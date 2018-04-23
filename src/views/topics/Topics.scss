@@ -1,0 +1,158 @@
+@import '../../constants';
+
+.topics.view {
+  display: flex;
+  flex-direction: row;
+
+  .topics-filters {
+    width: 600px;
+    height: calc(100% - 40px);
+
+    .row {
+      margin-top: 20px;
+    }
+
+    .topics-filters-name {
+
+      input[type="text"] {
+        margin-bottom: 0;
+      }
+
+      .bad-formatted-regexp-input {
+        border-bottom: solid red 1px;
+
+        &:focus {
+          box-shadow: none;
+        }
+      }
+
+      .bad-formatted-regexp-message {
+        color: red;
+        font-size: 12px;
+      }
+    }
+
+    .topics-filters-regexp {
+      margin-top: 20px;
+      margin-left: 20px;
+      max-width: 100px;
+
+      label { // materialize checkbox
+        padding-left: 25px;
+        font-size: 12px;
+
+        &:after {
+          margin-top: 3px;
+        }
+
+        &:before {
+          top: 3px;
+        }
+      }
+    }
+
+    .topics-filters-tree-view, .topics-filters-logs-view {
+      margin-top: 20px;
+
+      .topics-filters-tree-view-switch {
+        margin-left: 0;
+      }
+    }
+  }
+
+  .topics-items {
+    padding: 10px 20px;
+    position: relative;
+    height: calc(100% - 40px);
+    border: none;
+    margin: 0 0 0 40px;
+    flex: 1;
+
+    .title {
+      display: flex;
+      align-items: center;
+      margin-left: 10px;
+
+      .topics-items-length {
+        font-size: 14px;
+        color: $dark-grey;
+        font-style: italic;
+        margin-top: 6px;
+        margin-left: 10px;
+      }
+    }
+
+    > div { //react-custom-scrollbar
+      height: calc(100% - 40px) !important;
+      margin-top: 10px;
+    }
+
+    .topics-item {
+      cursor: pointer;
+      margin: 0 10px;
+      padding: 10px;
+      list-style-type: none;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      a {
+        display: inline-block;
+        width: 100%;
+      }
+    }
+
+    .topics-add-topic {
+      height: auto !important;
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+    }
+  }
+}
+
+.topics-add-topic-modal {
+  z-index: 999;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+
+  .content {
+    position: absolute;
+    bottom: 110px;
+    right: 55px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+
+    .icons {
+      width: 90px;
+      height: fit-content;
+
+      span {
+        padding: 5px;
+        display: inline-block;
+        margin-left: 10px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        &.check svg {
+          fill: green;
+        }
+
+        &.close svg {
+          fill: red;
+        }
+      }
+    }
+  }
+}

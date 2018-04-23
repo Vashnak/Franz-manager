@@ -1,0 +1,66 @@
+@import '../../constants';
+
+.menu {
+  height: 100%;
+  position: relative;
+  margin-right: 40px;
+
+  .menu-indicator {
+    transition: top 150ms;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 80px;
+    width: 5px;
+    background-color: $primary-color;
+  }
+
+  .menu-items {
+    display: flex;
+    flex-direction: column;
+    width: 160px;
+
+    .menu-item {
+      cursor: pointer;
+      width: 160px;
+      height: 113px;
+      margin-top: 30px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+
+      .menu-item-icon svg {
+        height: 40px;
+        width: 40px;
+
+        path {
+          fill: $grey;
+        }
+      }
+
+      .menu-item-label {
+        margin-top: 20px;
+        color: $dark-grey;
+        font-weight: 400;
+      }
+
+      &:after {
+        content: '';
+        height: 1px;
+        display: inline-block;
+        width: 80%;
+        margin-left: 10%;
+        margin-top: 30px;
+        background-color: $grey;
+      }
+
+      &.selected svg path {
+        fill: $primary-color;
+      }
+    }
+
+    .menu-item:last-child:after {
+      background-color: rgba(0, 0, 0, 0);
+    }
+  }
+}
