@@ -19,7 +19,11 @@ export default {
 
     getTopicMetrics(topicId, metricName) {
         return new Promise((resolve, reject) => {
-            ApiService.requestFranzManagerApi('GET', '/metrics', null, {topic: topicId, metricName: metricName, metricType: "BrokerTopicMetrics"})
+            const queryParams = {metricName, metricType: "BrokerTopicMetrics"};
+            if (topicId) {
+                queryParams.topic = topicId;
+            }
+            ApiService.requestFranzManagerApi('GET', '/metrics', null, queryParams)
                 .then(resolve)
                 .catch(reject);
         });

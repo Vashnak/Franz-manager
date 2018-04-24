@@ -22,9 +22,12 @@ class Topics extends React.Component {
         this.state = {
             topics: [],
             loadingTopics: true,
+            loadingMetrics: true,
             maxShownTopics: 40,
             topicsFilters: queryParams,
-            addTopicModal: false
+            addTopicModal: false,
+            metrics: {},
+            scientistNotation: true
         }
     }
 
@@ -33,6 +36,30 @@ class Topics extends React.Component {
             const queryParams = this._decodeQueryParams(props.location.search.substring(1));
             this.setState({topicsFilters: queryParams});
         }
+    }
+
+    componentWillMount() {
+        TopicsService.getTopics()
+            .then(topics => {
+                this.setState({topics, loadingTopics: false});
+            });
+        this._loadTopicsMetrics()
+    }
+
+    _loadTopicsMetrics() {
+        const wantedMetrics = ['MessagesInPerSec', 'BytesInPerSec', 'BytesOutPerSec', 'BytesRejectedPerSec', 'FailedFetchRequestsPerSec',
+            'FailedProduceRequestsPerSec', 'FetchMessageConversionsPerSec', 'ProduceMessageConversionsPerSec', 'ReplicationBytesInPerSec',
+            'ReplicationBytesOutPerSec', 'TotalFetchRequestsPerSec', 'TotalProduceRequestsPerSec'];
+        Promise.all(wantedMetrics.map(metricName => TopicsService.getTopicMetrics(null, metricName)))
+            .then(metricsArray => {
+                const metrics = metricsArray.reduce((prev, next) => {
+                    prev[next.name] = next.metrics;
+                    return prev;
+                }, {});
+                this.setState({metrics, loadingMetrics: false});
+
+            })
+            .catch(console.error);
     }
 
     _decodeQueryParams(params) {
@@ -44,13 +71,6 @@ class Topics extends React.Component {
         queryParams.hideLogsTopics = queryParams.hideLogsTopics === 'true';
 
         return queryParams;
-    }
-
-    componentWillMount() {
-        TopicsService.getTopics()
-            .then(topics => {
-                this.setState({topics, loadingTopics: false});
-            });
     }
 
     _updateFilter(inputType, filterKey, e) {
@@ -127,6 +147,15 @@ class Topics extends React.Component {
         this.setState({addTopicModal: false});
     }
 
+    _toggleScientistNotation(notation) {
+        this.setState({
+            scientistNotation: notation === 'scientist'
+        })
+    }
+
+    _formatNotation(number) {
+        return this.state.scientistNotation ? number.toExponential(2) : number.toFixed(2);
+    }
 
     render() {
         const topicsToShow = this._filterTopics(this.state.topics).sort((a, b) => a.id < b.id ? -1 : 1);
@@ -135,39 +164,81 @@ class Topics extends React.Component {
                 <div className="breadcrumbs">
                     <span className="breadcrumb"><Link to="/franz-manager/topics">Topics</Link></span>
                 </div>
-                <div className="topics-filters box">
-                    <span className="title">Filters</span>
+                <div className="left-box">
+                    <div className="topics-filters box">
+                        <span className="title">Filters</span>
 
-                    <div className="row">
-                        <div className="topics-filters-name input-field">
-                            <input type="text"
-                                   placeholder=".*"
-                                   className={classNames({'bad-formatted-regexp-input': this.state.topicsFilters.filterByRegexp && !this.state.isRegexpWellFormatted})}
-                                   onChange={this._updateFilter.bind(this, 'text', 'topicName')}
-                                   value={this.state.topicsFilters.topicName}/>
-                            <label className="active">Topic name</label>
-                            {this.state.topicsFilters.filterByRegexp && !this.state.isRegexpWellFormatted && (
-                                <span className="bad-formatted-regexp-message">Bad regexp format</span>)}
+                        <div className="row">
+                            <div className="topics-filters-name input-field">
+                                <input type="text"
+                                       placeholder=".*"
+                                       className={classNames({'bad-formatted-regexp-input': this.state.topicsFilters.filterByRegexp && !this.state.isRegexpWellFormatted})}
+                                       onChange={this._updateFilter.bind(this, 'text', 'topicName')}
+                                       value={this.state.topicsFilters.topicName}/>
+                                <label className="active">Topic name</label>
+                                {this.state.topicsFilters.filterByRegexp && !this.state.isRegexpWellFormatted && (
+                                    <span className="bad-formatted-regexp-message">Bad regexp format</span>)}
+                            </div>
+                            <div className="topics-filters-regexp"
+                                 onClick={this._updateFilter.bind(this, 'checkbox', 'filterByRegexp')}>
+                                <input type="checkbox" className="filled-in"
+                                       checked={this.state.topicsFilters.filterByRegexp}/>
+                                <label>is regexp ?</label>
+                            </div>
                         </div>
-                        <div className="topics-filters-regexp"
-                             onClick={this._updateFilter.bind(this, 'checkbox', 'filterByRegexp')}>
-                            <input type="checkbox" className="filled-in"
-                                   checked={this.state.topicsFilters.filterByRegexp}/>
-                            <label>is regexp ?</label>
+
+                        <div className="row">
+                            <div className="topics-filters-logs-view switch">
+                                <label>
+                                    <input type="checkbox" checked={this.state.topicsFilters.hideLogsTopics}
+                                           onClick={this._updateFilter.bind(this, 'checkbox', 'hideLogsTopics')}/>
+                                    <span className="topics-filters-tree-view-switch lever"/>
+                                    <label>Hide log topics</label>
+                                </label>
+                            </div>
                         </div>
                     </div>
-
-                    <div className="row">
-                        <div className="topics-filters-logs-view switch">
-                            <label>
-                                <input type="checkbox" checked={this.state.topicsFilters.hideLogsTopics}
-                                       onClick={this._updateFilter.bind(this, 'checkbox', 'hideLogsTopics')}/>
-                                <span className="topics-filters-tree-view-switch lever"/>
-                                <label>Hide log topics</label>
-                            </label>
-                        </div>
+                    <div className="topics-metrics box">
+                        <span className="title">Metrics
+                            <span className="notation">
+                                <span onClick={this._toggleScientistNotation.bind(this, 'decimal')}
+                                      className={classNames({active: !this.state.scientistNotation})}>decimal</span>
+                                <span onClick={this._toggleScientistNotation.bind(this, 'scientist')}
+                                      className={classNames({active: this.state.scientistNotation})}>scientist</span>
+                            </span>
+                        </span>
+                        {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>name</th>
+                                    <th>last min</th>
+                                    <th>last 15 min</th>
+                                    <th>total</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {
+                                    ['MessagesInPerSec', 'BytesInPerSec', 'BytesOutPerSec', 'BytesRejectedPerSec', 'FailedFetchRequestsPerSec',
+                                        'FailedProduceRequestsPerSec', 'FetchMessageConversionsPerSec', 'ProduceMessageConversionsPerSec', 'ReplicationBytesInPerSec',
+                                        'ReplicationBytesOutPerSec', 'TotalFetchRequestsPerSec', 'TotalProduceRequestsPerSec'].map((key, index) => {
+                                        return (<tr>
+                                            <td>{['Messages in', 'Bytes in', 'Bytes out', 'Bytes rejected', 'Failed fetch requests', 'Failed produce requests',
+                                                'Fetch message conversion', 'Produce message conversion', 'Replication bytes in', 'Replication bytes out',
+                                                'Total fetch requests', 'Total produce requests'][index]} / sec
+                                            </td>
+                                            <td>{this._formatNotation(Number(this.state.metrics[key].OneMinuteRate))}</td>
+                                            <td>{this._formatNotation(Number(this.state.metrics[key].FifteenMinuteRate))}</td>
+                                            <td>{this._formatNotation(Number(this.state.metrics[key].Count))}</td>
+                                        </tr>)
+                                    })
+                                }
+                                </tbody>
+                            </table>
+                        }
                     </div>
                 </div>
+
                 <div className="topics-items collection box">
                     <span className="title">Topics <span
                         className="topics-items-length">{topicsToShow.length + ' topic' + (topicsToShow.length > 1 ? 's' : '')}</span></span>

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 import TopicsService from '../../../services/TopicsService';
-import ClassNames from 'classnames';
+import classNames from 'classnames';
 import JSONPretty from 'react-json-pretty';
 import Scrollbar from 'react-custom-scrollbars';
 import CloseIcon from "mdi-react/CloseIcon";
@@ -34,7 +34,8 @@ class Topic extends React.Component {
             lastMessages: [],
             deleteTopicButtons: false,
             consumers: [],
-            metrics: {}
+            metrics: {},
+            scientistNotation: true
         }
     }
 
@@ -45,6 +46,7 @@ class Topic extends React.Component {
         this._loadTopicConsumers(this.state.topicId);
         this._loadTopicMetrics(this.state.topicId);
     }
+
     _loadTopicMetrics(topicId){
         const wantedMetrics = ['MessagesInPerSec', 'BytesInPerSec', 'BytesOutPerSec'];
         Promise.all(wantedMetrics.map(metricName => TopicsService.getTopicMetrics(topicId, metricName)))
@@ -143,6 +145,16 @@ class Topic extends React.Component {
         this.setState({deleteTopicButtons: false});
     }
 
+    _toggleScientistNotation(notation) {
+        this.setState({
+            scientistNotation: notation === 'scientist'
+        })
+    }
+
+    _formatNotation(number) {
+        return this.state.scientistNotation ? number.toExponential(2) : number.toFixed(2);
+    }
+
     render() {
         return (
             <div className="topic view">
@@ -153,6 +165,58 @@ class Topic extends React.Component {
                 </div>
 
                 <div className="left-box">
+                    <div className="topic-metrics box">
+                        <span className="title">Metrics
+                            <span className="notation">
+                                <span onClick={this._toggleScientistNotation.bind(this, 'decimal')}
+                                      className={classNames({active: !this.state.scientistNotation})}>decimal</span>
+                                <span onClick={this._toggleScientistNotation.bind(this, 'scientist')}
+                                      className={classNames({active: this.state.scientistNotation})}>scientist</span>
+                            </span>
+                        </span>
+                        {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>name</th>
+                                    <th>last min</th>
+                                    <th>last 15 min</th>
+                                    <th>total</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {
+                                    ["MessagesInPerSec", "BytesInPerSec", "BytesOutPerSec"].map((key, index) => {
+                                        return (<tr>
+                                            <td>{["Messages in / sec", "Bytes in / sec", "Bytes out / sec"][index]}</td>
+                                            <td>{this._formatNotation(Number(this.state.metrics[key].OneMinuteRate))}</td>
+                                            <td>{this._formatNotation(Number(this.state.metrics[key].FifteenMinuteRate))}</td>
+                                            <td>{this._formatNotation(Number(this.state.metrics[key].Count))}</td>
+                                        </tr>)
+                                    })
+                                }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+
+                    <div className="topic-consumers box">
+                        <span className="title">Consumers <span
+                            className="topic-consumers-length">{this.state.consumers.length + ' consumer' + (this.state.consumers.length > 1 ? 's' : '')}</span></span>
+                        {this.state.loadingConsumers ? <Loader/> :
+                            <div className="consumers-items collection">
+                                {this.state.consumers.length > 0 ? this.state.consumers.map((consumer, index) => {
+                                    return (
+                                        <div className="consumer-item collection-item" key={consumer + "-" + index}>
+                                            <Link
+                                                to={`/franz-manager/consumers/${consumer.replace(/\./g, ',')}`}>{consumer}</Link>
+                                        </div>
+                                    )
+                                }) : <div className="no-consumers">No consumers.</div>}
+                            </div>
+                        }
+                    </div>
+
                     <div className="topic-settings box">
                         <span className="title">Settings</span>
                         {this.state.loadingConfiguration ? <Loader/> :
@@ -171,7 +235,7 @@ class Topic extends React.Component {
                                                         <span
                                                             className="topic-details-configuration-key">{configurationKey}:</span>
                                                                 <span
-                                                                    className={ClassNames('topic-details-configuration-value', this._getValueType(this.state.topicConfiguration[configurationGroupKey][configurationKey]))}>
+                                                                    className={classNames('topic-details-configuration-value', this._getValueType(this.state.topicConfiguration[configurationGroupKey][configurationKey]))}>
                                                         {this.state.topicConfiguration[configurationGroupKey][configurationKey] || "null"}
                                                     </span>
                                                             </div>
@@ -185,56 +249,13 @@ class Topic extends React.Component {
                             </Scrollbar>
                         }
                     </div>
-
-                    <div className="topic-metrics box">
-                        <span className="title">Metrics</span>
-                        {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>name</th>
-                                    <th>last min</th>
-                                    <th>last 15 min</th>
-                                    <th>total</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {
-                                    ["MessagesInPerSec", "BytesInPerSec", "BytesOutPerSec"].map((key, index) => {
-                                        return (<tr>
-                                            <td>{["Messages in / sec", "Bytes in / sec", "Bytes out / sec"][index]}</td>
-                                            <td>{Number(this.state.metrics[key].OneMinuteRate).toFixed(2)}</td>
-                                            <td>{Number(this.state.metrics[key].FifteenMinuteRate).toFixed(2)}</td>
-                                            <td>{Number(this.state.metrics[key].Count).toFixed(2)}</td>
-                                        </tr>)
-                                    })
-                                }
-                                </tbody>
-                            </table>
-                        }
-                    </div>
-
-                    <div className="topic-consumers box">
-                        <span className="title">Consumers</span>
-                        {this.state.loadingConsumers ? <Loader/> :
-                            <div className="consumers-items collection">
-                                {this.state.consumers.length > 0 ? this.state.consumers.map((consumer, index) => {
-                                    return (
-                                        <div className="consumer-item collection-item" key={consumer + "-" + index}>
-                                            <Link
-                                                to={`/franz-manager/consumers/${consumer.replace(/\./g, ',')}`}>{consumer}</Link>
-                                        </div>
-                                    )
-                                }) : <div className="no-consumers">No consumers.</div>}
-                            </div>
-                        }
-                    </div>
                 </div>
 
 
                 <div className="right-box">
                     <div className="topic-partitions box">
-                        <span className="title">Partitions</span>
+                        <span className="title">Partitions <span
+                            className="topic-partitions-length">{this.state.partitions.length + ' partition' + (this.state.partitions.length > 1 ? 's' : '')}</span></span>
                         {this.state.loadingPartition ? <Loader/> :
                             <Scrollbar>
                                 <table>
