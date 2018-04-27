@@ -24,9 +24,7 @@ class Topics extends React.Component {
         this.state = {
             topics: [],
             loadingTopics: true,
-            loadingMetrics: true,
             errorLoadingTopics: false,
-            errorLoadingMetrics: false,
             maxShownTopics: 40,
             topicsFilters: queryParams,
             addTopicModal: false,
@@ -48,25 +46,6 @@ class Topics extends React.Component {
             })
             .catch(() => {
                 this.setState({loadingTopics: false, errorLoadingTopics: true})
-            });
-        this._loadTopicsMetrics()
-    }
-
-    _loadTopicsMetrics() {
-        const wantedMetrics = ['MessagesInPerSec', 'BytesInPerSec', 'BytesOutPerSec', 'BytesRejectedPerSec', 'FailedFetchRequestsPerSec',
-            'FailedProduceRequestsPerSec', 'FetchMessageConversionsPerSec', 'ProduceMessageConversionsPerSec', 'ReplicationBytesInPerSec',
-            'ReplicationBytesOutPerSec', 'TotalFetchRequestsPerSec', 'TotalProduceRequestsPerSec'];
-        Promise.all(wantedMetrics.map(metricName => TopicsService.getTopicMetrics(null, metricName)))
-            .then(metricsArray => {
-                const metrics = metricsArray.reduce((prev, next) => {
-                    prev[next.name] = next.metrics;
-                    return prev;
-                }, {});
-                this.setState({metrics, loadingMetrics: false});
-
-            })
-            .catch(() => {
-                this.setState({loadingMetrics: false, errorLoadingMetrics: true})
             });
     }
 
@@ -163,20 +142,6 @@ class Topics extends React.Component {
 
     render() {
         const topicsToShow = this._filterTopics(this.state.topics).sort((a, b) => a.id < b.id ? -1 : 1);
-        const metricsTranslation = {
-            MessagesInPerSec: 'Messages in',
-            BytesInPerSec: 'Bytes in',
-            BytesOutPerSec: 'Bytes out',
-            BytesRejectedPerSec: 'Bytes rejected',
-            FailedFetchRequestsPerSec: 'Failed fetch requests',
-            FailedProduceRequestsPerSec: 'Failed produce requests',
-            FetchMessageConversionsPerSec: 'Fetch message conversion',
-            ProduceMessageConversionsPerSec: 'Produce message conversion',
-            ReplicationBytesInPerSec: 'Replication bytes in',
-            ReplicationBytesOutPerSec: 'Replication bytes out',
-            TotalFetchRequestsPerSec: 'Total fetch requests',
-            TotalProduceRequestsPerSec: 'Total produce requests'
-        };
 
         return (
             <div className="topics view">
@@ -227,25 +192,6 @@ class Topics extends React.Component {
                                 </label>
                             </div>
                         </div>
-                    </div>
-                    <div className="topics-metrics box">
-                        <span className="title">Metrics</span>
-                        {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
-                            this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> :
-                                <Metrics fields={{
-                                    label: 'Metric',
-                                    OneMinuteRate: 'Last min',
-                                    FifteenMinuteRate: 'Last 15 min',
-                                    Count: 'Total'
-                                }} metrics={Object.keys(this.state.metrics).map(metricKey => {
-                                    return {
-                                        label: metricsTranslation[metricKey],
-                                        OneMinuteRate: this.state.metrics[metricKey].OneMinuteRate,
-                                        FifteenMinuteRate: this.state.metrics[metricKey].FifteenMinuteRate,
-                                        Count: this.state.metrics[metricKey].Count
-                                    }
-                                })}/>
-                        }
                     </div>
                 </div>
 

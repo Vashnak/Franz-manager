@@ -10,6 +10,7 @@ import BrokersService from "../../services/BrokersService";
 import Loader from "../../components/loader/Loader";
 import Error from '../../components/error/Error';
 import Metrics from '../../components/metrics/Metrics';
+import TopicsService from "../../services/TopicsService";
 
 class Clusters extends React.Component {
     constructor(props) {
@@ -19,7 +20,10 @@ class Clusters extends React.Component {
             loadingBrokers: true,
             brokers: [],
             brokersSettings: {},
-            clusterSettings: {}
+            clusterSettings: {},
+            metrics: {},
+            loadingMetrics: true,
+            errorLoadingMetrics: false
         }
     }
 
@@ -68,6 +72,25 @@ class Clusters extends React.Component {
                 this.setState({brokers, brokersSettings, loadingBrokers: false});
             })
             .catch(() => this.setState({loadingBrokers: false, errorLoadingBrokers: true}));
+        this._loadTopicsMetrics()
+    }
+
+    _loadTopicsMetrics() {
+        const wantedMetrics = ['MessagesInPerSec', 'BytesInPerSec', 'BytesOutPerSec', 'BytesRejectedPerSec', 'FailedFetchRequestsPerSec',
+            'FailedProduceRequestsPerSec', 'FetchMessageConversionsPerSec', 'ProduceMessageConversionsPerSec', 'ReplicationBytesInPerSec',
+            'ReplicationBytesOutPerSec', 'TotalFetchRequestsPerSec', 'TotalProduceRequestsPerSec'];
+        Promise.all(wantedMetrics.map(metricName => TopicsService.getTopicMetrics(null, metricName)))
+            .then(metricsArray => {
+                const metrics = metricsArray.reduce((prev, next) => {
+                    prev[next.name] = next.metrics;
+                    return prev;
+                }, {});
+                this.setState({metrics, loadingMetrics: false});
+
+            })
+            .catch(() => {
+                this.setState({loadingMetrics: false, errorLoadingMetrics: true})
+            });
     }
 
     _reduceValueSize(value) {
@@ -88,7 +111,21 @@ class Clusters extends React.Component {
     }
 
     render() {
-        console.log(this.state.brokers)
+        const metricsTranslation = {
+            MessagesInPerSec: 'Messages in',
+            BytesInPerSec: 'Bytes in',
+            BytesOutPerSec: 'Bytes out',
+            BytesRejectedPerSec: 'Bytes rejected',
+            FailedFetchRequestsPerSec: 'Failed fetch requests',
+            FailedProduceRequestsPerSec: 'Failed produce requests',
+            FetchMessageConversionsPerSec: 'Fetch message conversion',
+            ProduceMessageConversionsPerSec: 'Produce message conversion',
+            ReplicationBytesInPerSec: 'Replication bytes in',
+            ReplicationBytesOutPerSec: 'Replication bytes out',
+            TotalFetchRequestsPerSec: 'Total fetch requests',
+            TotalProduceRequestsPerSec: 'Total produce requests'
+        };
+
         return (
             <div className="clusters view">
                 <div className="breadcrumbs">
@@ -125,6 +162,26 @@ class Clusters extends React.Component {
                                                 bytesIn: 'Bytes In',
                                                 bytesOut: 'Bytes Out'
                                             }} metrics={this.state.brokers}/>
+                                        </div>
+
+                                        <div className="brokers-metrics box">
+                                            <span className="title">Metrics</span>
+                                            {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
+                                                this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> :
+                                                    <Metrics fields={{
+                                                        label: 'Metric',
+                                                        OneMinuteRate: 'Last min',
+                                                        FifteenMinuteRate: 'Last 15 min',
+                                                        Count: 'Total'
+                                                    }} metrics={Object.keys(this.state.metrics).map(metricKey => {
+                                                        return {
+                                                            label: metricsTranslation[metricKey],
+                                                            OneMinuteRate: this.state.metrics[metricKey].OneMinuteRate,
+                                                            FifteenMinuteRate: this.state.metrics[metricKey].FifteenMinuteRate,
+                                                            Count: this.state.metrics[metricKey].Count
+                                                        }
+                                                    })}/>
+                                            }
                                         </div>
                                     </div>
                                 </div>
