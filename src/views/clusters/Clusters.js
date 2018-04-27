@@ -4,8 +4,12 @@ import Scrollbar from 'react-custom-scrollbars';
 import ClassNames from 'classnames';
 
 import './Clusters.scss';
+
+import Utils from "../../modules/Utils";
 import BrokersService from "../../services/BrokersService";
 import Loader from "../../components/loader/Loader";
+import Error from '../../components/error/Error';
+import Metrics from '../../components/metrics/Metrics';
 
 class Clusters extends React.Component {
     constructor(props) {
@@ -63,7 +67,7 @@ class Clusters extends React.Component {
 
                 this.setState({brokers, brokersSettings, loadingBrokers: false});
             })
-            .catch(console.error);
+            .catch(() => this.setState({loadingBrokers: false, errorLoadingBrokers: true}));
     }
 
     _reduceValueSize(value) {
@@ -84,65 +88,83 @@ class Clusters extends React.Component {
     }
 
     render() {
+        console.log(this.state.brokers)
         return (
             <div className="clusters view">
                 <div className="breadcrumbs">
-                    <span className="breadcrumb"><Link to="/franz-manager/cluster">Clusters</Link></span>
+                    <span className="breadcrumb"><Link to="/franz-manager/cluster">Cluster</Link></span>
                 </div>
-                {this.state.loadingBrokers ? (
-                    <Loader/>
-                ) : (
-
-                    <div className="clusters-content">
-                        <div className="cluster-settings box">
-                            <span className="title">Infos</span>
-                            <div className="cluster-settings-lines">
-                                <div className="cluster-settings-line">
-                                    <span className="cluster-settings-line-key">Zookeeper : </span>
-                                    <span
-                                        className="cluster-settings-line-value">{this.state.brokersSettings.zookeeper ? this.state.brokersSettings.zookeeper['zookeeper.connect'] : ''}</span>
-                                </div>
-                                <div className="cluster-settings-line">
-                                    <span className="cluster-settings-line-key">Kafka : </span>
-                                    <span
-                                        className="cluster-settings-line-value">{this.state.brokers ? this.state.brokers.map((broker) => broker.host + ':' + broker.port).join(',') : ''}</span>
+                {this.state.loadingBrokers ? <Loader/> :
+                    this.state.errorLoadingBrokers ? <Error error="Cannot load cluster configuration."/> : (
+                        <div className="cluster-content">
+                            <div className="cluster-settings box">
+                                <span className="title">Infos</span>
+                                <div className="cluster-settings-lines">
+                                    <div className="cluster-settings-line">
+                                        <span className="cluster-settings-line-key">Zookeeper : </span>
+                                        <span
+                                            className="cluster-settings-line-value">{this.state.brokersSettings.zookeeper ? this.state.brokersSettings.zookeeper['zookeeper.connect'] : ''}</span>
+                                    </div>
+                                    <div className="cluster-settings-line">
+                                        <span className="cluster-settings-line-key">Kafka : </span>
+                                        <span
+                                            className="cluster-settings-line-value">{this.state.brokers ? this.state.brokers.map((broker) => broker.host + ':' + broker.port).join(',') : ''}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                            <div className="panel">
+                                <div className="left">
+                                    <div>
+                                        <div className="brokers-summary box">
+                                            <span className="title">Brokers</span>
 
-                        <div className="brokers-settings box">
-                            <span className="title">Settings</span>
-                            <Scrollbar className="brokers-settings-scrollbar">
-                                <div className="brokers-settings-containers">
-                                    {Object.keys(this.state.brokersSettings).map(settingCategory => {
-                                        return (
-                                            <div className="brokers-settings-container">
-                                                <h4 className="brokers-settings-container-category">{settingCategory}</h4>
+                                            <Metrics fields={{
+                                                id: 'Id',
+                                                host: 'Host',
+                                                port: 'Port',
+                                                bytesIn: 'Bytes In',
+                                                bytesOut: 'Bytes Out'
+                                            }} metrics={this.state.brokers}/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="right">
+                                    <div className="brokers-settings box">
+                                        <span className="title">Settings</span>
+                                        <Scrollbar className="brokers-settings-scrollbar">
+                                            <div className="brokers-settings-containers">
+                                                {Object.keys(this.state.brokersSettings).map(settingCategory => {
+                                                    return (
+                                                        <div className="brokers-settings-container">
+                                                            <h4 className="brokers-settings-container-category">{settingCategory}</h4>
 
-                                                <div className="brokers-settings-container-lines">
-                                                    {Object.keys(this.state.brokersSettings[settingCategory]).sort((a, b) => a < b ? -1 : 1).map(settingName => {
-                                                        return (
-                                                            <div className="brokers-settings-container-line">
+                                                            <div className="brokers-settings-container-lines">
+                                                                {Object.keys(this.state.brokersSettings[settingCategory]).sort((a, b) => a < b ? -1 : 1).map(settingName => {
+                                                                    return (
+                                                                        <div
+                                                                            className="brokers-settings-container-line">
                                                     <span className="broker-settings-container-line-key">
                                                         {settingName}
                                                     </span>
-                                                                :
-                                                                <span
-                                                                    className={ClassNames('broker-settings-container-line-value', this._getValueType(this.state.brokersSettings[settingCategory][settingName]))}>
+                                                                            :
+                                                                            <span
+                                                                                className={ClassNames('broker-settings-container-line-value', this._getValueType(this.state.brokersSettings[settingCategory][settingName]))}>
                                                             {this._reduceValueSize(this.state.brokersSettings[settingCategory][settingName] || "null")}
                                                     </span>
+                                                                        </div>
+                                                                    )
+                                                                })}
                                                             </div>
-                                                        )
-                                                    })}
-                                                </div>
+                                                        </div>
+                                                    )
+                                                })}
                                             </div>
-                                        )
-                                    })}
+                                        </Scrollbar>
+                                    </div>
                                 </div>
-                            </Scrollbar>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
             </div>
         );
     }

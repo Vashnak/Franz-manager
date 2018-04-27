@@ -1,6 +1,9 @@
 import React from 'react';
 import Loader from '../../components/loader/Loader';
+import Error from '../../components/error/Error';
+import Metrics from '../../components/metrics/Metrics';
 import TopicsService from '../../services/TopicsService';
+
 import querystring from 'querystring';
 import Scrollbar from 'react-custom-scrollbars';
 import CloseIcon from "mdi-react/CloseIcon";
@@ -9,7 +12,6 @@ import {Link} from 'react-router-dom';
 import classNames from 'classnames';
 import _ from 'lodash';
 
-import FolderIcon from 'mdi-react/FolderIcon';
 
 import './Topics.scss';
 
@@ -23,11 +25,12 @@ class Topics extends React.Component {
             topics: [],
             loadingTopics: true,
             loadingMetrics: true,
+            errorLoadingTopics: false,
+            errorLoadingMetrics: false,
             maxShownTopics: 40,
             topicsFilters: queryParams,
             addTopicModal: false,
-            metrics: {},
-            scientistNotation: true
+            metrics: {}
         }
     }
 
@@ -42,6 +45,9 @@ class Topics extends React.Component {
         TopicsService.getTopics()
             .then(topics => {
                 this.setState({topics, loadingTopics: false});
+            })
+            .catch(() => {
+                this.setState({loadingTopics: false, errorLoadingTopics: true})
             });
         this._loadTopicsMetrics()
     }
@@ -59,7 +65,9 @@ class Topics extends React.Component {
                 this.setState({metrics, loadingMetrics: false});
 
             })
-            .catch(console.error);
+            .catch(() => {
+                this.setState({loadingMetrics: false, errorLoadingMetrics: true})
+            });
     }
 
     _decodeQueryParams(params) {
@@ -69,6 +77,7 @@ class Topics extends React.Component {
         queryParams.filterByRegexp = queryParams.filterByRegexp === 'true';
         queryParams.treeView = queryParams.treeView === 'true';
         queryParams.hideLogsTopics = queryParams.hideLogsTopics === 'true';
+        queryParams.caseSensitive = queryParams.caseSensitive === 'true';
 
         return queryParams;
     }
@@ -112,7 +121,12 @@ class Topics extends React.Component {
         }
 
         return topics.filter(topic => {
-            const topicNameFilter = filters.filterByRegexp ? regexp.test(topic.id) : topic.id.indexOf(filters.topicName) >= 0;
+            let topicNameFilter = true;
+
+            if (filters.filterByRegexp) topicNameFilter = regexp.test(topic.id);
+            else if (filters.caseSensitive) topicNameFilter = topic.id.indexOf(filters.topicName) >= 0;
+            else topicNameFilter = topic.id.toLowerCase().indexOf(filters.topicName.toLowerCase()) >= 0;
+
             const showLogs = filters.hideLogsTopics ? topic.id.substr(topic.id.length - 4, 4) !== '.log' : true;
             return topicNameFilter && showLogs;
         }).sort((a, b) => {
@@ -147,18 +161,23 @@ class Topics extends React.Component {
         this.setState({addTopicModal: false});
     }
 
-    _toggleScientistNotation(notation) {
-        this.setState({
-            scientistNotation: notation === 'scientist'
-        })
-    }
-
-    _formatNotation(number) {
-        return this.state.scientistNotation ? number.toExponential(2) : number.toFixed(2);
-    }
-
     render() {
         const topicsToShow = this._filterTopics(this.state.topics).sort((a, b) => a.id < b.id ? -1 : 1);
+        const metricsTranslation = {
+            MessagesInPerSec: 'Messages in',
+            BytesInPerSec: 'Bytes in',
+            BytesOutPerSec: 'Bytes out',
+            BytesRejectedPerSec: 'Bytes rejected',
+            FailedFetchRequestsPerSec: 'Failed fetch requests',
+            FailedProduceRequestsPerSec: 'Failed produce requests',
+            FetchMessageConversionsPerSec: 'Fetch message conversion',
+            ProduceMessageConversionsPerSec: 'Produce message conversion',
+            ReplicationBytesInPerSec: 'Replication bytes in',
+            ReplicationBytesOutPerSec: 'Replication bytes out',
+            TotalFetchRequestsPerSec: 'Total fetch requests',
+            TotalProduceRequestsPerSec: 'Total produce requests'
+        };
+
         return (
             <div className="topics view">
                 <div className="breadcrumbs">
@@ -188,6 +207,17 @@ class Topics extends React.Component {
                         </div>
 
                         <div className="row">
+                            <div className="topics-filters-case-sensitive switch">
+                                <label>
+                                    <input type="checkbox" checked={this.state.topicsFilters.caseSensitive}
+                                           onClick={this._updateFilter.bind(this, 'checkbox', 'caseSensitive')}/>
+                                    <span className="lever"/>
+                                    <label>Case sensitive</label>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="row">
                             <div className="topics-filters-logs-view switch">
                                 <label>
                                     <input type="checkbox" checked={this.state.topicsFilters.hideLogsTopics}
@@ -199,42 +229,22 @@ class Topics extends React.Component {
                         </div>
                     </div>
                     <div className="topics-metrics box">
-                        <span className="title">Metrics
-                            <span className="notation">
-                                <span onClick={this._toggleScientistNotation.bind(this, 'decimal')}
-                                      className={classNames({active: !this.state.scientistNotation})}>decimal</span>
-                                <span onClick={this._toggleScientistNotation.bind(this, 'scientist')}
-                                      className={classNames({active: this.state.scientistNotation})}>scientist</span>
-                            </span>
-                        </span>
+                        <span className="title">Metrics</span>
                         {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>name</th>
-                                    <th>last min</th>
-                                    <th>last 15 min</th>
-                                    <th>total</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {
-                                    ['MessagesInPerSec', 'BytesInPerSec', 'BytesOutPerSec', 'BytesRejectedPerSec', 'FailedFetchRequestsPerSec',
-                                        'FailedProduceRequestsPerSec', 'FetchMessageConversionsPerSec', 'ProduceMessageConversionsPerSec', 'ReplicationBytesInPerSec',
-                                        'ReplicationBytesOutPerSec', 'TotalFetchRequestsPerSec', 'TotalProduceRequestsPerSec'].map((key, index) => {
-                                        return (<tr>
-                                            <td>{['Messages in', 'Bytes in', 'Bytes out', 'Bytes rejected', 'Failed fetch requests', 'Failed produce requests',
-                                                'Fetch message conversion', 'Produce message conversion', 'Replication bytes in', 'Replication bytes out',
-                                                'Total fetch requests', 'Total produce requests'][index]} / sec
-                                            </td>
-                                            <td>{this._formatNotation(Number(this.state.metrics[key].OneMinuteRate))}</td>
-                                            <td>{this._formatNotation(Number(this.state.metrics[key].FifteenMinuteRate))}</td>
-                                            <td>{this._formatNotation(Number(this.state.metrics[key].Count))}</td>
-                                        </tr>)
-                                    })
-                                }
-                                </tbody>
-                            </table>
+                            this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> :
+                                <Metrics fields={{
+                                    label: 'Metric',
+                                    OneMinuteRate: 'Last min',
+                                    FifteenMinuteRate: 'Last 15 min',
+                                    Count: 'Total'
+                                }} metrics={Object.keys(this.state.metrics).map(metricKey => {
+                                    return {
+                                        label: metricsTranslation[metricKey],
+                                        OneMinuteRate: this.state.metrics[metricKey].OneMinuteRate,
+                                        FifteenMinuteRate: this.state.metrics[metricKey].FifteenMinuteRate,
+                                        Count: this.state.metrics[metricKey].Count
+                                    }
+                                })}/>
                         }
                     </div>
                 </div>
@@ -244,20 +254,22 @@ class Topics extends React.Component {
                         className="topics-items-length">{topicsToShow.length + ' topic' + (topicsToShow.length > 1 ? 's' : '')}</span></span>
                     {
                         this.state.loadingTopics ? <Loader/> : (
-                            <Scrollbar onScrollFrame={this._onTopicListScrolled.bind(this)}>
-                                <div className="topics-classic-view">
-                                    {
-                                        topicsToShow.splice(0, this.state.maxShownTopics).map(topic => {
-                                            return (
-                                                <li className="topics-item collection-item">
-                                                    <Link
-                                                        to={'/franz-manager/topics/' + topic.id.replace(/\./g, ',')}>{topic.id}</Link>
-                                                </li>
-                                            )
-                                        })
-                                    }
-                                </div>
-                            </Scrollbar>
+                            this.state.errorLoadingTopics ? <Error error="Cannot load topics."/> : (
+                                <Scrollbar onScrollFrame={this._onTopicListScrolled.bind(this)}>
+                                    <div className="topics-classic-view">
+                                        {
+                                            topicsToShow.splice(0, this.state.maxShownTopics).map(topic => {
+                                                return (
+                                                    <li className="topics-item collection-item">
+                                                        <Link
+                                                            to={'/franz-manager/topics/' + topic.id.replace(/\./g, ',')}>{topic.id}</Link>
+                                                    </li>
+                                                )
+                                            })
+                                        }
+                                    </div>
+                                </Scrollbar>
+                            )
                         )}
                     <div className="topics-add-topic">
                         <a className="waves-effect waves-light btn"

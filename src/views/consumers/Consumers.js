@@ -1,6 +1,7 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 import Loader from '../../components/loader/Loader';
+import Error from '../../components/error/Error';
 import Scrollbar from 'react-custom-scrollbars';
 
 import './Consumers.scss';
@@ -12,6 +13,7 @@ class Consumers extends React.Component {
 
         this.state = {
             loadingConsumers: true,
+            errorLoadingConsumers: false,
             consumers: [],
             filter: ''
         };
@@ -34,6 +36,7 @@ class Consumers extends React.Component {
                     loadingConsumers: false
                 });
             })
+            .catch(() => this.setState({loadingConsumers: false, errorLoadingConsumers: true}))
     }
 
     _updatefilter(e) {
@@ -67,6 +70,7 @@ class Consumers extends React.Component {
                 <div className="consumers-items collection box">
                     {
                         this.state.loadingConsumers ? <Loader/> : (
+                            this.state.errorLoadingConsumers ? <Error error="Cannot load consumers."/> : (
                             <Scrollbar>
                                 <div className="topics-classic-view">
                                     {
@@ -84,6 +88,7 @@ class Consumers extends React.Component {
                                     }
                                 </div>
                             </Scrollbar>
+                            )
                         )}
                 </div>
             </div>

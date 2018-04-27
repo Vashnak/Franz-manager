@@ -4,10 +4,11 @@ import TopicsService from '../../../services/TopicsService';
 import classNames from 'classnames';
 import JSONPretty from 'react-json-pretty';
 import Scrollbar from 'react-custom-scrollbars';
-import CloseIcon from "mdi-react/CloseIcon";
-import CheckIcon from "mdi-react/CheckIcon";
+import _ from "lodash";
 
 import Loader from '../../../components/loader/Loader';
+import Error from '../../../components/error/Error';
+import Metrics from '../../../components/metrics/Metrics';
 
 import './Topic.scss';
 import ConsumersService from "../../../services/ConsumersService";
@@ -31,6 +32,11 @@ class Topic extends React.Component {
             loadingConsumers: true,
             loadingMetrics: true,
             loadingPartition: true,
+            errorLoadingMetrics: false,
+            errorLoadingConsumers: false,
+            errorLoadingConfiguration: false,
+            errorLoadingPartitions: false,
+            errorLoadingMessages: false,
             lastMessages: [],
             deleteTopicButtons: false,
             consumers: [],
@@ -47,7 +53,7 @@ class Topic extends React.Component {
         this._loadTopicMetrics(this.state.topicId);
     }
 
-    _loadTopicMetrics(topicId){
+    _loadTopicMetrics(topicId) {
         const wantedMetrics = ['MessagesInPerSec', 'BytesInPerSec', 'BytesOutPerSec'];
         Promise.all(wantedMetrics.map(metricName => TopicsService.getTopicMetrics(topicId, metricName)))
             .then(metricsArray => {
@@ -58,10 +64,12 @@ class Topic extends React.Component {
                 this.setState({metrics, loadingMetrics: false});
 
             })
-            .catch(console.error);
+            .catch(() => {
+                this.setState({loadingMetrics: false, errorLoadingMetrics: true})
+            });
     }
 
-    _loadTopicDetails(topicId){
+    _loadTopicDetails(topicId) {
         TopicsService.getTopicDetails(topicId)
             .then(td => {
                 let configurations = td.configurations;
@@ -85,39 +93,53 @@ class Topic extends React.Component {
 
                 this.setState({topicConfiguration, loadingConfiguration: false})
             })
-            .catch(console.error);
+            .catch(() => {
+                this.setState({loadingConfiguration: false, errorLoadingConfiguration: true})
+            });
     }
 
-    _loadTopicConsumers(topicId){
+    _loadTopicConsumers(topicId) {
         ConsumersService.getConsumers(null, topicId)
             .then(consumers => {
                 this.setState({
                     loadingConsumers: false,
                     consumers: consumers.map(c => c.group).filter((v, i, a) => a.indexOf(v) === i)
                 });
+            })
+            .catch(() => {
+                this.setState({loadingConsumers: false, errorLoadingConsumers: true})
             });
     }
 
-    _loadTopicLastMessages(topicId){
+    _loadTopicLastMessages(topicId) {
         TopicsService.getLastTopicMessage(topicId)
             .then(lastTopicMessages => {
                 this.setState({loadingMessage: false, lastMessages: lastTopicMessages});
             })
             .catch((e) => {
-                console.log(e);
-                this.setState({
-                    loadingMessage: false,
-                    lastMessages: []
-                })
+                if(e === 'No message for this topic.'){
+                    this.setState({
+                        loadingMessage: false,
+                        lastMessages: []
+                    });
+                } else {
+                    this.setState({
+                        loadingMessage: false,
+                        lastMessages: [],
+                        errorLoadingMessages: true
+                    });
+                }
             });
     }
 
-    _loadTopicPartitions(topicId){
+    _loadTopicPartitions(topicId) {
         TopicsService.getTopicPartitions(topicId)
             .then(partitions => {
                 this.setState({partitions, loadingPartition: false})
             })
-            .catch(console.error);
+            .catch(() => {
+                this.setState({loadingPartition: false, errorLoadingPartitions: true})
+            });
     }
 
     _getValueType(value) {
@@ -152,10 +174,22 @@ class Topic extends React.Component {
     }
 
     _formatNotation(number) {
-        return this.state.scientistNotation ? number.toExponential(2) : number.toFixed(2);
+        return this.state.scientistNotation ? number.toExponential(2) : number.toFixed(2).toString().replace('.00', '');
+    }
+
+    _isPartitionSync(partition) {
+        const replicas = _.clone(partition.replicas).sort();
+        const inSyncReplicas = _.clone(partition.inSyncReplicas).sort();
+        return _.isEqual(replicas, inSyncReplicas);
     }
 
     render() {
+        const metricsTranslation = {
+            MessagesInPerSec: 'Messages in',
+            BytesInPerSec: 'Bytes in',
+            BytesOutPerSec: 'Bytes out'
+        };
+
         return (
             <div className="topic view">
                 <div className="breadcrumbs">
@@ -166,37 +200,23 @@ class Topic extends React.Component {
 
                 <div className="left-box">
                     <div className="topic-metrics box">
-                        <span className="title">Metrics
-                            <span className="notation">
-                                <span onClick={this._toggleScientistNotation.bind(this, 'decimal')}
-                                      className={classNames({active: !this.state.scientistNotation})}>decimal</span>
-                                <span onClick={this._toggleScientistNotation.bind(this, 'scientist')}
-                                      className={classNames({active: this.state.scientistNotation})}>scientist</span>
-                            </span>
-                        </span>
+                        <span className="title">Metrics</span>
                         {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>name</th>
-                                    <th>last min</th>
-                                    <th>last 15 min</th>
-                                    <th>total</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {
-                                    ["MessagesInPerSec", "BytesInPerSec", "BytesOutPerSec"].map((key, index) => {
-                                        return (<tr>
-                                            <td>{["Messages in / sec", "Bytes in / sec", "Bytes out / sec"][index]}</td>
-                                            <td>{this._formatNotation(Number(this.state.metrics[key].OneMinuteRate))}</td>
-                                            <td>{this._formatNotation(Number(this.state.metrics[key].FifteenMinuteRate))}</td>
-                                            <td>{this._formatNotation(Number(this.state.metrics[key].Count))}</td>
-                                        </tr>)
-                                    })
-                                }
-                                </tbody>
-                            </table>
+                            this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> : (
+                                <Metrics fields={{
+                                    label: 'Metric',
+                                    OneMinuteRate: 'Last min',
+                                    FifteenMinuteRate: 'Last 15 min',
+                                    Count: 'Total'
+                                }} metrics={Object.keys(this.state.metrics).map(metricKey => {
+                                    return {
+                                        label: metricsTranslation[metricKey],
+                                        OneMinuteRate: this.state.metrics[metricKey].OneMinuteRate,
+                                        FifteenMinuteRate: this.state.metrics[metricKey].FifteenMinuteRate,
+                                        Count: this.state.metrics[metricKey].Count
+                                    }
+                                })}/>
+                            )
                         }
                     </div>
 
@@ -204,22 +224,25 @@ class Topic extends React.Component {
                         <span className="title">Consumers <span
                             className="topic-consumers-length">{this.state.consumers.length + ' consumer' + (this.state.consumers.length > 1 ? 's' : '')}</span></span>
                         {this.state.loadingConsumers ? <Loader/> :
-                            <div className="consumers-items collection">
-                                {this.state.consumers.length > 0 ? this.state.consumers.map((consumer, index) => {
-                                    return (
-                                        <div className="consumer-item collection-item" key={consumer + "-" + index}>
-                                            <Link
-                                                to={`/franz-manager/consumers/${consumer.replace(/\./g, ',')}`}>{consumer}</Link>
-                                        </div>
-                                    )
-                                }) : <div className="no-consumers">No consumers.</div>}
-                            </div>
+                            this.state.errorLoadingConsumers ? <Error error="Cannot load consumers."/> : (
+                                <div className="consumers-items collection">
+                                    {this.state.consumers.length > 0 ? this.state.consumers.map((consumer, index) => {
+                                        return (
+                                            <div className="consumer-item collection-item" key={consumer + "-" + index}>
+                                                <Link
+                                                    to={`/franz-manager/consumers/${consumer.replace(/\./g, ',')}`}>{consumer}</Link>
+                                            </div>
+                                        )
+                                    }) : <div className="no-consumers">No consumers.</div>}
+                                </div>
+                            )
                         }
                     </div>
 
                     <div className="topic-settings box">
                         <span className="title">Settings</span>
                         {this.state.loadingConfiguration ? <Loader/> :
+                            this.state.errorLoadingConfiguration ? <Error error="Cannot load settings."/> : (
                             <Scrollbar>
                                 {
                                     Object.keys(this.state.topicConfiguration).map((configurationGroupKey, i) => {
@@ -247,6 +270,7 @@ class Topic extends React.Component {
                                     })
                                 }
                             </Scrollbar>
+                            )
                         }
                     </div>
                 </div>
@@ -257,6 +281,7 @@ class Topic extends React.Component {
                         <span className="title">Partitions <span
                             className="topic-partitions-length">{this.state.partitions.length + ' partition' + (this.state.partitions.length > 1 ? 's' : '')}</span></span>
                         {this.state.loadingPartition ? <Loader/> :
+                            this.state.errorLoadingPartitions ? <Error error="Cannot load partitions."/> : (
                             <Scrollbar>
                                 <table>
                                     <thead>
@@ -272,7 +297,8 @@ class Topic extends React.Component {
                                     <tbody>
                                     {
                                         this.state.partitions.sort((a, b) => a.partition - b.partition).map(partition => {
-                                            return <tr>
+                                            return <tr
+                                                className={classNames({notSync: !this._isPartitionSync(partition)})}>
                                                 <td>{partition.partition}</td>
                                                 <td>{partition.leader}</td>
                                                 <td>{partition.beginningOffset}</td>
@@ -285,13 +311,14 @@ class Topic extends React.Component {
                                     </tbody>
                                 </table>
                             </Scrollbar>
+                            )
                         }
                     </div>
 
                     <div className="topic-preview box">
                         <span className="title">Last messages</span>
-                        {this.state.loadingMessage ? <Loader/>
-                            : (
+                        {this.state.loadingMessage ? <Loader/> :
+                            this.state.errorLoadingMessages ? <Error error="Cannot load last messages."/> : (
                                 <Scrollbar>
                                     {this.state.lastMessages.length > 0 ? this.state.lastMessages.map((message, index) => {
                                         return (
