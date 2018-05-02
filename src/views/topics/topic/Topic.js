@@ -117,7 +117,7 @@ class Topic extends React.Component {
                 this.setState({loadingMessage: false, lastMessages: lastTopicMessages});
             })
             .catch((e) => {
-                if(e === 'No message for this topic.'){
+                if (e === 'No message for this topic.') {
                     this.setState({
                         loadingMessage: false,
                         lastMessages: []
@@ -225,16 +225,19 @@ class Topic extends React.Component {
                             className="topic-consumers-length">{this.state.consumers.length + ' consumer' + (this.state.consumers.length > 1 ? 's' : '')}</span></span>
                         {this.state.loadingConsumers ? <Loader/> :
                             this.state.errorLoadingConsumers ? <Error error="Cannot load consumers."/> : (
-                                <div className="consumers-items collection">
-                                    {this.state.consumers.length > 0 ? this.state.consumers.map((consumer, index) => {
-                                        return (
-                                            <div className="consumer-item collection-item" key={consumer + "-" + index}>
-                                                <Link
-                                                    to={`/franz-manager/consumers/${consumer.replace(/\./g, ',')}`}>{consumer}</Link>
-                                            </div>
-                                        )
-                                    }) : <div className="no-consumers">No consumers.</div>}
-                                </div>
+                                <Scrollbar>
+                                    <div className="consumers-items collection">
+                                        {this.state.consumers.length > 0 ? this.state.consumers.map((consumer, index) => {
+                                            return (
+                                                <div className="consumer-item collection-item"
+                                                     key={consumer + "-" + index}>
+                                                    <Link
+                                                        to={`/franz-manager/consumers/${consumer.replace(/\./g, ',')}`}>{consumer}</Link>
+                                                </div>
+                                            )
+                                        }) : <div className="no-consumers">No consumers.</div>}
+                                    </div>
+                                </Scrollbar>
                             )
                         }
                     </div>
@@ -243,33 +246,33 @@ class Topic extends React.Component {
                         <span className="title">Settings</span>
                         {this.state.loadingConfiguration ? <Loader/> :
                             this.state.errorLoadingConfiguration ? <Error error="Cannot load settings."/> : (
-                            <Scrollbar>
-                                {
-                                    Object.keys(this.state.topicConfiguration).map((configurationGroupKey, i) => {
-                                        return (
-                                            <div className="topic-details-configurationGroup"
-                                                 key={configurationGroupKey + '-' + i}>
-                                                <h5 className="topic-details-configurationGroup-title">{configurationGroupKey}</h5>
-                                                {
-                                                    Object.keys(this.state.topicConfiguration[configurationGroupKey]).sort((a, b) => a < b ? -1 : 1).map((configurationKey, j) => {
-                                                        return (
-                                                            <div className="topic-details-configuration"
-                                                                 key={configurationKey + '-' + j}>
+                                <Scrollbar>
+                                    {
+                                        Object.keys(this.state.topicConfiguration).map((configurationGroupKey, i) => {
+                                            return (
+                                                <div className="topic-details-configurationGroup"
+                                                     key={configurationGroupKey + '-' + i}>
+                                                    <h5 className="topic-details-configurationGroup-title">{configurationGroupKey}</h5>
+                                                    {
+                                                        Object.keys(this.state.topicConfiguration[configurationGroupKey]).sort((a, b) => a < b ? -1 : 1).map((configurationKey, j) => {
+                                                            return (
+                                                                <div className="topic-details-configuration"
+                                                                     key={configurationKey + '-' + j}>
                                                         <span
                                                             className="topic-details-configuration-key">{configurationKey}:</span>
-                                                                <span
-                                                                    className={classNames('topic-details-configuration-value', this._getValueType(this.state.topicConfiguration[configurationGroupKey][configurationKey]))}>
+                                                                    <span
+                                                                        className={classNames('topic-details-configuration-value', this._getValueType(this.state.topicConfiguration[configurationGroupKey][configurationKey]))}>
                                                         {this.state.topicConfiguration[configurationGroupKey][configurationKey] || "null"}
                                                     </span>
-                                                            </div>
-                                                        )
-                                                    })
-                                                }
-                                            </div>
-                                        )
-                                    })
-                                }
-                            </Scrollbar>
+                                                                </div>
+                                                            )
+                                                        })
+                                                    }
+                                                </div>
+                                            )
+                                        })
+                                    }
+                                </Scrollbar>
                             )
                         }
                     </div>
@@ -282,35 +285,35 @@ class Topic extends React.Component {
                             className="topic-partitions-length">{this.state.partitions.length + ' partition' + (this.state.partitions.length > 1 ? 's' : '')}</span></span>
                         {this.state.loadingPartition ? <Loader/> :
                             this.state.errorLoadingPartitions ? <Error error="Cannot load partitions."/> : (
-                            <Scrollbar>
-                                <table>
-                                    <thead>
-                                    <tr>
-                                        <th>partition</th>
-                                        <th>leader</th>
-                                        <th>beginning offset</th>
-                                        <th>end offset</th>
-                                        <th>replicas</th>
-                                        <th>in sync replicas</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {
-                                        this.state.partitions.sort((a, b) => a.partition - b.partition).map(partition => {
-                                            return <tr
-                                                className={classNames({notSync: !this._isPartitionSync(partition)})}>
-                                                <td>{partition.partition}</td>
-                                                <td>{partition.leader}</td>
-                                                <td>{partition.beginningOffset}</td>
-                                                <td>{partition.endOffset}</td>
-                                                <td>({partition.replicas.join(', ')})</td>
-                                                <td>({partition.inSyncReplicas.join(', ')})</td>
-                                            </tr>
-                                        })
-                                    }
-                                    </tbody>
-                                </table>
-                            </Scrollbar>
+                                <Scrollbar>
+                                    <table>
+                                        <thead>
+                                        <tr>
+                                            <th>partition</th>
+                                            <th>leader</th>
+                                            <th>beginning offset</th>
+                                            <th>end offset</th>
+                                            <th>replicas</th>
+                                            <th>in sync replicas</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {
+                                            this.state.partitions.sort((a, b) => a.partition - b.partition).map(partition => {
+                                                return <tr
+                                                    className={classNames({notSync: !this._isPartitionSync(partition)})}>
+                                                    <td>{partition.partition}</td>
+                                                    <td>{partition.leader}</td>
+                                                    <td>{partition.beginningOffset}</td>
+                                                    <td>{partition.endOffset}</td>
+                                                    <td>({partition.replicas.join(', ')})</td>
+                                                    <td>({partition.inSyncReplicas.join(', ')})</td>
+                                                </tr>
+                                            })
+                                        }
+                                        </tbody>
+                                    </table>
+                                </Scrollbar>
                             )
                         }
                     </div>
@@ -323,8 +326,10 @@ class Topic extends React.Component {
                                     {this.state.lastMessages.length > 0 ? this.state.lastMessages.map((message, index) => {
                                         return (
                                             <div className="topic-preview-item" key={message + "-" + index}>
-                                            <span
-                                                className="topic-preview-key"><b>key:</b> {message.key || "null"}</span><br/>
+                                                <span
+                                                    className="topic-preview-timestamp"><b>timestamp:</b> {new Date(message.timestamp).toISOString()}</span><br/>
+                                                <span
+                                                    className="topic-preview-key"><b>key:</b> {message.key || "null"}</span><br/>
                                                 <span className="topic-preview-value"><b>value:</b></span><br/>
                                                 <JSONPretty className="json-pretty" json={message.message}/>
                                             </div>

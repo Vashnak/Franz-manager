@@ -22,14 +22,13 @@
 
     .topic-consumers {
       margin-top: 15px;
-      flex-direction: column;
       max-height: 200px;
+      display: flex;
+      flex-direction: column;
 
       .title {
-        display: flex;
-        align-items: center;
-
         .topic-consumers-length {
+          vertical-align: baseline;
           font-size: 14px;
           color: $dark-grey;
           font-style: italic;
