@@ -49,7 +49,7 @@ class Consumers extends React.Component {
         const consumers = this.state.consumers;
         const shownConsumers = {};
         Object.keys(consumers).forEach(consumer => {
-            if(!this.state.filter || consumer.includes(this.state.filter)){
+            if(!this.state.filter || consumer.toLowerCase().includes(this.state.filter.toLowerCase())){
                 shownConsumers[consumer] = consumers[consumer];
             }
         });

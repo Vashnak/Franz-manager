@@ -167,16 +167,6 @@ class Topic extends React.Component {
         this.setState({deleteTopicButtons: false});
     }
 
-    _toggleScientistNotation(notation) {
-        this.setState({
-            scientistNotation: notation === 'scientist'
-        })
-    }
-
-    _formatNotation(number) {
-        return this.state.scientistNotation ? number.toExponential(2) : number.toFixed(2).toString().replace('.00', '');
-    }
-
     _isPartitionSync(partition) {
         const replicas = _.clone(partition.replicas).sort();
         const inSyncReplicas = _.clone(partition.inSyncReplicas).sort();
@@ -327,7 +317,7 @@ class Topic extends React.Component {
                                         return (
                                             <div className="topic-preview-item" key={message + "-" + index}>
                                                 <span
-                                                    className="topic-preview-timestamp"><b>timestamp:</b> {new Date(message.timestamp).toISOString()}</span><br/>
+                                                    className="topic-preview-timestamp"><b>timestamp:</b> {message.timestamp === -1 ? 'unknown' : new Date(message.timestamp).toISOString()}</span><br/>
                                                 <span
                                                     className="topic-preview-key"><b>key:</b> {message.key || "null"}</span><br/>
                                                 <span className="topic-preview-value"><b>value:</b></span><br/>

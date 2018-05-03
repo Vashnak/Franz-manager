@@ -12,7 +12,6 @@ import {Link} from 'react-router-dom';
 import classNames from 'classnames';
 import _ from 'lodash';
 
-
 import './Topics.scss';
 
 class Topics extends React.Component {

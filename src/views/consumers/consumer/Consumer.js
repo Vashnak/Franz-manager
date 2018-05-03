@@ -94,7 +94,7 @@ class Consumer extends React.Component {
                                                     <th>Topic offset</th>
                                                     <th>Consumer offset</th>
                                                     <th>Lag</th>
-                                                    <th>Timestamp</th>
+                                                    <th>Commit timestamp</th>
                                                 </tr>
                                                 </thead>
 
@@ -107,7 +107,7 @@ class Consumer extends React.Component {
                                                                 <td>{typeof partition.topicOffset !== 'undefined' ? partition.topicOffset : 'unknown'}</td>
                                                                 <td>{partition.consumerOffset}</td>
                                                                 <td>{typeof partition.topicOffset !== 'undefined' ? partition.topicOffset - partition.consumerOffset : 'unknown'}</td>
-                                                                <td>{partition.timestamp}</td>
+                                                                <td>{partition.commitTimestamp}</td>
                                                             </tr>
                                                         )
                                                     })
