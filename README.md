@@ -30,6 +30,7 @@ Finally just go on localhost:8080 and enjoy.
 
 Build your docker : `docker build -t franz-manager .`
 
-Then run it : `docker run -e SERVER_URL=https://API_URL.net -p 8080:80 franz-manager`
+Then run it : `docker run -e SERVER_URL=https://API_URL.net/franz-manager-api -p 8080:80 franz-manager`
+(don't forget /franz-manager-api at the end of the url)
 
 App should be available at localhost:8080
