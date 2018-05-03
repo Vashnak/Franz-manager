@@ -1,0 +1,76 @@
+@import '../../../constants';
+
+.consumer.view {
+  display: flex;
+  flex-direction: column;
+
+  .title {
+    a {
+      display: inline-block;
+      vertical-align: bottom;
+      font-size: 14px;
+      margin-bottom: 4px;
+      margin-left: 10px;
+      font-style: italic;
+      color: $primary-color;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .search-bar {
+    height: 42px;
+    margin-bottom: 16px;
+
+    .search-input-text {
+      max-width: 250px;
+      padding: 0 15px;
+      height: 40px;
+      background-color: white;
+      border: solid lightgrey 1px;
+      border-radius: 3px;
+
+      &:focus {
+        border: solid lightgrey 1px;
+        box-shadow: none;
+        outline: none;
+      }
+    }
+
+    .topics-items-length {
+      font-size: 14px;
+      color: $dark-grey;
+      display: inline-block;
+      height: 42px;
+      font-style: italic;
+      vertical-align: bottom;
+      margin-left: 10px;
+    }
+  }
+
+  .topics {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1;
+    overflow: auto;
+
+    .topic-consumed {
+      margin: 7.5px 0;
+      width: 100%;
+
+      .topic-consumed-partitions{
+        border: none;
+
+        thead th {
+          font-weight: 400;
+        }
+
+        td {
+          padding: 8px 5px;
+        }
+      }
+    }
+  }
+}

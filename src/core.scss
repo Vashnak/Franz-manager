@@ -1,0 +1,95 @@
+$fa-font-path: "../node_modules/font-awesome/fonts";
+@import "../node_modules/font-awesome/scss/font-awesome.scss";
+@import "./libs/materialize/sass/materialize";
+@import "./constants.scss";
+@import "./animations.scss";
+
+* {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  vertical-align: top;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: $light-grey;
+  height: 100%;
+  width: 100%;
+}
+
+#root, #root .body {
+  height: 100%;
+  width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+.body {
+  padding: 30px;
+  display: flex;
+  flex-direction: row;
+
+  .views {
+    flex: 1 1;
+
+    .view {
+      height: 100%;
+      flex-wrap: wrap;
+
+      .breadcrumbs {
+        width: 100%;
+        height: 20px;
+        margin-bottom: 20px;
+      }
+
+      .breadcrumbs, .breadcrumb {
+        display: flex;
+        align-items: center;
+      }
+
+      .breadcrumb {
+        color: rgba($primary-text-color, 0.7);
+
+        &:first-child:before, &:before {
+          content: '\203A' !important;
+          display: inline-block;
+          font-size: 20px;
+          color: rgba($primary-text-color, 0.7) !important;
+        }
+      }
+
+      .breadcrumb:last-child {
+        color: $primary-text-color;
+      }
+    }
+  }
+}
+
+.title {
+  font-size: 24px;
+}
+
+.box {
+  background-color: white;
+  display: inline-block;
+  box-shadow: 0 0 15px 1px rgba($grey, 0.3);
+  padding: 10px 20px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  > * {
+    flex: 1 1;
+  }
+}
+
+.lever {
+  margin: 0 15px 0 0!important;
+}
