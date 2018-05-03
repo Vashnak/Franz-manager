@@ -14,9 +14,9 @@ Features :
 
 #### Screenshots
 
-![cluster view](https://github.com/GreenCom-Networks/Franz-manager/tree/master/demo_assets/cluster_view.png)
-![topic view](https://github.com/GreenCom-Networks/Franz-manager/tree/master/demo_assets/topic_view.png)
-![consumers view](https://github.com/GreenCom-Networks/Franz-manager/tree/master/demo_assets/consumers_view.png)
+![cluster view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/cluster_view.png)
+![topic view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/topic_view.png)
+![consumers view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/consumers_view.png)
 
 #### Development
 
