@@ -11,7 +11,7 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             'NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            'SERVER_URL': JSON.stringify(process.env.SERVER_URL || 'http://localhost:3000'),
+            'SERVER_URL': JSON.stringify(process.env.SERVER_URL),
             'process.env.NODE_ENV': JSON.stringify('production')
         }),
         new webpack.optimize.UglifyJsPlugin(), //minify everything

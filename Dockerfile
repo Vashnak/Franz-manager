@@ -4,6 +4,7 @@ ENV APP franz-manager
 ENV BASE_NGINX /usr/share/nginx/html
 
 COPY ./ /$APP/
+COPY deploy.js /
 
 RUN apk update \
     && apk add --update nodejs \
@@ -17,4 +18,4 @@ RUN apk update \
     && cp nginx.conf /etc/nginx/conf.d/default.conf \
     && chmod -R 755 ${BASE_NGINX}
 
-CMD node && nginx -g 'daemon off;'
+CMD node /deploy.js && nginx -g 'daemon off;'
