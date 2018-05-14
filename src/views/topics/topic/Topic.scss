@@ -173,6 +173,25 @@
       padding: 10px 20px;
       height: 0;
 
+      .title {
+        display: flex;
+        align-items: center;
+
+        .topic-messages-length {
+          font-size: 14px;
+          color: $dark-grey;
+          font-style: italic;
+          margin-top: 3px;
+          margin-left: 10px;
+        }
+      }
+
+      .menu {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+      }
+
       > div { //react-custom-scrollbar
         height: calc(100% - 42px) !important; //32px = title size, 40px = margin-top
         margin-top: 10px;

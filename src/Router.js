@@ -5,7 +5,7 @@
 import React from 'react';
 import {BrowserRouter, Switch, Route, Redirect} from 'react-router-dom';
 
-import Menu from './components/menu/Menu';
+import Sidenav from './components/sidenav/Sidenav';
 import DashboardView from './views/dashboard/Dashboard';
 import ClusterView from './views/clusters/Clusters';
 import TopicsView from './views/topics/Topics';
@@ -17,7 +17,7 @@ const routes = () => {
     return (
         <BrowserRouter>
             <div className="body">
-                <Menu/>
+                <Sidenav/>
                 <div className="views">
                     <Switch>
                         <Route exact path="/" render={() => {return <Redirect to="/franz-manager/dashboard"/>}}/>

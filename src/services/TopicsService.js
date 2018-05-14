@@ -37,10 +37,14 @@ export default {
         });
     },
 
-    getLastTopicMessage(topicId) {
+    getLastTopicMessages(topicId, quantity, timestamp) {
         return new Promise((resolve, reject) => {
-            ApiService.requestFranzManagerApi('GET', '/topics/' + topicId + '/messages', null, {quantity: 10})
+            ApiService.requestFranzManagerApi('GET', '/topics/' + topicId + '/messages', null, {
+                quantity: quantity || 10,
+                from: timestamp
+            })
                 .then(res => {
+                    console.log(res.length)
                     if (res.length === 0) {
                         return reject('No message for this topic.');
                     }

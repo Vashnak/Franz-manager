@@ -1,0 +1,11 @@
+.menu-item {
+    height: 48px;
+    line-height: 48px;
+    display: inline-block;
+    width: 100%;
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    color: black;
+}

@@ -1,11 +1,11 @@
 @import '../../constants';
 
-.menu {
+.sidenav {
   height: 100%;
   position: relative;
   margin-right: 30px;
 
-  .menu-indicator {
+  .sidenav-indicator {
     transition: top 150ms;
     position: absolute;
     top: 0;
@@ -15,12 +15,12 @@
     background-color: $primary-color;
   }
 
-  .menu-items {
+  .sidenav-items {
     display: flex;
     flex-direction: column;
     width: 160px;
 
-    .menu-item {
+    .sidenav-item {
       cursor: pointer;
       width: 160px;
       height: 113px;
@@ -29,7 +29,7 @@
       display: flex;
       flex-direction: column;
 
-      .menu-item-icon svg {
+      .sidenav-item-icon svg {
         height: 40px;
         width: 40px;
 
@@ -38,7 +38,7 @@
         }
       }
 
-      .menu-item-label {
+      .sidenav-item-label {
         margin-top: 20px;
         color: $dark-grey;
         font-weight: 400;
@@ -59,7 +59,7 @@
       }
     }
 
-    .menu-item:last-child:after {
+    .sidenav-item:last-child:after {
       background-color: rgba(0, 0, 0, 0);
     }
   }

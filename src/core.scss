@@ -73,6 +73,7 @@ a {
 }
 
 .box {
+  position: relative;
   background-color: white;
   display: inline-block;
   box-shadow: 0 0 15px 1px rgba($grey, 0.3);

@@ -7,9 +7,9 @@ import ViewParallelIcon from 'mdi-react/ViewParallelIcon';
 import FormatListNumbersIcon from 'mdi-react/FormatListNumbersIcon';
 import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
 
-import './Menu.scss';
+import './Sidenav.scss';
 
-const menuItems = [
+const sidenavItems = [
     {
         label: 'Dashboard',
         link: '/franz-manager/dashboard',
@@ -32,7 +32,7 @@ const menuItems = [
     }
 ];
 
-class Menu extends Component {
+class Sidenav extends Component {
     static contextTypes = {
         router: PropTypes.object.isRequired
     };
@@ -41,14 +41,14 @@ class Menu extends Component {
         super(props, context);
 
         let currentRoute = this.context.router.route.location.pathname;
-        let currentSelectedMenuItem = menuItems.find(m => m.link.split('/')[2] === currentRoute.split('/')[2]);
+        let currentSelectedSidenavItem = sidenavItems.find(m => m.link.split('/')[2] === currentRoute.split('/')[2]);
 
         if (currentRoute === '/franz-manager' || currentRoute === '/franz-manager/') { //it means we just got redirected from root
-            currentSelectedMenuItem = {label: menuItems[0].label}
+            currentSelectedSidenavItem = {label: sidenavItems[0].label}
         }
 
         this.state = {
-            selectedMenuItem: currentSelectedMenuItem ? currentSelectedMenuItem.label : 'unknown'
+            selectedSidenavItem: currentSelectedSidenavItem ? currentSelectedSidenavItem.label : 'unknown'
         };
 
         this.context.router.history.listen(location => {
@@ -57,41 +57,41 @@ class Menu extends Component {
     }
 
     _updateRoute(location){
-        this.setState({selectedMenuItem: menuItems.find(m => m.link.split('/')[2] === location.pathname.split('/')[2]).label})
+        this.setState({selectedSidenavItem: sidenavItems.find(m => m.link.split('/')[2] === location.pathname.split('/')[2]).label})
     }
 
-    _selectMenuItem(menuItem) {
-        this.context.router.history.push(menuItem.link);
-        this.setState({selectedMenuItem: menuItem.label});
+    _selectSidenavItem(sidenavItem) {
+        this.context.router.history.push(sidenavItem.link);
+        this.setState({selectedSidenavItem: sidenavItem.label});
     }
 
     _calcIndicatorPosition() {
-        let menuItemIndex = menuItems.findIndex(m => m.label === this.state.selectedMenuItem);
-        return menuItemIndex * 142 + 31;
+        let sidenavItemIndex = sidenavItems.findIndex(m => m.label === this.state.selectedSidenavItem);
+        return sidenavItemIndex * 142 + 31;
     }
 
     render() {
         return (
-            <div className="menu box">
-                <div className="menu-items">
+            <div className="sidenav box">
+                <div className="sidenav-items">
                     {
-                        menuItems.map((menuItem, index) => {
+                        sidenavItems.map((sidenavItem, index) => {
                             return (
-                                <div onClick={this._selectMenuItem.bind(this, menuItem)}
+                                <div onClick={this._selectSidenavItem.bind(this, sidenavItem)}
                                      key={index}
-                                     className={Classnames("menu-item", {selected: menuItem.label === this.state.selectedMenuItem})}>
-                                    <div className="menu-item-icon">{menuItem.icon}</div>
-                                    <span className="menu-item-label">{menuItem.label}</span>
+                                     className={Classnames("sidenav-item", {selected: sidenavItem.label === this.state.selectedSidenavItem})}>
+                                    <div className="sidenav-item-icon">{sidenavItem.icon}</div>
+                                    <span className="sidenav-item-label">{sidenavItem.label}</span>
                                 </div>
                             )
                         })
                     }
                 </div>
-                <div className="menu-indicator"
+                <div className="sidenav-indicator"
                      style={{top: this._calcIndicatorPosition()}}/>
             </div>
         );
     }
 }
 
-export default Menu;
+export default Sidenav;
