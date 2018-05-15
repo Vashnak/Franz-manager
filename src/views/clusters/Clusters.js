@@ -171,14 +171,14 @@ class Clusters extends React.Component {
                                                     <Metrics fields={{
                                                         label: 'Metric',
                                                         OneMinuteRate: 'Last min',
-                                                        FifteenMinuteRate: 'Last 15 min',
-                                                        Count: 'Total'
+                                                        FiveMinuteRate: 'Last 5 min',
+                                                        FifteenMinuteRate: 'Last 15 min'
                                                     }} metrics={Object.keys(this.state.metrics).map(metricKey => {
                                                         return {
                                                             label: metricsTranslation[metricKey],
                                                             OneMinuteRate: this.state.metrics[metricKey].OneMinuteRate,
                                                             FifteenMinuteRate: this.state.metrics[metricKey].FifteenMinuteRate,
-                                                            Count: this.state.metrics[metricKey].Count
+                                                            FiveMinuteRate: this.state.metrics[metricKey].FiveMinuteRate
                                                         }
                                                     })}/>
                                             }
