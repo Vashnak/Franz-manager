@@ -72,6 +72,16 @@ export default {
         });
     },
 
+    updateTopicConfiguration(topicId, configuration) {
+        return new Promise((resolve, reject) => {
+            ApiService.requestFranzManagerApi('PUT', '/topics/' + topicId, configuration)
+                .then(res => {
+                    return resolve(res);
+                })
+                .catch(reject);
+        });
+    },
+
     deleteTopic(topicName) {
         return new Promise((resolve, reject) => {
             ApiService.requestFranzManagerApi('DELETE', '/topics/' + topicName, null, null)

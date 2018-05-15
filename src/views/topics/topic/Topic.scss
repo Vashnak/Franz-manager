@@ -73,6 +73,7 @@
       flex: 1 1;
       display: flex;
       flex-direction: column;
+      position: relative;
 
       .topic-details-configurationGroup {
         margin-bottom: 20px;
@@ -114,6 +115,12 @@
             }
           }
         }
+      }
+
+      .edit-config-modal-button{
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
       }
     }
   }
@@ -320,6 +327,54 @@
         &.close svg {
           fill: red;
         }
+      }
+    }
+  }
+}
+
+.edit-config-modal {
+  z-index: 999;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .content {
+    width: 700px;
+    background-color: #fff;
+    border-radius: 3px;
+    padding: 15px;
+
+    #ace-editor {
+      margin-top: 15px;
+      width: 100% !important;
+
+      * {
+        font-family: 'Consolas', 'Monaco', monospace;
+      }
+
+      .ace_line{
+        font-size: 15px;
+      }
+    }
+
+    .edit-configuration-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+
+      .update {
+        background-color: #38cb53;
+      }
+
+      .cancel {
+        margin-left: 15px;
+        background-color: #cb1e1e;
       }
     }
   }

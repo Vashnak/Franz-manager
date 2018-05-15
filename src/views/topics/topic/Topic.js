@@ -9,8 +9,12 @@ import Scrollbar from 'react-custom-scrollbars';
 import _ from "lodash";
 import moment from "moment";
 import {Portal} from "react-portal";
+import AceEditor from 'react-ace';
 import CloseIcon from "mdi-react/CloseIcon";
 import CheckIcon from "mdi-react/CheckIcon";
+
+import 'brace/mode/json';
+import 'brace/theme/github';
 
 import Menu from '../../../shared/Menu';
 import Item from '../../../shared/Menu/Item';
@@ -28,6 +32,7 @@ class Topic extends React.Component {
 
         this.state = {
             topicId: this.props.match.params.topicId.replace(/,/g, '.'),
+            brutTopicConfiguration: {},
             topicConfiguration: {
                 messages: {},
                 retention: {},
@@ -110,7 +115,11 @@ class Topic extends React.Component {
                     }
                 });
 
-                this.setState({topicConfiguration, loadingConfiguration: false})
+                this.setState({
+                    brutTopicConfiguration: td.configurations,
+                    topicConfiguration,
+                    loadingConfiguration: false
+                })
             })
             .catch(() => {
                 this.setState({loadingConfiguration: false, errorLoadingConfiguration: true})
@@ -253,6 +262,31 @@ class Topic extends React.Component {
             });
     }
 
+    _updateTopicConfiguration() {
+        if (this.state.updatedTopicConfiguration) {
+            try {
+                let configuration = JSON.parse(this.state.updatedTopicConfiguration);
+                this.setState({
+                    topicConfiguration: {
+                        messages: {},
+                        retention: {},
+                        replication: {},
+                        segment: {},
+                        others: {}
+                    },
+                    loadingConfiguration: true,
+                    editConfigModal: false
+                });
+                TopicsService.updateTopicConfiguration(this.state.topicId, configuration)
+                    .then(() => {
+                        setTimeout(() => this._loadTopicDetails(this.state.topicId), 100);
+                    });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    }
+
     /** renderers */
     _renderMetrics() {
         const metricsTranslation = {
@@ -346,6 +380,37 @@ class Topic extends React.Component {
                         </Scrollbar>
                     )
                 }
+
+                <div className="edit-config-modal-button">
+                    <a className="waves-effect waves-light btn"
+                       onClick={() => this.setState({editConfigModal: true})}>Edit</a>
+                </div>
+
+                {this.state.editConfigModal && (
+                    <Portal>
+                        <div className="edit-config-modal">
+                            <div className="content">
+                                <div className="title">Edit configuration</div>
+                                <AceEditor
+                                    mode="json"
+                                    theme="github"
+                                    name="ace-editor"
+                                    fontSize={18}
+                                    onChange={value => this.setState({updatedTopicConfiguration: value})}
+                                    value={this.state.updatedTopicConfiguration ? this.state.updatedTopicConfiguration :
+                                        JSON.stringify(this.state.brutTopicConfiguration, null, '\t')}
+                                    editorProps={{$blockScrolling: true}}
+                                />
+                                <div className="edit-configuration-buttons">
+                                    <a className={"waves-effect waves-light btn update" + (this.state.updatedTopicConfiguration ? '' : ' disabled')}
+                                       onClick={this._updateTopicConfiguration.bind(this)}>Update</a>
+                                    <a className="waves-effect waves-light btn cancel"
+                                       onClick={() => this.setState({editConfigModal: false})}>Cancel</a>
+                                </div>
+                            </div>
+                        </div>
+                    </Portal>
+                )}
             </div>
         )
     }
@@ -388,7 +453,6 @@ class Topic extends React.Component {
                         </Scrollbar>
                     )
                 }
-
 
                 <div className="add-partition-button" ref="add-partition-button">
                     <a className="waves-effect waves-light btn"

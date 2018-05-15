@@ -24,6 +24,7 @@
     "prop-types": "^15.5.10",
     "querystring": "^0.2.0",
     "react": "^16.0.0",
+    "react-ace": "^6.1.1",
     "react-custom-scrollbars": "^4.2.0",
     "react-dom": "^16.0.0",
     "react-json-pretty": "^1.7.4",
