@@ -131,6 +131,7 @@
       max-height: 50%;
       width: 100%;
       height: 0;
+      position: relative;
 
       .title {
         display: flex;
@@ -145,7 +146,7 @@
         }
       }
 
-      > div { //react-custom-scrollbar
+      > div:first-child { //react-custom-scrollbar
         height: calc(100% - 42px) !important; //32px = title size, 40px = margin-top
         margin-top: 10px;
       }
@@ -163,6 +164,13 @@
         font-size: 14px;
         padding: 5px 5px;
         border-radius: 0;
+      }
+
+      .add-partition-button {
+        height: auto;
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
       }
     }
 
@@ -267,6 +275,51 @@
 
       .topic-preview-item:first-child {
         margin-top: 0;
+      }
+    }
+  }
+}
+
+.add-partitions-modal {
+  z-index: 999;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+
+  .content {
+    height: 120px;
+    position: absolute;
+    right: 55px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+
+    .icons {
+      width: 90px;
+      height: fit-content;
+
+      span {
+        padding: 5px;
+        display: inline-block;
+        margin-left: 10px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        &.check svg {
+          fill: green;
+        }
+
+        &.close svg {
+          fill: red;
+        }
       }
     }
   }

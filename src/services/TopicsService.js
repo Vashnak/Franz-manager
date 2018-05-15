@@ -37,6 +37,14 @@ export default {
         });
     },
 
+    addTopicPartitions(topicId, quantity) {
+        return new Promise((resolve, reject) => {
+            ApiService.requestFranzManagerApi('POST', '/topics/' + topicId + '/partitions', null, {quantity})
+                .then(resolve)
+                .catch(reject);
+        });
+    },
+
     getLastTopicMessages(topicId, quantity, timestamp) {
         return new Promise((resolve, reject) => {
             ApiService.requestFranzManagerApi('GET', '/topics/' + topicId + '/messages', null, {

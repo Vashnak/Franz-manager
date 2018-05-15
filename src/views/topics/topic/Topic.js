@@ -8,6 +8,9 @@ import ConstantsService from "../../../services/ConstantsService";
 import Scrollbar from 'react-custom-scrollbars';
 import _ from "lodash";
 import moment from "moment";
+import {Portal} from "react-portal";
+import CloseIcon from "mdi-react/CloseIcon";
+import CheckIcon from "mdi-react/CheckIcon";
 
 import Menu from '../../../shared/Menu';
 import Item from '../../../shared/Menu/Item';
@@ -239,6 +242,17 @@ class Topic extends React.Component {
         }
     }
 
+    _addPartition(quantity) {
+        this.setState({
+            addPartitionModal: false,
+            loadingPartition: true
+        });
+        TopicsService.addTopicPartitions(this.state.topicId, quantity)
+            .then(() => {
+                setTimeout(() => this._loadTopicPartitions(this.state.topicId), 500);
+            });
+    }
+
     /** renderers */
     _renderMetrics() {
         const metricsTranslation = {
@@ -374,6 +388,38 @@ class Topic extends React.Component {
                         </Scrollbar>
                     )
                 }
+
+
+                <div className="add-partition-button" ref="add-partition-button">
+                    <a className="waves-effect waves-light btn"
+                       onClick={() => this.setState({addPartitionModal: true})}>Add</a>
+                </div>
+
+                {this.state.addPartitionModal && (
+                    <Portal>
+                        <div className="add-partitions-modal">
+                            <div className="content"
+                                 style={{top: this.refs['add-partition-button'].getBoundingClientRect().top - 140}}>
+                                <div className="input-field">
+                                    <input type="text"
+                                           placeholder="3"
+                                           onChange={e => this.setState({partitionToAdd: e.target.value})}
+                                           value={this.state.partitionToAdd}/>
+                                    <label className="active">How much partition to add</label>
+                                </div>
+                                <div className="icons">
+                                <span className="check"
+                                      onClick={this._addPartition.bind(this, this.state.partitionToAdd)}><CheckIcon/></span>
+                                    <span className="close"
+                                          onClick={() => this.setState({
+                                              partitionToAdd: null,
+                                              addPartitionModal: false
+                                          })}><CloseIcon/></span>
+                                </div>
+                            </div>
+                        </div>
+                    </Portal>
+                )}
             </div>
         )
     }
