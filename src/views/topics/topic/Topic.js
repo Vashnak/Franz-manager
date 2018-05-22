@@ -301,7 +301,7 @@ class Topic extends React.Component {
                 {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
                     this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> : (
                         <Metrics fields={{
-                            label: 'Metric',
+                            label: 'Metric (per sec)',
                             OneMinuteRate: 'Last min',
                             FiveMinuteRate: 'Last 5 min',
                             FifteenMinuteRate: 'Last 15 min'
@@ -422,7 +422,7 @@ class Topic extends React.Component {
                             className="topic-partitions-length">{this.state.partitions.length + ' partition' + (this.state.partitions.length > 1 ? 's' : '')}</span></span>
                 {this.state.loadingPartition ? <Loader/> :
                     this.state.errorLoadingPartitions ? <Error error="Cannot load partitions."/> : (
-                        <Scrollbar>
+                        <Scrollbar className="topic-partitions-scrollbar">
                             <table>
                                 <thead>
                                 <tr>

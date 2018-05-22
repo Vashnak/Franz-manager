@@ -151,38 +151,40 @@ class Clusters extends React.Component {
                             </div>
                             <div className="panel">
                                 <div className="left">
-                                    <div>
-                                        <div className="brokers-summary box">
-                                            <span className="title">Brokers</span>
+                                    <div className="brokers-summary box">
+                                        <span className="title">Brokers</span>
 
+                                        <Scrollbar className="brokers-summary-scrollbar">
                                             <Metrics fields={{
                                                 id: 'Id',
                                                 host: 'Host',
                                                 port: 'Port',
-                                                bytesIn: 'Bytes In',
-                                                bytesOut: 'Bytes Out'
+                                                bytesIn: 'Bytes In (per sec)',
+                                                bytesOut: 'Bytes Out (per sec)'
                                             }} metrics={this.state.brokers}/>
-                                        </div>
+                                        </Scrollbar>
+                                    </div>
 
-                                        <div className="brokers-metrics box">
-                                            <span className="title">Metrics</span>
-                                            {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
-                                                this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> :
-                                                    <Metrics fields={{
-                                                        label: 'Metric',
-                                                        OneMinuteRate: 'Last min',
-                                                        FiveMinuteRate: 'Last 5 min',
-                                                        FifteenMinuteRate: 'Last 15 min'
-                                                    }} metrics={Object.keys(this.state.metrics).map(metricKey => {
-                                                        return {
-                                                            label: metricsTranslation[metricKey],
-                                                            OneMinuteRate: this.state.metrics[metricKey].OneMinuteRate,
-                                                            FifteenMinuteRate: this.state.metrics[metricKey].FifteenMinuteRate,
-                                                            FiveMinuteRate: this.state.metrics[metricKey].FiveMinuteRate
-                                                        }
-                                                    })}/>
-                                            }
-                                        </div>
+                                    <div className="brokers-metrics box">
+                                        <span className="title">Metrics</span>
+                                        <Scrollbar className="brokers-metrics-scrollbar">
+                                        {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
+                                            this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> :
+                                                <Metrics fields={{
+                                                    label: 'Metric (per sec)',
+                                                    OneMinuteRate: 'Last min',
+                                                    FiveMinuteRate: 'Last 5 min',
+                                                    FifteenMinuteRate: 'Last 15 min'
+                                                }} metrics={Object.keys(this.state.metrics).map(metricKey => {
+                                                    return {
+                                                        label: metricsTranslation[metricKey],
+                                                        OneMinuteRate: this.state.metrics[metricKey].OneMinuteRate,
+                                                        FifteenMinuteRate: this.state.metrics[metricKey].FifteenMinuteRate,
+                                                        FiveMinuteRate: this.state.metrics[metricKey].FiveMinuteRate
+                                                    }
+                                                })}/>
+                                        }
+                                        </Scrollbar>
                                     </div>
                                 </div>
                                 <div className="right">

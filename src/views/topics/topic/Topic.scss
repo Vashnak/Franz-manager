@@ -139,6 +139,12 @@
       width: 100%;
       height: 0;
       position: relative;
+      display: flex;
+      flex-direction: column;
+
+      .topic-partitions-scrollbar {
+        flex: 1 1;
+      }
 
       .title {
         display: flex;

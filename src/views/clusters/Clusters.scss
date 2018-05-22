@@ -39,6 +39,7 @@
       .left, .right {
         display: flex;
         flex: 1 1;
+        flex-direction: column;
       }
 
       .left > div {
@@ -47,6 +48,27 @@
 
       .brokers-summary {
         width: 100%;
+        max-height: 180px;
+        flex: 1 1;
+        display: flex;
+        flex-direction: column;
+
+        .brokers-summary-scrollbar {
+          flex: 1 1;
+        }
+      }
+
+      .brokers-metrics {
+        width: 100%;
+        max-height: 420px;
+        margin-top: 15px;
+        flex: 1 1;
+        display: flex;
+        flex-direction: column;
+
+        .brokers-metrics-scrollbar {
+          flex: 1 1;
+        }
       }
 
       .brokers-settings {
@@ -108,11 +130,6 @@
           }
         }
 
-      }
-
-      .brokers-metrics {
-        width: 100%;
-        margin-top: 15px;
       }
     }
   }

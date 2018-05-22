@@ -55,6 +55,18 @@ class Consumer extends React.Component {
         })
     }
 
+    _calcLag(topic) {
+        let partitions = this.state.topics[topic];
+
+        if (partitions) {
+            return partitions.reduce((prev, next) => {
+                return prev + (next.topicOffset - next.consumerOffset);
+            }, 0);
+        }
+
+        return '?';
+    }
+
     render() {
         const topics = this.state.topics;
         const shownTopics = {};
@@ -77,6 +89,10 @@ class Consumer extends React.Component {
                            onChange={this._updatefilter.bind(this)}/>
                     <span
                         className="topics-items-length">{shownTopicsLength + ' / ' + totalTopicsLength + ' shown topics'}</span>
+
+                    <div style={{flex: '1 1'}}/>
+                    {topics && <span
+                        className="consumer-total-lag"> Total lag: {Object.values(topics).flatten().reduce((prev, next) => prev + (next.topicOffset - next.consumerOffset), 0)} message(s)</span>}
                 </div>
                 <div className="topics">
                     <Scrollbar>
@@ -93,7 +109,8 @@ class Consumer extends React.Component {
                                                     <th>Partition</th>
                                                     <th>Topic offset</th>
                                                     <th>Consumer offset</th>
-                                                    <th>Lag</th>
+                                                    <th>Lag <span className="topic-lag">({this._calcLag(topic)})</span>
+                                                    </th>
                                                     <th>Commit timestamp</th>
                                                 </tr>
                                                 </thead>

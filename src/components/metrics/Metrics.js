@@ -28,7 +28,7 @@ class Metrics extends React.Component {
                             return <tr>
                                 {Object.keys(fields).map((key, index) => {
                                     return <td
-                                        key={index + key}>{!isNaN(metric[key]) && key !== 'port' ? Utils.formatMetric(Number(metric[key]).toFixed(0)) : metric[key]}</td>
+                                        key={index + key}>{!isNaN(metric[key]) && key !== 'port' ? Utils.formatMetric(Number(metric[key]).toFixed(0)) : metric[key] || 'N/A' }</td>
                                 })}
                             </tr>
                         })
