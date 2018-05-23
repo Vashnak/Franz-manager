@@ -167,15 +167,13 @@
         flex-direction: column;
 
         .title {
-          display: flex;
-          align-items: center;
-
           .topic-partitions-length {
             font-size: 14px;
             color: $dark-grey;
             font-style: italic;
             margin-top: 3px;
             margin-left: 10px;
+            vertical-align: baseline;
           }
         }
 
@@ -251,6 +249,7 @@
 
           .json-pretty {
             overflow: initial;
+            width: 0 !important;
 
             .json-string {
               color: #347138;
@@ -275,7 +274,7 @@
   }
 }
 
-@media screen and(max-width: 1150px){
+@media screen and(max-width: 1330px){
   .boxes {
     display: block !important;
   }
