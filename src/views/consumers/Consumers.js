@@ -2,10 +2,10 @@ import React from 'react';
 import {Link} from 'react-router-dom';
 import Loader from '../../components/loader/Loader';
 import Error from '../../components/error/Error';
-import Scrollbar from 'react-custom-scrollbars';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import ConsumersService from "../../services/ConsumersService";
 
 import './Consumers.scss';
-import ConsumersService from "../../services/ConsumersService";
 
 class Consumers extends React.Component {
     constructor(props) {
@@ -71,7 +71,7 @@ class Consumers extends React.Component {
                     {
                         this.state.loadingConsumers ? <Loader/> : (
                             this.state.errorLoadingConsumers ? <Error error="Cannot load consumers."/> : (
-                            <Scrollbar>
+                            <PerfectScrollbar>
                                 <div className="topics-classic-view">
                                     {
                                         Object.keys(shownConsumers).sort((a, b) => a < b ? -1 : 1).map(consumerId => {
@@ -87,7 +87,7 @@ class Consumers extends React.Component {
                                         })
                                     }
                                 </div>
-                            </Scrollbar>
+                            </PerfectScrollbar>
                             )
                         )}
                 </div>

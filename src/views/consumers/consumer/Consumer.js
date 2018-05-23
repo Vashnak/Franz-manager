@@ -1,7 +1,6 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
-import Loader from '../../../components/loader/Loader';
-import Scrollbar from 'react-custom-scrollbars';
+import PerfectScrollbar from 'react-perfect-scrollbar';
 
 import './Consumer.scss';
 import ConsumersService from "../../../services/ConsumersService";
@@ -95,7 +94,7 @@ class Consumer extends React.Component {
                         className="consumer-total-lag"> Total lag: {Object.values(topics).flatten().reduce((prev, next) => prev + (next.topicOffset - next.consumerOffset), 0)} message(s)</span>}
                 </div>
                 <div className="topics">
-                    <Scrollbar>
+                    <PerfectScrollbar>
                         {
                             Object.keys(shownTopics).map(topic => {
                                 return (
@@ -137,7 +136,7 @@ class Consumer extends React.Component {
                                 )
                             })
                         }
-                    </Scrollbar>
+                    </PerfectScrollbar>
                 </div>
             </div>
         );

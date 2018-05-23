@@ -1,11 +1,10 @@
 import React from 'react';
 import Loader from '../../components/loader/Loader';
 import Error from '../../components/error/Error';
-import Metrics from '../../components/metrics/Metrics';
 import TopicsService from '../../services/TopicsService';
 
 import querystring from 'querystring';
-import Scrollbar from 'react-custom-scrollbars';
+import PerfectScrollbar from 'react-perfect-scrollbar';
 import CloseIcon from "mdi-react/CloseIcon";
 import CheckIcon from "mdi-react/CheckIcon";
 import {Link} from 'react-router-dom';
@@ -74,9 +73,12 @@ class Topics extends React.Component {
         this.setState({topicsFilters: currentTopicsFilters})
     }
 
-    _onTopicListScrolled(e) {
-        if (e.top > 0.9) {
+    _onTopicListScrolled() {
+        if (!this.throttleScroll && this.state.maxShownTopics < this.state.topics.length) {
             this.setState({maxShownTopics: this.state.maxShownTopics + 20})
+            setTimeout(() => {
+                this.throttleScroll = false;
+            }, 100)
         }
     }
 
@@ -200,7 +202,7 @@ class Topics extends React.Component {
                     {
                         this.state.loadingTopics ? <Loader/> : (
                             this.state.errorLoadingTopics ? <Error error="Cannot load topics."/> : (
-                                <Scrollbar onScrollFrame={this._onTopicListScrolled.bind(this)}>
+                                <PerfectScrollbar onYReachEnd={this._onTopicListScrolled.bind(this)}>
                                     <div className="topics-classic-view">
                                         {
                                             topicsToShow.splice(0, this.state.maxShownTopics).map(topic => {
@@ -213,7 +215,7 @@ class Topics extends React.Component {
                                             })
                                         }
                                     </div>
-                                </Scrollbar>
+                                </PerfectScrollbar>
                             )
                         )}
                     <div className="topics-add-topic">

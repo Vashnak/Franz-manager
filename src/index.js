@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {AppContainer} from 'react-hot-loader'
 import Router from './Router';
 
-
+import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'materialize-css/dist/js/materialize.min';
 import './core.scss';
 

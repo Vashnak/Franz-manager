@@ -10,7 +10,8 @@
     flex-direction: column;
 
     .topics-filters {
-      flex: 1 1;
+      min-width: 300px;
+      padding-bottom: 20px;
 
       .row {
         margin-top: 20px;
@@ -125,6 +126,22 @@
       position: absolute;
       bottom: 15px;
       right: 15px;
+    }
+  }
+}
+
+@media screen and(max-width: 1000px) {
+  .topics.view {
+    flex-direction: column;
+
+    .left-box {
+      flex: initial !important;
+      margin-bottom: 15px !important;
+    }
+
+    .topics-items {
+      float: initial !important;
+      margin-left: 0 !important;
     }
   }
 }

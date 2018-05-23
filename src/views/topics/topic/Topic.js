@@ -5,7 +5,8 @@ import classNames from 'classnames';
 import JSONPretty from 'react-json-pretty';
 import ConsumersService from "../../../services/ConsumersService";
 import ConstantsService from "../../../services/ConstantsService";
-import Scrollbar from 'react-custom-scrollbars';
+import {CopyIcon} from "../../../services/SvgService";
+import PerfectScrollbar from 'react-perfect-scrollbar';
 import _ from "lodash";
 import moment from "moment";
 import {Portal} from "react-portal";
@@ -77,6 +78,7 @@ class Topic extends React.Component {
     }
 
     /** loaders */
+
     _loadTopicMetrics(topicId) {
         const wantedMetrics = ['MessagesInPerSec', 'BytesInPerSec', 'BytesOutPerSec'];
         Promise.all(wantedMetrics.map(metricName => TopicsService.getTopicMetrics(topicId, metricName)))
@@ -245,9 +247,12 @@ class Topic extends React.Component {
         return _.isEqual(replicas, inSyncReplicas);
     }
 
-    _messageScrollHandler(e) {
-        if (e.top > 0.9) {
+    _messageScrollHandler() {
+        if (!this.throttleScroll && this.state.maxMessagesToShow < this.state.lastMessages.length) {
             this.setState({maxMessagesToShow: this.state.maxMessagesToShow + 20})
+            setTimeout(() => {
+                this.throttleScroll = false;
+            }, 100)
         }
     }
 
@@ -326,7 +331,7 @@ class Topic extends React.Component {
                             className="topic-consumers-length">{this.state.consumers.length + ' consumer' + (this.state.consumers.length > 1 ? 's' : '')}</span></span>
                 {this.state.loadingConsumers ? <Loader/> :
                     this.state.errorLoadingConsumers ? <Error error="Cannot load consumers."/> : (
-                        <Scrollbar>
+                        <PerfectScrollbar>
                             <div className="consumers-items collection">
                                 {this.state.consumers.length > 0 ? this.state.consumers.map((consumer, index) => {
                                     return (
@@ -338,7 +343,7 @@ class Topic extends React.Component {
                                     )
                                 }) : <div className="no-consumers">No consumers.</div>}
                             </div>
-                        </Scrollbar>
+                        </PerfectScrollbar>
                     )
                 }
             </div>
@@ -351,7 +356,7 @@ class Topic extends React.Component {
                 <span className="title">Settings</span>
                 {this.state.loadingConfiguration ? <Loader/> :
                     this.state.errorLoadingConfiguration ? <Error error="Cannot load settings."/> : (
-                        <Scrollbar>
+                        <PerfectScrollbar>
                             {
                                 Object.keys(this.state.topicConfiguration).map((configurationGroupKey, i) => {
                                     return (
@@ -377,7 +382,7 @@ class Topic extends React.Component {
                                     )
                                 })
                             }
-                        </Scrollbar>
+                        </PerfectScrollbar>
                     )
                 }
 
@@ -422,7 +427,7 @@ class Topic extends React.Component {
                             className="topic-partitions-length">{this.state.partitions.length + ' partition' + (this.state.partitions.length > 1 ? 's' : '')}</span></span>
                 {this.state.loadingPartition ? <Loader/> :
                     this.state.errorLoadingPartitions ? <Error error="Cannot load partitions."/> : (
-                        <Scrollbar className="topic-partitions-scrollbar">
+                        <PerfectScrollbar className="topic-partitions-scrollbar">
                             <table>
                                 <thead>
                                 <tr>
@@ -450,7 +455,7 @@ class Topic extends React.Component {
                                 }
                                 </tbody>
                             </table>
-                        </Scrollbar>
+                        </PerfectScrollbar>
                     )
                 }
 
@@ -523,16 +528,28 @@ class Topic extends React.Component {
                         </span>
                 {this.state.loadingMessage ? <Loader/> :
                     this.state.errorLoadingMessages ? <Error error="Cannot load last messages."/> : (
-                        <Scrollbar onScrollFrame={this._messageScrollHandler.bind(this)}>
+                        <PerfectScrollbar ref="messages-scrollbar" onYReachEnd={this._messageScrollHandler.bind(this)}>
                             {messages.length > 0 ? messages.splice(0, this.state.maxMessagesToShow).map((message, index) => {
                                 return (
                                     <div className="topic-preview-item" key={message + "-" + index}>
-                                                <span
-                                                    className="topic-preview-timestamp"><b>timestamp:</b> {message.timestamp === -1 ? 'unknown' : new Date(message.timestamp).toISOString()}</span><br/>
+                                        <span
+                                            className="topic-preview-timestamp"><b>timestamp:</b> {message.timestamp === -1 ? 'unknown' : new Date(message.timestamp).toISOString()}
+                                            <CopyIcon width="16" height="16"
+                                                      style={{float: "right", marginRight: 16, marginTop: 6}}/>
+                                            </span><br/>
                                         <span
                                             className="topic-preview-key"><b>key:</b> {message.key || "null"}</span><br/>
                                         <span className="topic-preview-value"><b>value:</b></span><br/>
-                                        <JSONPretty className="json-pretty" json={message.message}/>
+                                        {
+                                            (() => {
+                                                try {
+                                                    JSON.parse(message.message);
+                                                    return <JSONPretty className="json-pretty" json={message.message}/>;
+                                                } catch (e) {
+                                                    return <span>{message.message}</span>;
+                                                }
+                                            })()
+                                        }
                                     </div>
                                 )
                             }) : (
@@ -540,24 +557,8 @@ class Topic extends React.Component {
                                     <span>No message for this topic with these filters.</span>
                                 </div>
                             )}
-                        </Scrollbar>
+                        </PerfectScrollbar>
                     )
-                }
-                {this.state.deleteTopicButtons ?
-                    <span className="confirm-delete-box">
-                            <a className="waves-effect waves-light btn confirm-delete-topic"
-                               onClick={this._deleteTopic.bind(this)}>
-                                Confirm
-                            </a>
-                            <a className="waves-effect waves-light btn cancel-delete-topic"
-                               onClick={this._closeDeleteTopicsButtons.bind(this)}>
-                                Cancel
-                            </a>
-                        </span> :
-                    <a className="waves-effect waves-light btn delete-topic-button"
-                       onClick={this._openDeleteTopicsButtons.bind(this)}>
-                        Delete topic
-                    </a>
                 }
             </div>
         )
@@ -570,17 +571,36 @@ class Topic extends React.Component {
                     <span className="breadcrumb"><Link to="/franz-manager/topics">Topics</Link></span>
                     <span className="breadcrumb"><Link
                         to={'/franz-manager/topics/' + this.state.topicId.replace(/\./g, ',')}>{this.state.topicId}</Link></span>
+                    <span style={{flex: '1 1'}}/>
+                    {this.state.deleteTopicButtons ?
+                        <span className="confirm-delete-box">
+                            <a className="waves-effect waves-light confirm-delete-topic"
+                               onClick={this._deleteTopic.bind(this)}>
+                                Confirm
+                            </a>
+                            <a className="waves-effect waves-light cancel-delete-topic"
+                               onClick={this._closeDeleteTopicsButtons.bind(this)}>
+                                Cancel
+                            </a>
+                        </span> :
+                        <a className="waves-effect waves-light delete-topic-button"
+                           onClick={this._openDeleteTopicsButtons.bind(this)}>
+                            Delete topic
+                        </a>
+                    }
                 </div>
 
-                <div className="left-box">
-                    {this._renderMetrics()}
-                    {this._renderConsumers()}
-                    {this._renderSettings()}
-                </div>
+                <div className="boxes">
+                    <div className="left-box">
+                        {this._renderMetrics()}
+                        {this._renderConsumers()}
+                        {this._renderSettings()}
+                    </div>
 
-                <div className="right-box">
-                    {this._renderPartitions()}
-                    {this._renderLastMessages()}
+                    <div className="right-box">
+                        {this._renderPartitions()}
+                        {this._renderLastMessages()}
+                    </div>
                 </div>
             </div>
         );

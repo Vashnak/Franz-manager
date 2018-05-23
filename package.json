@@ -28,6 +28,7 @@
     "react-custom-scrollbars": "^4.2.0",
     "react-dom": "^16.0.0",
     "react-json-pretty": "^1.7.4",
+    "react-perfect-scrollbar": "^1.1.1",
     "react-portal": "^4.1.3",
     "react-router": "^4.1.1",
     "react-router-dom": "^4.1.1",

@@ -1,11 +1,10 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
-import Scrollbar from 'react-custom-scrollbars';
+import PerfectScrollbar from 'react-perfect-scrollbar';
 import ClassNames from 'classnames';
 
 import './Clusters.scss';
 
-import Utils from "../../modules/Utils";
 import BrokersService from "../../services/BrokersService";
 import Loader from "../../components/loader/Loader";
 import Error from '../../components/error/Error';
@@ -154,7 +153,7 @@ class Clusters extends React.Component {
                                     <div className="brokers-summary box">
                                         <span className="title">Brokers</span>
 
-                                        <Scrollbar className="brokers-summary-scrollbar">
+                                        <PerfectScrollbar className="brokers-summary-scrollbar">
                                             <Metrics fields={{
                                                 id: 'Id',
                                                 host: 'Host',
@@ -162,12 +161,12 @@ class Clusters extends React.Component {
                                                 bytesIn: 'Bytes In (per sec)',
                                                 bytesOut: 'Bytes Out (per sec)'
                                             }} metrics={this.state.brokers}/>
-                                        </Scrollbar>
+                                        </PerfectScrollbar>
                                     </div>
 
                                     <div className="brokers-metrics box">
                                         <span className="title">Metrics</span>
-                                        <Scrollbar className="brokers-metrics-scrollbar">
+                                        <PerfectScrollbar className="brokers-metrics-scrollbar">
                                         {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
                                             this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> :
                                                 <Metrics fields={{
@@ -184,13 +183,13 @@ class Clusters extends React.Component {
                                                     }
                                                 })}/>
                                         }
-                                        </Scrollbar>
+                                        </PerfectScrollbar>
                                     </div>
                                 </div>
                                 <div className="right">
                                     <div className="brokers-settings box">
                                         <span className="title">Settings</span>
-                                        <Scrollbar className="brokers-settings-scrollbar">
+                                        <PerfectScrollbar className="brokers-settings-scrollbar">
                                             <div className="brokers-settings-containers">
                                                 {Object.keys(this.state.brokersSettings).map(settingCategory => {
                                                     return (
@@ -218,7 +217,7 @@ class Clusters extends React.Component {
                                                     )
                                                 })}
                                             </div>
-                                        </Scrollbar>
+                                        </PerfectScrollbar>
                                     </div>
                                 </div>
                             </div>

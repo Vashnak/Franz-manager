@@ -52,7 +52,6 @@ export default {
                 from: timestamp
             })
                 .then(res => {
-                    console.log(res.length)
                     if (res.length === 0) {
                         return reject('No message for this topic.');
                     }

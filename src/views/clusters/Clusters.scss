@@ -14,6 +14,7 @@
     flex: 1 1;
 
     .cluster-settings {
+      display: block;
       width: 100%;
       margin-bottom: 15px;
 
@@ -42,96 +43,92 @@
         flex-direction: column;
       }
 
-      .left > div {
-        flex: 1 1;
+      .right {
+        margin-left: 15px;
       }
 
       .brokers-summary {
         width: 100%;
         max-height: 180px;
-        flex: 1 1;
         display: flex;
         flex-direction: column;
-
-        .brokers-summary-scrollbar {
-          flex: 1 1;
-        }
       }
 
       .brokers-metrics {
         width: 100%;
-        max-height: 420px;
         margin-top: 15px;
-        flex: 1 1;
         display: flex;
         flex-direction: column;
-
-        .brokers-metrics-scrollbar {
-          flex: 1 1;
-        }
       }
 
       .brokers-settings {
-        margin-left: 15px;
         padding-right: 5px;
         width: 100%;
-        flex: 1 1;
-        display: flex;
-        flex-direction: column;
 
-        .brokers-settings-scrollbar {
-          flex: 1 1;
+        .brokers-settings-containers {
+          padding-right: 20px;
+          display: flex;
+          height: 100%;
+          flex-direction: column;
 
-          .brokers-settings-containers {
-            padding-right: 20px;
-            display: flex;
-            height: 100%;
-            flex-direction: column;
+          .brokers-settings-container {
+            flex: 1 1;
+            margin-bottom: 20px;
 
-            .brokers-settings-container {
-              flex: 1 1;
-              margin-bottom: 20px;
+            .brokers-settings-container-category {
+              font-size: 18px;
+            }
 
-              .brokers-settings-container-category {
-                font-size: 18px;
+            .brokers-settings-container-line {
+              &:hover {
+                background-color: rgba($grey, 0.3);
               }
 
-              .brokers-settings-container-line {
-                &:hover {
-                  background-color: rgba($grey, 0.3);
+              .broker-settings-container-line-value {
+                margin-left: 50px;
+                float: right;
+
+                &.string {
+                  color: #347138;
+
+                  &:before, &:after {
+                    content: '"'
+                  }
                 }
 
-                .broker-settings-container-line-value {
-                  margin-left: 50px;
-                  float: right;
+                &.number {
+                  color: #0D47A1;
+                }
 
-                  &.string {
-                    color: #347138;
+                &.boolean {
+                  color: #00b0ff;
+                }
 
-                    &:before, &:after {
-                      content: '"'
-                    }
-                  }
-
-                  &.number {
-                    color: #0D47A1;
-                  }
-
-                  &.boolean {
-                    color: #00b0ff;
-                  }
-
-                  &.null {
-                    color: #adadad;
-                  }
+                &.null {
+                  color: #adadad;
                 }
               }
             }
           }
         }
+      }
+    }
 
+    @media screen and(max-width: 1050px) {
+      .panel, .right, .left {
+        display: block !important;
+        width: 100%;
+      }
+
+      .left {
+        margin-bottom: 15px;
+      }
+      
+      .right {
+        margin-bottom: 15px;
+        margin-left: 0 !important;
+        float: initial !important;
       }
     }
   }
-
 }

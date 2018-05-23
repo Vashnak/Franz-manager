@@ -77,7 +77,7 @@ export let Logo = (props) => {
             </g>
         </svg>
     );
-}
+};
 
 export let DoubleArrow = (props) => {
     return (
@@ -88,6 +88,16 @@ export let DoubleArrow = (props) => {
                 <polygon fill="#231F20"
                          points="0.046,13.418 2.13,15.502 12.967,4.666 23.803,15.502 25.887,13.418 12.967,0.498  "/>
             </g>
+        </svg>
+    );
+};
+
+export let CopyIcon = (props) => {
+    return (
+        <svg height="48" viewBox="0 0 48 48" width="48" {...props}>
+            <path d="M0 0h48v48h-48z" fill="none"/>
+            <path
+                d="M32 2h-24c-2.21 0-4 1.79-4 4v28h4v-28h24v-4zm6 8h-22c-2.21 0-4 1.79-4 4v28c0 2.21 1.79 4 4 4h22c2.21 0 4-1.79 4-4v-28c0-2.21-1.79-4-4-4zm0 32h-22v-28h22v28z"/>
         </svg>
     );
 };

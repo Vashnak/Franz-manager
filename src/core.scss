@@ -75,9 +75,10 @@ a {
 .box {
   position: relative;
   background-color: white;
-  display: inline-block;
   box-shadow: 0 0 15px 1px rgba($grey, 0.3);
   padding: 10px 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .row {
@@ -85,10 +86,19 @@ a {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  margin: 0;
 
   > * {
     flex: 1 1;
   }
+}
+
+.ps__rail-y, .ps__rail-x {
+  z-index: 9;
+}
+
+.scrollbar-container {
+  height: initial;
 }
 
 .lever {
