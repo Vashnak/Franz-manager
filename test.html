@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="container">
+    <div class="g g1"></div>
+    <div class="g g2"></div>
+    <div class="g g3"></div>
+    <div class="g g4"></div>
+    <div class="g g5"></div>
+</div>
+
+<style>
+    .container {
+        height: 300px;
+        display: grid;
+        grid-template-columns: 40px 50px auto auto 40px;
+    }
+
+    /*.g {*/
+        /*width: 100px;*/
+        /*height: 100px;*/
+    /*}*/
+
+    .g1 {
+        background-color: #00f;
+    }
+
+    .g2 {
+        background-color: #0f0;
+    }
+
+    .g3 {
+        background-color: #f00;
+    }
+
+    .g4 {
+        background-color: #0ff;
+        max-width: 300px;
+    }
+
+    .g5 {
+        background-color: #ff0;
+    }
+</style>
+</body>
+</html>

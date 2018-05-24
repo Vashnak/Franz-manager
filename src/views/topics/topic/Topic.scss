@@ -27,11 +27,12 @@
   .boxes {
     display: flex;
     flex-direction: row;
+    height: calc(100vh - 100px);
+    position: relative;
 
     .left-box {
       flex: 4 4;
       min-width: 400px;
-      height: calc(100% - 40px);
       position: relative;
       display: flex;
       flex-direction: column;
@@ -143,7 +144,7 @@
           }
         }
 
-        .edit-config-modal-button{
+        .edit-config-modal-button {
           position: absolute;
           bottom: 15px;
           right: 15px;
@@ -205,6 +206,7 @@
         width: 100%;
         margin-top: 15px;
         padding: 10px 20px;
+        min-height: 0;
 
         .title {
           .topic-messages-length {
@@ -274,7 +276,7 @@
   }
 }
 
-@media screen and(max-width: 1330px){
+@media screen and(max-width: 1330px) {
   .boxes {
     display: block !important;
   }
@@ -366,7 +368,7 @@
         font-family: 'Consolas', 'Monaco', monospace;
       }
 
-      .ace_line{
+      .ace_line {
         font-size: 15px;
       }
     }
