@@ -8,5 +8,21 @@
     justify-content: center;
     align-items: center;
     font-size: 24px;
+    padding: 20px;
+
+    #visualization {
+      width: 100%;
+      height: calc(100% - 80px);
+
+      circle {
+        stroke: #fff;
+        stroke-width: 1.5px;
+      }
+
+      line {
+        fill: none;
+        stroke: #bbb;
+      }
+    }
   }
 }

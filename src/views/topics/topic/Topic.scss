@@ -208,6 +208,25 @@
         padding: 10px 20px;
         min-height: 0;
 
+        .copy-icon {
+          width: 28px;
+          height: 28px;
+          float: right;
+          cursor: pointer;
+          padding: 6px;
+          margin: 0 10px;
+
+          &:hover {
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.1);
+          }
+
+          &:active {
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.2);
+          }
+        }
+
         .title {
           .topic-messages-length {
             font-size: 14px;

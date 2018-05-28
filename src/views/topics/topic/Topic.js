@@ -13,6 +13,7 @@ import {Portal} from "react-portal";
 import AceEditor from 'react-ace';
 import CloseIcon from "mdi-react/CloseIcon";
 import CheckIcon from "mdi-react/CheckIcon";
+import {ToastContainer, ToastStore} from 'react-toasts';
 
 import 'brace/mode/json';
 import 'brace/theme/github';
@@ -292,6 +293,16 @@ class Topic extends React.Component {
         }
     }
 
+    _copyJSON(json) {
+        const textarea = document.createElement('textarea');
+        textarea.value = json;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        ToastStore.success('Message content copied.')
+    }
+
     /** renderers */
     _renderMetrics() {
         const metricsTranslation = {
@@ -498,8 +509,9 @@ class Topic extends React.Component {
 
         return (
             <div className="topic-preview box">
-                        <span className="title">Last messages <span
-                            className="topic-messages-length">{this.state.lastMessages.length + ' message' + (this.state.lastMessages.length > 1 ? 's' : '')}</span>
+                <textarea style={{display: 'none'}} id="toCopy"/>
+                <span className="title">Last messages <span
+                    className="topic-messages-length">{this.state.lastMessages.length + ' message' + (this.state.lastMessages.length > 1 ? 's' : '')}</span>
                             <Menu>
                                 <Item label="10 messages"
                                       onClick={this._loadTopicLastMessages.bind(this, this.state.topicId, 10, null, "10")}
@@ -534,8 +546,8 @@ class Topic extends React.Component {
                                     <div className="topic-preview-item" key={message + "-" + index}>
                                         <span
                                             className="topic-preview-timestamp"><b>timestamp:</b> {message.timestamp === -1 ? 'unknown' : new Date(message.timestamp).toISOString()}
-                                            <CopyIcon width="16" height="16"
-                                                      style={{float: "right", marginRight: 16, marginTop: 6}}/>
+                                            <CopyIcon className="copy-icon"
+                                                      onClick={this._copyJSON.bind(this, message.message)}/>
                                             </span><br/>
                                         <span
                                             className="topic-preview-key"><b>key:</b> {message.key || "null"}</span><br/>
@@ -560,6 +572,7 @@ class Topic extends React.Component {
                         </PerfectScrollbar>
                     )
                 }
+                <ToastContainer store={ToastStore}/>
             </div>
         )
     }

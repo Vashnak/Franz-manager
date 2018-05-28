@@ -33,7 +33,9 @@
     "react-router": "^4.1.1",
     "react-router-dom": "^4.1.1",
     "react-tap-event-plugin": "^2.0.1",
-    "superagent": "^3.5.2"
+    "react-toasts": "^2.0.4",
+    "superagent": "^3.5.2",
+    "vis": "^4.21.0"
   },
   "devDependencies": {
     "babel-core": "https://registry.npmjs.org/babel-core/-/babel-core-6.23.1.tgz",
