@@ -7,6 +7,10 @@ import 'react-perfect-scrollbar/dist/css/styles.css';
 import 'materialize-css/dist/js/materialize.min';
 import './core.scss';
 
+if (!global._babelPolyfill) {
+    require('babel-polyfill');
+}
+
 const render = Component => {
     ReactDOM.render(
         <AppContainer>

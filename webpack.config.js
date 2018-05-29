@@ -21,7 +21,6 @@ module.exports = {
     devtool: 'eval',
     entry: {
         'app': [
-            'babel-polyfill',
             'react-hot-loader/patch',
             './src/index'
         ]

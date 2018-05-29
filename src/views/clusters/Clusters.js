@@ -31,7 +31,7 @@ class Clusters extends React.Component {
             .then(brokers => {
                 let brokersSettings = {
                     ssl: {},
-                    replicats: {},
+                    replicas: {},
                     offsets: {},
                     transactions: {},
                     zookeeper: {},
@@ -51,7 +51,7 @@ class Clusters extends React.Component {
                         brokersSettings.offsets[key] = broker.configurations[key];
                         delete broker.configurations[key];
                     } else if (key.includes('replica')) {
-                        brokersSettings.replicats[key] = broker.configurations[key];
+                        brokersSettings.replicas[key] = broker.configurations[key];
                         delete broker.configurations[key];
                     } else if (key.includes('zookeeper')) {
                         brokersSettings.zookeeper[key] = broker.configurations[key];

@@ -4,6 +4,7 @@ import * as Vis from 'vis';
 import BrokersService from '../../services/BrokersService';
 
 import kafkaImg from '../../images/kafka.jpg'
+import zookeeperImg from '../../images/zookeeper.gif'
 
 import 'vis/dist/vis.css';
 import './Dashboard.scss';
@@ -15,14 +16,27 @@ class Dashboard extends React.Component {
             .then(b => {
                 let nodes = null;
                 let edges = null;
-                let EDGE_LENGTH_SUB = 100;
 
                 nodes = [];
                 edges = [];
 
                 nodes.push({id: 'Cluster'});
 
+                let serializedZookeepers = [];
+
                 b.forEach(broker => {
+                    let zookeepers = broker.configurations["zookeeper.connect"].replace('/kafka', '').split(',');
+                    zookeepers.forEach(z => {
+                        let splitted = z.split(':');
+                        if (!serializedZookeepers.find(sz => sz.host === splitted[0] && sz.port === splitted[1])) {
+                            serializedZookeepers.push({
+                                id: z,
+                                host: splitted[0],
+                                port: splitted[1]
+                            })
+                        }
+                    });
+
                     let brokerInfo = `Broker ${broker.id}\nhost: ${broker.host}\nport: ${broker.port}`;
                     nodes.push({
                         id: broker.id,
@@ -30,10 +44,20 @@ class Dashboard extends React.Component {
                         image: kafkaImg,
                         shape: 'image'
                     });
-                    edges.push({from: broker.id, to: 'Cluster', length: EDGE_LENGTH_SUB});
+                    edges.push({from: broker.id, to: 'Cluster', length: 200});
                 });
 
-                let vis = new Vis.Network(document.getElementById('visualization'), {nodes, edges}, {});
+                serializedZookeepers.forEach(sz => {
+                    nodes.push({
+                        id: sz.id,
+                        label: `Zookeeper \nhost: ${sz.host}\nport: ${sz.port}`,
+                        image: zookeeperImg,
+                        shape: 'image'
+                    });
+                    edges.push({from: sz.id, to: 'Cluster', length: 100});
+                });
+
+                new Vis.Network(document.getElementById('visualization'), {nodes, edges}, {});
             });
     }
 
