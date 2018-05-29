@@ -11,7 +11,7 @@
     "start": "NODE_ENV=development webpack-dev-server --hot --history-api-fallback --open --host 0.0.0.0",
     "docker": "docker build -t franz-manager .",
     "build": "NODE_ENV=production webpack && npm run replace",
-    "replace" : "cp index.html dist/index.html && sed -i 's~<script src=\"./app.js\"></script>~~' dist/index.html "
+    "replace" : "cp index.html dist/index.html && sed -i 's~<script src=\"/app.js\"></script>~~' dist/index.html "
   },
   "keywords": [],
   "license": "ISC",
