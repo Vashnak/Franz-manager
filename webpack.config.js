@@ -12,7 +12,7 @@ module.exports = {
         new webpack.DefinePlugin({
             'NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'SERVER_URL': JSON.stringify(process.env.SERVER_URL),
-            'process.env.NODE_ENV': JSON.stringify('production')
+            'process.env.NODE_ENV': JSON.stringify('development')
         }),
         new webpack.optimize.UglifyJsPlugin(), //minify everything
         new webpack.optimize.AggressiveMergingPlugin(), //Merge chunks
@@ -21,6 +21,7 @@ module.exports = {
     devtool: 'eval',
     entry: {
         'app': [
+            'babel-polyfill',
             'react-hot-loader/patch',
             './src/index'
         ]
