@@ -1,7 +1,10 @@
 import React from 'react';
+import {PortalWithState, Portal} from 'react-portal';
 import Loader from '../../components/loader/Loader';
 import Error from '../../components/error/Error';
 import TopicsService from '../../services/TopicsService';
+import Menu from '../../shared/Menu';
+import Item from '../../shared/Menu/Item';
 
 import querystring from 'querystring';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -12,6 +15,7 @@ import classNames from 'classnames';
 import _ from 'lodash';
 
 import './Topics.scss';
+import ApiService from "../../services/ApiService";
 
 class Topics extends React.Component {
     constructor(props) {
@@ -141,9 +145,31 @@ class Topics extends React.Component {
         this.setState({addTopicModal: false});
     }
 
+    _openBulkDeleteModal(topicsToDelete) {
+        this.setState({deleteTopicsModal: true, topicsToDelete});
+    }
+
+    _deleteTopicsConfirmation() {
+        if (!this.state.deleteTopicsConfirmationModal) {
+            this.setState({deleteTopicsConfirmationModal: true});
+        } else {
+            this._deleteTopics(this.state.topicsToDelete);
+        }
+    }
+
+    async _deleteTopics(topics){
+        for(const topic of topics){
+            await TopicsService.deleteTopic(topic.id);
+        }
+        this.setState({
+            deleteTopicsModal: false,
+            deleteTopicsConfirmationModal: false,
+            topicsToDelete: []
+        })
+    }
+
     render() {
         const topicsToShow = this._filterTopics(this.state.topics).sort((a, b) => a.id < b.id ? -1 : 1);
-
         return (
             <div className="topics view">
                 <div className="breadcrumbs">
@@ -198,14 +224,19 @@ class Topics extends React.Component {
 
                 <div className="topics-items collection box">
                     <span className="title">Topics <span
-                        className="topics-items-length">{topicsToShow.length + ' topic' + (topicsToShow.length > 1 ? 's' : '')}</span></span>
+                        className="topics-items-length">{topicsToShow.length + ' topic' + (topicsToShow.length > 1 ? 's' : '')}</span>
+                        <Menu>
+                                <Item label="Delete shown topics"
+                                      onClick={this._openBulkDeleteModal.bind(this, topicsToShow)}/>
+                        </Menu>
+                    </span>
                     {
                         this.state.loadingTopics ? <Loader/> : (
                             this.state.errorLoadingTopics ? <Error error="Cannot load topics."/> : (
                                 <PerfectScrollbar onYReachEnd={this._onTopicListScrolled.bind(this)}>
                                     <div className="topics-classic-view">
                                         {
-                                            topicsToShow.splice(0, this.state.maxShownTopics).map(topic => {
+                                            topicsToShow.slice(0, this.state.maxShownTopics).map(topic => {
                                                 return (
                                                     <li className="topics-item collection-item">
                                                         <Link
@@ -242,6 +273,37 @@ class Topics extends React.Component {
                             </div>
                         </div>
                     </div>
+                )}
+                {this.state.deleteTopicsModal && (
+                    <PortalWithState isOpen={this.state.deleteTopicsModal}>
+                        {
+                            () => {
+                                return <div className="topics-delete-topic-modal">
+                                    <div className="content">
+                                        <p className="warning">You are going to
+                                            delete {this.state.topicsToDelete.length} topic(s).</p><br/>
+                                        <div className="topics">
+                                            {this.state.topicsToDelete.map((t, index) => <div key={index} className="topic">{t.id}</div>)}
+                                        </div>
+                                        <br/>
+                                        <div className="confirmLine">
+                                            {this.state.deleteTopicsConfirmationModal ? <b>REALLY sure ?</b> :
+                                                <b>Do you really want to do this ?</b>}
+                                            <div style={{flex: "1 1"}}/>
+                                            <input type="button"
+                                                   onClick={this._deleteTopicsConfirmation.bind(this)}
+                                                   className="yes waves-effect waves-light btn" value="yes"/>
+                                            <input type="button" onClick={() => this.setState({
+                                                deleteTopicsModal: false,
+                                                deleteTopicsConfirmationModal: false,
+                                                topicsToDelete: []
+                                            })} className="no waves-effect waves-light btn" value="no"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </PortalWithState>
                 )}
             </div>
         );
