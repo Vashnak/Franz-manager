@@ -14,6 +14,7 @@ const defaultToggleButton = (
 class Menu extends React.Component {
     constructor(props) {
         super(props);
+        this.id = Math.random().toFixed(0);
         this.state = {
             hideContent: true,
             position: {},
@@ -37,13 +38,19 @@ class Menu extends React.Component {
 
     _toggleMenu(e) {
         if (this.state.hideContent) {
+            this.refs[this.id].className = "menu-content active";
             this.setState({hideContent: false, position: e.target.getBoundingClientRect()});
         } else {
+            this.refs[this.id].className = "menu-content";
             this.setState({hideContent: true, position: {}});
         }
     }
 
     render() {
+        let children = [];
+        if(this.props.children){
+            children = Array.isArray(this.props.children) ? this.props.children : [this.props.children]
+        }
         const state = this.state;
         const menuContentStyle = {};
         if (state.position.top && state.position.right) {
@@ -54,11 +61,14 @@ class Menu extends React.Component {
             <div className="menu">
                 <span className="menu-toggle-button"
                       onClick={this._toggleMenu.bind(this)}>{this.props.toggleButton || defaultToggleButton}</span>
-                <div className={Classnames("menu-content", {active: !state.hideContent})} style={menuContentStyle}>
+                <div ref={this.id} className="menu-content" style={menuContentStyle}>
                     <ul>
-                        {this.props.children && this.props.children.map((child, index) => {
-                            child.props.closeMenu = this._toggleMenu.bind(this);
-                            return <li style={{delay: (index * 50) + 'ms'}}>{child}</li>
+                        {children.map((child, index) => {
+                            let clonedChild = React.cloneElement(child, {
+                                ...child.props,
+                                closeMenu: this._toggleMenu.bind(this)
+                            });
+                            return <li key={index}>{clonedChild}</li>
                         })}
                     </ul>
                 </div>

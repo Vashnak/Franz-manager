@@ -21,8 +21,20 @@
 
 .menu .menu-content.active {
     opacity: 1;
-    transition: all 0.2s ease;
-    transform: scale(1);
+    animation: menuAnimation 0.25s ease-in;
+    animation-fill-mode: forwards;
+}
+
+@keyframes menuAnimation {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1, 0.2);
+    }
+    100% {
+        transform: scale(1, 1);
+    }
 }
 
 .menu .menu-content ul {
