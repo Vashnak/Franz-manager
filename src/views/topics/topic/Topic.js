@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import JSONPretty from 'react-json-pretty';
 import ConsumersService from "../../../services/ConsumersService";
 import ConstantsService from "../../../services/ConstantsService";
-import {CopyIcon} from "../../../services/SvgService";
+import {CopyIcon, WarningIcon} from "../../../services/SvgService";
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import _ from "lodash";
 import moment from "moment";
@@ -453,8 +453,8 @@ class Topic extends React.Component {
                                 <tbody>
                                 {
                                     this.state.partitions.sort((a, b) => a.partition - b.partition).map(partition => {
-                                        return <tr
-                                            className={classNames({notSync: !this._isPartitionSync(partition)})}>
+                                        return <tr key={partition.partition}
+                                                   className={classNames({notSync: !this._isPartitionSync(partition)})}>
                                             <td>{partition.partition}</td>
                                             <td>{partition.leader}</td>
                                             <td>{partition.beginningOffset}</td>
@@ -506,12 +506,13 @@ class Topic extends React.Component {
 
     _renderLastMessages() {
         const messages = _.clone(this.state.lastMessages);
-
         return (
             <div className="topic-preview box">
                 <textarea style={{display: 'none'}} id="toCopy"/>
                 <span className="title">Last messages <span
-                    className="topic-messages-length">{this.state.lastMessages.length + ' message' + (this.state.lastMessages.length > 1 ? 's' : '')}</span>
+                    className="topic-messages-length">{messages.length + ' message' + (messages.length > 1 ? 's' : '')}</span>
+                    {messages.find(m => m.timestamp === -1) && <WarningIcon/>}
+
                             <Menu>
                                 <Item label="10 messages"
                                       onClick={this._loadTopicLastMessages.bind(this, this.state.topicId, 10, null, "10")}

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export let Logo = (props) => {
+export let Logo = props => {
     return (
         <svg width="100%" viewBox="0 0 357.18731 145.52083" version="1.1" height="145.52083" {...props}>
             <g transform="translate(0,-151.47915)">
@@ -79,7 +79,7 @@ export let Logo = (props) => {
     );
 };
 
-export let DoubleArrow = (props) => {
+export let DoubleArrow = props => {
     return (
         <svg height="26px" viewBox="0 0 26 26" width="26px"  {...props}>
             <g>
@@ -92,7 +92,7 @@ export let DoubleArrow = (props) => {
     );
 };
 
-export let CopyIcon = (props) => {
+export let CopyIcon = props => {
     return (
         <svg height="48" viewBox="0 0 48 48" width="48" {...props}>
             <path d="M0 0h48v48h-48z" fill="none"/>
@@ -102,7 +102,7 @@ export let CopyIcon = (props) => {
     );
 };
 
-export let LaptopIcon = (props) => {
+export let LaptopIcon = props => {
     return (
         <svg viewBox="0 0 24.16 21.396" width="24px" {...props}>
             <g>
@@ -116,8 +116,7 @@ export let LaptopIcon = (props) => {
     );
 };
 
-
-export let ServerIcon = (props) => {
+export let ServerIcon = props => {
     return (
         <svg height="64" width="48" {...props}>
             <path d="M0 128v128c0 0 1.906 64 64 64s577.125 0 640 0 64-64 64-64V128c0 0-0.5-64-64-64s-588.468 0-640 0C-0.906 64 0 128 0 128zM0
@@ -128,6 +127,18 @@ export let ServerIcon = (props) => {
      896V768h64v128H64zM192 896V768h64v128H192zM320 896V768h64v128H320zM448 896V768h64v128H448zM640 832v-64h64v64H640z"/>
         </svg>
 
+    );
+};
+
+export let WarningIcon = props => {
+    return (
+        <svg height="64" width="64" viewBox="0 0 1794 1664"  {...props}>
+            <path
+                d="M1024 1375v-190q0-14-9.5-23.5t-22.5-9.5h-192q-13 0-22.5 9.5t-9.5 23.5v190q0 14 9.5 23.5t22.5 9.5h192q13
+                0 22.5-9.5t9.5-23.5zm-2-374l18-459q0-12-10-19-13-11-24-11h-220q-11 0-24 11-10 7-10 21l17 457q0 10
+                10 16.5t24 6.5h185q14 0 23.5-6.5t10.5-16.5zm-14-934l768 1408q35 63-2 126-17 29-46.5 46t-63.5
+                17h-1536q-34 0-63.5-17t-46.5-46q-37-63-2-126l768-1408q17-31 47-49t65-18 65 18 47 49z"/>
+        </svg>
     );
 };
 

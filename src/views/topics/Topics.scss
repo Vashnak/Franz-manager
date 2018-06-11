@@ -152,7 +152,7 @@
   }
 }
 
-.topics-add-topic-modal, .topics-delete-topic-modal {
+.topics-add-topic-modal {
   z-index: 999;
   position: absolute;
   top: 0;
@@ -192,46 +192,6 @@
         &.close svg {
           fill: red;
         }
-      }
-    }
-  }
-}
-
-.topics-delete-topic-modal {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  .content {
-    position: relative;
-    bottom: initial;
-    right: initial;
-    display: inline-block;
-    min-width: 500px;
-    max-width: 800px;
-
-    .warning {
-      color: red;
-      font-size: 16px;
-      text-decoration: underline;
-    }
-
-    .topics {
-      max-height: 300px;
-      overflow: auto;
-    }
-
-    .confirmLine {
-      display: flex;
-      align-items: center;
-
-      .yes {
-        margin-right: 15px;
-        background-color: green;
-      }
-
-      .no {
-        background-color: red;
       }
     }
   }

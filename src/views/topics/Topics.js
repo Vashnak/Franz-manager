@@ -1,11 +1,13 @@
 import React from 'react';
-import {PortalWithState, Portal} from 'react-portal';
 import Loader from '../../components/loader/Loader';
 import Error from '../../components/error/Error';
 import TopicsService from '../../services/TopicsService';
 import Menu from '../../shared/Menu';
 import Item from '../../shared/Menu/Item';
 
+import DeleteTopicsModal from "./deleteTopicsModal/DeleteTopicsModal";
+
+import {ToastContainer, ToastStore} from 'react-toasts';
 import querystring from 'querystring';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import CloseIcon from "mdi-react/CloseIcon";
@@ -15,7 +17,6 @@ import classNames from 'classnames';
 import _ from 'lodash';
 
 import './Topics.scss';
-import ApiService from "../../services/ApiService";
 
 class Topics extends React.Component {
     constructor(props) {
@@ -42,6 +43,11 @@ class Topics extends React.Component {
     }
 
     componentWillMount() {
+        this._loadTopics();
+    }
+
+    _loadTopics(){
+        this.setState({loadingTopics: true});
         TopicsService.getTopics()
             .then(topics => {
                 this.setState({topics, loadingTopics: false});
@@ -79,7 +85,7 @@ class Topics extends React.Component {
 
     _onTopicListScrolled() {
         if (!this.throttleScroll && this.state.maxShownTopics < this.state.topics.length) {
-            this.setState({maxShownTopics: this.state.maxShownTopics + 20})
+            this.setState({maxShownTopics: this.state.maxShownTopics + 20});
             setTimeout(() => {
                 this.throttleScroll = false;
             }, 100)
@@ -149,23 +155,32 @@ class Topics extends React.Component {
         this.setState({deleteTopicsModal: true, topicsToDelete});
     }
 
-    _deleteTopicsConfirmation() {
-        if (!this.state.deleteTopicsConfirmationModal) {
-            this.setState({deleteTopicsConfirmationModal: true});
-        } else {
-            this._deleteTopics(this.state.topicsToDelete);
-        }
+    _closeDeleteTopicsModal() {
+        this.setState({
+            deleteTopicsModal: false,
+            topicsToDelete: []
+        })
     }
 
-    async _deleteTopics(topics){
-        for(const topic of topics){
-            await TopicsService.deleteTopic(topic.id);
+    async _deleteTopics(topics) {
+        let length = topics.length;
+        let topicsCopy = JSON.parse(JSON.stringify(topics));
+        for (const topic of topics) {
+            try {
+                await TopicsService.deleteTopic(topic.id);
+            } catch (e) {
+                console.log("could not delete topic " + topic.id);
+            }
+            topicsCopy.splice(topicsCopy.findIndex(t => t.id = topic.id), 1);
+            this.setState({topicsToDelete: topicsCopy});
         }
         this.setState({
             deleteTopicsModal: false,
             deleteTopicsConfirmationModal: false,
             topicsToDelete: []
-        })
+        });
+        ToastStore.success(`Successfully deleted ${length} topic${length > 1 ? 's' : ''} !`, 5000);
+        this._loadTopics();
     }
 
     render() {
@@ -238,7 +253,7 @@ class Topics extends React.Component {
                                         {
                                             topicsToShow.slice(0, this.state.maxShownTopics).map(topic => {
                                                 return (
-                                                    <li className="topics-item collection-item">
+                                                    <li className="topics-item collection-item" key={topic.id}>
                                                         <Link
                                                             to={'/franz-manager/topics/' + topic.id.replace(/\./g, ',')}>{topic.id}</Link>
                                                     </li>
@@ -275,36 +290,11 @@ class Topics extends React.Component {
                     </div>
                 )}
                 {this.state.deleteTopicsModal && (
-                    <PortalWithState isOpen={this.state.deleteTopicsModal}>
-                        {
-                            () => {
-                                return <div className="topics-delete-topic-modal">
-                                    <div className="content">
-                                        <p className="warning">You are going to
-                                            delete {this.state.topicsToDelete.length} topic(s).</p><br/>
-                                        <div className="topics">
-                                            {this.state.topicsToDelete.map((t, index) => <div key={index} className="topic">{t.id}</div>)}
-                                        </div>
-                                        <br/>
-                                        <div className="confirmLine">
-                                            {this.state.deleteTopicsConfirmationModal ? <b>REALLY sure ?</b> :
-                                                <b>Do you really want to do this ?</b>}
-                                            <div style={{flex: "1 1"}}/>
-                                            <input type="button"
-                                                   onClick={this._deleteTopicsConfirmation.bind(this)}
-                                                   className="yes waves-effect waves-light btn" value="yes"/>
-                                            <input type="button" onClick={() => this.setState({
-                                                deleteTopicsModal: false,
-                                                deleteTopicsConfirmationModal: false,
-                                                topicsToDelete: []
-                                            })} className="no waves-effect waves-light btn" value="no"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        }
-                    </PortalWithState>
+                    <DeleteTopicsModal topicsToDelete={this.state.topicsToDelete}
+                                       closeModal={this._closeDeleteTopicsModal.bind(this)}
+                                       deleteTopics={this._deleteTopics.bind(this)}/>
                 )}
+                <ToastContainer store={ToastStore}/>
             </div>
         );
     }
