@@ -11,6 +11,7 @@ Features :
  - Detailed topic information (metrics, settings, partitions, consumers, last messages).
  - Consumers listing.
  - Live consumption (gif below).
+ - Bulk topic deletion (gif below).
  - Detailed consumer information (partitions, topic offset, consumer offset, lag, commit timestamp).
 
 #### Gifs
@@ -18,6 +19,14 @@ Features :
 ###### Live consumption
 
 ![live_consumption](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/live_consuming.gif)
+
+###### Bulk topic deletion
+
+![topic_bulk_delete](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/topic_bulk_delete.gif)
+
+###### Add partitions
+
+![add_partition](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/add_partition.gif)
 
 #### Screenshots
 
