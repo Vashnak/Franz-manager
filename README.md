@@ -12,10 +12,19 @@ Features :
  - Consumers listing.
  - Detailed consumer information (partitions, topic offset, consumer offset, lag, commit timestamp).
 
+#### Gifs
+
+###### Live consumption
+
+![live_consumption](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/live_consuming.gif)
+
 #### Screenshots
 
+###### Cluster view
 ![cluster view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/cluster_view.png)
+###### Topic view
 ![topic view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/topic_view.png)
+###### Consumers view
 ![consumers view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/consumers_view.png)
 
 #### Development
