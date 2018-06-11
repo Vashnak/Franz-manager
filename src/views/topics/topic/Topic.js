@@ -511,7 +511,7 @@ class Topic extends React.Component {
                 <textarea style={{display: 'none'}} id="toCopy"/>
                 <span className="title">Last messages <span
                     className="topic-messages-length">{messages.length + ' message' + (messages.length > 1 ? 's' : '')}</span>
-                    {messages.find(m => m.timestamp === -1) && <WarningIcon/>}
+                    {messages.find(m => m.timestamp === -1) && <span className="warning"></span>}
 
                             <Menu>
                                 <Item label="10 messages"
