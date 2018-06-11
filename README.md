@@ -10,6 +10,7 @@ Features :
  - Topics creation / deletion.
  - Detailed topic information (metrics, settings, partitions, consumers, last messages).
  - Consumers listing.
+ - Live consumption (gif below).
  - Detailed consumer information (partitions, topic offset, consumer offset, lag, commit timestamp).
 
 #### Gifs
