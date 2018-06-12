@@ -419,7 +419,8 @@ class Topic extends React.Component {
                                                     JSON.parse(message.message);
                                                     return <JSONPretty className="json-pretty" json={message.message}/>;
                                                 } catch (e) {
-                                                    return <span>{message.message}</span>;
+                                                    return <pre className="json-pretty">{message.message}</pre>
+                                                    // return <span className="message">{message.message}</span>;
                                                 }
                                             })()
                                         }
@@ -448,8 +449,8 @@ class Topic extends React.Component {
                     <SettingsIcon className="settings-icon" width={20} onClick={this._openSettingsModal.bind(this)}/>
                     {this.state.deleteTopicButtons ?
                         <span className="confirm-delete-box">
-                            <ValidIcon className="confirm-icon" width={20} fill="green" onClick={this._deleteTopic.bind(this)}/>
                             <CancelIcon className="cancel-icon" width={20} fill="red" onClick={this._closeDeleteTopicsButtons.bind(this)}/>
+                            <ValidIcon className="confirm-icon" width={20} fill="green" onClick={this._deleteTopic.bind(this)}/>
                         </span> :
                         <DeleteIcon className="delete-icon" width={24}
                                     onClick={this._openDeleteTopicsButtons.bind(this)}/>
