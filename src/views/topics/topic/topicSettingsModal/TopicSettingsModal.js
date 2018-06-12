@@ -27,7 +27,8 @@ class TopicSettingsModal extends Component {
                 segment: {},
                 others: {}
             },
-            mode: 'reading'
+            mode: 'reading',
+            filter: ''
         }
     }
 
@@ -38,10 +39,9 @@ class TopicSettingsModal extends Component {
     _loadTopicDetails(topicId) {
         TopicsService.getTopicDetails(topicId)
             .then(td => {
+                console.log(td);
                 let configurations = td.configurations;
                 let topicConfiguration = this.state.topicConfiguration;
-                topicConfiguration.replication.replication = td.replication;
-                topicConfiguration.others.partitions = td.partitions;
 
                 Object.keys(configurations).forEach(key => {
                     if (key.indexOf('message') >= 0) {
@@ -101,6 +101,10 @@ class TopicSettingsModal extends Component {
         this.setState({mode: 'reading'});
     }
 
+    _handleFilterChange(e) {
+        this.setState({filter: e.target.value});
+    }
+
     _getValueType(value) {
         if (value === 'true' || value === 'boolean')
             return 'boolean';
@@ -115,37 +119,50 @@ class TopicSettingsModal extends Component {
         return (
             <Modal className="topic-settings-modal">
                 <span className="title">Settings {this.state.mode === 'reading' &&
-                <EditIcon width={20} className="edit-icon"
-                          onClick={this._editMode.bind(this)}/>}</span>
+                <EditIcon width={20} height={20} className="edit-icon"
+                          onClick={this._editMode.bind(this)}/>}
+                    <div style={{flex: "1 1"}}/>
+                          <div className="input-field">
+                              <input type="text" placeholder="filter" value={this.state.filter}
+                                     onChange={this._handleFilterChange.bind(this)}/>
+                          </div>
+                          </span>
                 {this.state.loadingConfiguration ? <Loader/> :
                     this.state.errorLoadingConfiguration ? <Error error="Cannot load settings."/> :
                         this.state.mode === 'reading' ? (
                             <div className="topic-settings">
                                 <PerfectScrollbar>
                                     {
-                                        Object.keys(this.state.topicConfiguration).map((configurationGroupKey, i) => {
-                                            return (
-                                                <div className="topic-details-configurationGroup"
-                                                     key={configurationGroupKey + '-' + i}>
-                                                    <h5 className="topic-details-configurationGroup-title">{configurationGroupKey}</h5>
-                                                    {
-                                                        Object.keys(this.state.topicConfiguration[configurationGroupKey]).sort((a, b) => a < b ? -1 : 1).map((configurationKey, j) => {
-                                                            return (
-                                                                <div className="topic-details-configuration"
-                                                                     key={configurationKey + '-' + j}>
+                                        Object.keys(this.state.topicConfiguration)
+                                            .filter(configurationGroupKey => {
+                                                return Object.keys(this.state.topicConfiguration[configurationGroupKey]).find(key => key.includes(this.state.filter));
+                                            })
+                                            .map((configurationGroupKey, i) => {
+                                                return (
+                                                    <div className="topic-details-configurationGroup"
+                                                         key={configurationGroupKey + '-' + i}>
+                                                        <h5 className="topic-details-configurationGroup-title">{configurationGroupKey}</h5>
+                                                        {
+                                                            Object.keys(this.state.topicConfiguration[configurationGroupKey])
+                                                                .filter(key => key.includes(this.state.filter))
+                                                                .sort((a, b) => a < b ? -1 : 1)
+                                                                .map((configurationKey, j) => {
+                                                                    return (
+                                                                        <div className="topic-details-configuration"
+                                                                             key={configurationKey + '-' + j}>
                                                         <span
                                                             className="topic-details-configuration-key">{configurationKey}:</span>
-                                                                    <span
-                                                                        className={classNames('topic-details-configuration-value', this._getValueType(this.state.topicConfiguration[configurationGroupKey][configurationKey]))}>
+                                                                            <span
+                                                                                className={classNames('topic-details-configuration-value', this._getValueType(this.state.topicConfiguration[configurationGroupKey][configurationKey]))}>
                                                         {this.state.topicConfiguration[configurationGroupKey][configurationKey] || "null"}
                                                     </span>
-                                                                </div>
-                                                            )
-                                                        })
-                                                    }
-                                                </div>
-                                            )
-                                        })
+                                                                        </div>
+                                                                    )
+                                                                })
+                                                        }
+                                                    </div>
+                                                )
+                                            })
                                     }
                                 </PerfectScrollbar>
 

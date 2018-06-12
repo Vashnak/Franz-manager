@@ -9,6 +9,8 @@
     width: 530px;
 
     .title {
+      display: flex;
+
       .edit-icon {
         margin-top: 6px;
         margin-left: 10px;
@@ -20,6 +22,16 @@
 
         &:active {
           fill: $primary-color-dark;
+        }
+      }
+
+      .input-field {
+        display: inline-block;
+        margin: 0;
+
+        input {
+          height: 32px;
+          margin: 0;
         }
       }
     }
