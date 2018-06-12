@@ -5,18 +5,14 @@ import classNames from 'classnames';
 import JSONPretty from 'react-json-pretty';
 import ConsumersService from "../../../services/ConsumersService";
 import ConstantsService from "../../../services/ConstantsService";
-import {CopyIcon, WarningIcon} from "../../../services/SvgService";
+import {CancelIcon, CopyIcon, DeleteIcon, SettingsIcon, ValidIcon, WarningIcon} from "../../../services/SvgService";
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import _ from "lodash";
 import moment from "moment";
 import {Portal} from "react-portal";
-import AceEditor from 'react-ace';
 import CloseIcon from "mdi-react/CloseIcon";
 import CheckIcon from "mdi-react/CheckIcon";
 import {ToastContainer, ToastStore} from 'react-toasts';
-
-import 'brace/mode/json';
-import 'brace/theme/github';
 
 import Menu from '../../../shared/Menu';
 import Item from '../../../shared/Menu/Item';
@@ -27,6 +23,7 @@ import Error from '../../../components/error/Error';
 import Metrics from '../../../components/metrics/Metrics';
 
 import './Topic.scss';
+import TopicSettingsModal from "./topicSettingsModal/TopicSettingsModal";
 
 class Topic extends React.Component {
     constructor(props) {
@@ -34,23 +31,13 @@ class Topic extends React.Component {
 
         this.state = {
             topicId: this.props.match.params.topicId.replace(/,/g, '.'),
-            brutTopicConfiguration: {},
-            topicConfiguration: {
-                messages: {},
-                retention: {},
-                replication: {},
-                segment: {},
-                others: {}
-            },
             partitions: [],
             loadingMessage: true,
-            loadingConfiguration: true,
             loadingConsumers: true,
             loadingMetrics: true,
             loadingPartition: true,
             errorLoadingMetrics: false,
             errorLoadingConsumers: false,
-            errorLoadingConfiguration: false,
             errorLoadingPartitions: false,
             errorLoadingMessages: false,
             lastMessages: [],
@@ -59,12 +46,12 @@ class Topic extends React.Component {
             consumers: [],
             metrics: {},
             scientistNotation: true,
-            selectedFilter: ''
+            selectedFilter: '',
+            settingsModal: false
         }
     }
 
     componentWillMount() {
-        this._loadTopicDetails(this.state.topicId);
         this._loadTopicLastMessages(this.state.topicId);
         this._loadTopicPartitions(this.state.topicId);
         this._loadTopicConsumers(this.state.topicId);
@@ -93,39 +80,6 @@ class Topic extends React.Component {
             })
             .catch(() => {
                 this.setState({loadingMetrics: false, errorLoadingMetrics: true})
-            });
-    }
-
-    _loadTopicDetails(topicId) {
-        TopicsService.getTopicDetails(topicId)
-            .then(td => {
-                let configurations = td.configurations;
-                let topicConfiguration = this.state.topicConfiguration;
-                topicConfiguration.replication.replication = td.replication;
-                topicConfiguration.others.partitions = td.partitions;
-
-                Object.keys(configurations).forEach(key => {
-                    if (key.indexOf('message') >= 0) {
-                        topicConfiguration.messages[key] = configurations[key];
-                    } else if (key.indexOf('retention') >= 0) {
-                        topicConfiguration.retention[key] = configurations[key];
-                    } else if (key.indexOf('replica') >= 0) {
-                        topicConfiguration.replication[key] = configurations[key];
-                    } else if (key.indexOf('segment') >= 0) {
-                        topicConfiguration.segment[key] = configurations[key];
-                    } else {
-                        topicConfiguration.others[key] = configurations[key];
-                    }
-                });
-
-                this.setState({
-                    brutTopicConfiguration: td.configurations,
-                    topicConfiguration,
-                    loadingConfiguration: false
-                })
-            })
-            .catch(() => {
-                this.setState({loadingConfiguration: false, errorLoadingConfiguration: true})
             });
     }
 
@@ -176,6 +130,16 @@ class Topic extends React.Component {
             });
     }
 
+    _loadTopicPartitions(topicId) {
+        TopicsService.getTopicPartitions(topicId)
+            .then(partitions => {
+                this.setState({partitions, loadingPartition: false})
+            })
+            .catch(() => {
+                this.setState({loadingPartition: false, errorLoadingPartitions: true})
+            });
+    }
+
     _startLiveMessages(topicId) {
         this.setState({
             loadingMessage: true,
@@ -206,27 +170,7 @@ class Topic extends React.Component {
         };
     }
 
-    _loadTopicPartitions(topicId) {
-        TopicsService.getTopicPartitions(topicId)
-            .then(partitions => {
-                this.setState({partitions, loadingPartition: false})
-            })
-            .catch(() => {
-                this.setState({loadingPartition: false, errorLoadingPartitions: true})
-            });
-    }
-
     /** functions */
-    _getValueType(value) {
-        if (value === 'true' || value === 'boolean')
-            return 'boolean';
-        if (+value === parseInt(value) || +value === parseFloat(value))
-            return 'number';
-        if (value === "" || value === undefined || value === null)
-            return 'null';
-        return 'string';
-    }
-
     _deleteTopic() {
         TopicsService.deleteTopic(this.state.topicId)
             .then(() => {
@@ -268,31 +212,6 @@ class Topic extends React.Component {
             });
     }
 
-    _updateTopicConfiguration() {
-        if (this.state.updatedTopicConfiguration) {
-            try {
-                let configuration = JSON.parse(this.state.updatedTopicConfiguration);
-                this.setState({
-                    topicConfiguration: {
-                        messages: {},
-                        retention: {},
-                        replication: {},
-                        segment: {},
-                        others: {}
-                    },
-                    loadingConfiguration: true,
-                    editConfigModal: false
-                });
-                TopicsService.updateTopicConfiguration(this.state.topicId, configuration)
-                    .then(() => {
-                        setTimeout(() => this._loadTopicDetails(this.state.topicId), 100);
-                    });
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
-
     _copyJSON(json) {
         const textarea = document.createElement('textarea');
         textarea.value = json;
@@ -301,6 +220,14 @@ class Topic extends React.Component {
         document.execCommand('copy');
         document.body.removeChild(textarea);
         ToastStore.success('Message content copied.')
+    }
+
+    _openSettingsModal() {
+        this.setState({settingsModal: true});
+    }
+
+    _closeSettingsModal() {
+        this.setState({settingsModal: false});
     }
 
     /** renderers */
@@ -361,76 +288,6 @@ class Topic extends React.Component {
         )
     }
 
-    _renderSettings() {
-        return (
-            <div className="topic-settings box">
-                <span className="title">Settings</span>
-                {this.state.loadingConfiguration ? <Loader/> :
-                    this.state.errorLoadingConfiguration ? <Error error="Cannot load settings."/> : (
-                        <PerfectScrollbar>
-                            {
-                                Object.keys(this.state.topicConfiguration).map((configurationGroupKey, i) => {
-                                    return (
-                                        <div className="topic-details-configurationGroup"
-                                             key={configurationGroupKey + '-' + i}>
-                                            <h5 className="topic-details-configurationGroup-title">{configurationGroupKey}</h5>
-                                            {
-                                                Object.keys(this.state.topicConfiguration[configurationGroupKey]).sort((a, b) => a < b ? -1 : 1).map((configurationKey, j) => {
-                                                    return (
-                                                        <div className="topic-details-configuration"
-                                                             key={configurationKey + '-' + j}>
-                                                        <span
-                                                            className="topic-details-configuration-key">{configurationKey}:</span>
-                                                            <span
-                                                                className={classNames('topic-details-configuration-value', this._getValueType(this.state.topicConfiguration[configurationGroupKey][configurationKey]))}>
-                                                        {this.state.topicConfiguration[configurationGroupKey][configurationKey] || "null"}
-                                                    </span>
-                                                        </div>
-                                                    )
-                                                })
-                                            }
-                                        </div>
-                                    )
-                                })
-                            }
-                        </PerfectScrollbar>
-                    )
-                }
-
-                <div className="edit-config-modal-button">
-                    <a className="waves-effect waves-light btn"
-                       onClick={() => this.setState({editConfigModal: true})}>Edit</a>
-                </div>
-
-                {this.state.editConfigModal && (
-                    <Portal>
-                        <div className="edit-config-modal">
-                            <div className="content">
-                                <div className="title">Edit configuration</div>
-                                <AceEditor
-                                    mode="json"
-                                    theme="github"
-                                    name="ace-editor"
-                                    fontSize={18}
-                                    onChange={value => this.setState({updatedTopicConfiguration: value})}
-                                    value={this.state.updatedTopicConfiguration ? this.state.updatedTopicConfiguration :
-                                        JSON.stringify(this.state.brutTopicConfiguration, null, '\t')}
-                                    editorProps={{$blockScrolling: true}}
-                                />
-                                <div className="edit-configuration-buttons">
-                                    <a className={"waves-effect waves-light btn update" + (this.state.updatedTopicConfiguration ? '' : ' disabled')}
-                                       onClick={this._updateTopicConfiguration.bind(this)}>Update</a>
-                                    <a className="waves-effect waves-light btn cancel"
-                                       onClick={() => this.setState({editConfigModal: false})}>Cancel</a>
-                                </div>
-                            </div>
-                        </div>
-                    </Portal>
-                )}
-            </div>
-        )
-    }
-
     _renderPartitions() {
         return (
             <div className="topic-partitions box">
@@ -479,13 +336,16 @@ class Topic extends React.Component {
                     <Portal>
                         <div className="add-partitions-modal">
                             <div className="content"
-                                 style={{top: this.refs['add-partition-button'].getBoundingClientRect().top - 140}}>
+                                 style={{
+                                     top: this.refs['add-partition-button'].getBoundingClientRect().top - 140,
+                                     left: this.refs['add-partition-button'].getBoundingClientRect().left
+                                 }}>
                                 <div className="input-field">
                                     <input type="text"
                                            placeholder="3"
                                            onChange={e => this.setState({partitionToAdd: e.target.value})}
                                            value={this.state.partitionToAdd}/>
-                                    <label className="active">How much partition to add</label>
+                                    <label className="active">How many partition to add</label>
                                 </div>
                                 <div className="icons">
                                 <span className="check"
@@ -513,7 +373,7 @@ class Topic extends React.Component {
                     className="topic-messages-length">{messages.length + ' message' + (messages.length > 1 ? 's' : '')}</span>
                     {messages.find(m => m.timestamp === -1) && <span className="warning"></span>}
 
-                            <Menu>
+                    <Menu>
                                 <Item label="10 messages"
                                       onClick={this._loadTopicLastMessages.bind(this, this.state.topicId, 10, null, "10")}
                                       selected={this.state.selectedFilter === '10'}/>
@@ -585,22 +445,14 @@ class Topic extends React.Component {
                     <span className="breadcrumb"><Link to="/franz-manager/topics">Topics</Link></span>
                     <span className="breadcrumb"><Link
                         to={'/franz-manager/topics/' + this.state.topicId.replace(/\./g, ',')}>{this.state.topicId}</Link></span>
-                    <span style={{flex: '1 1'}}/>
+                    <SettingsIcon className="settings-icon" width={20} onClick={this._openSettingsModal.bind(this)}/>
                     {this.state.deleteTopicButtons ?
                         <span className="confirm-delete-box">
-                            <a className="waves-effect waves-light confirm-delete-topic"
-                               onClick={this._deleteTopic.bind(this)}>
-                                Confirm
-                            </a>
-                            <a className="waves-effect waves-light cancel-delete-topic"
-                               onClick={this._closeDeleteTopicsButtons.bind(this)}>
-                                Cancel
-                            </a>
+                            <ValidIcon className="confirm-icon" width={20} fill="green" onClick={this._deleteTopic.bind(this)}/>
+                            <CancelIcon className="cancel-icon" width={20} fill="red" onClick={this._closeDeleteTopicsButtons.bind(this)}/>
                         </span> :
-                        <a className="waves-effect waves-light delete-topic-button"
-                           onClick={this._openDeleteTopicsButtons.bind(this)}>
-                            Delete topic
-                        </a>
+                        <DeleteIcon className="delete-icon" width={24}
+                                    onClick={this._openDeleteTopicsButtons.bind(this)}/>
                     }
                 </div>
 
@@ -608,14 +460,16 @@ class Topic extends React.Component {
                     <div className="left-box">
                         {this._renderMetrics()}
                         {this._renderConsumers()}
-                        {this._renderSettings()}
+                        {this._renderPartitions()}
                     </div>
 
                     <div className="right-box">
-                        {this._renderPartitions()}
                         {this._renderLastMessages()}
                     </div>
                 </div>
+
+                {this.state.settingsModal &&
+                <TopicSettingsModal topicId={this.state.topicId} close={this._closeSettingsModal.bind(this)}/>}
             </div>
         );
     }

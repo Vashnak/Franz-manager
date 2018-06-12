@@ -22,7 +22,7 @@
     "materialize-css": "^0.100.2",
     "mdi-react": "^2.0.46-hotfix.0",
     "moment": "^2.18.1",
-    "prop-types": "^15.5.10",
+    "prop-types": "^15.6.1",
     "querystring": "^0.2.0",
     "react": "^16.0.0",
     "react-ace": "^6.1.1",
