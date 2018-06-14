@@ -20,7 +20,18 @@ class Dashboard extends React.Component {
                     nodes = [];
                     edges = [];
 
-                    nodes.push({id: 'Cluster'});
+                    nodes.push({id: 'cluster'});
+                    nodes.push({
+                        id: 'big_broker',
+                        color: "rgba(0,0,0,0)"
+                    });
+                    nodes.push({
+                        id: 'big_zookeeper',
+                        color: "rgba(0,0,0,0)"
+                    });
+
+                    edges.push({from: 'big_broker', to: 'cluster', color: {color: "#007fe2"}});
+                    edges.push({from: 'big_zookeeper', to: 'cluster', color: {color: "#007fe2"}});
 
                     let serializedZookeepers = [];
 
@@ -42,9 +53,9 @@ class Dashboard extends React.Component {
                             id: "broker-" + broker.id,
                             label: brokerInfo,
                             image: kafkaImg,
-                            shape: 'image'
+                            shape: 'image',
                         });
-                        edges.push({from: "broker-" + broker.id, to: 'Cluster', length: 200});
+                        edges.push({from: "broker-" + broker.id, to: 'big_broker', length: 150});
                     });
 
                     serializedZookeepers.forEach(sz => {
@@ -52,29 +63,29 @@ class Dashboard extends React.Component {
                             id: "zookeeper-" + sz.id,
                             label: `Zookeeper \nhost: ${sz.host}\nport: ${sz.port}`,
                             image: zookeeperImg,
-                            shape: 'image'
+                            shape: 'image',
                         });
-                        edges.push({from: "zookeeper-" + sz.id, to: 'Cluster', length: 200});
+                        edges.push({from: "zookeeper-" + sz.id, to: 'big_zookeeper', length: 150});
                     });
 
-                    nodes.forEach(node1 => {
-                        nodes.forEach(node2 => {
-                            if (node1.id.includes('zookeeper') && node2.id.includes('zookeeper')
-                                || node1.id.includes('broker') && node2.id.includes('broker')) {
-                                let exist = edges.find(e => {
-                                    return (e.from === node1.id && e.to === node2.id)
-                                        || (e.from === node2.id && e.to === node1.id);
-                                });
-                                if (!exist && node1.id !== node2.id) {
-                                    edges.push({from: node1.id, to: node2.id, length: 200, color: {color: "rgba(0,0,0,0.08)"}});
-                                }
-                            }
-                        })
-                    });
+                    // nodes.forEach(node1 => {
+                    //     nodes.forEach(node2 => {
+                    //         if (node1.id.includes('zookeeper') && node2.id.includes('zookeeper')
+                    //             || node1.id.includes('broker') && node2.id.includes('broker')) {
+                    //             let exist = edges.find(e => {
+                    //                 return (e.from === node1.id && e.to === node2.id)
+                    //                     || (e.from === node2.id && e.to === node1.id);
+                    //             });
+                    //             if (!exist && node1.id !== node2.id) {
+                    //                 edges.push({from: node1.id, to: node2.id,  color: {color: "rgba(0,0,0,0)"}});
+                    //             }
+                    //         }
+                    //     })
+                    // });
 
                     const vis = new Vis.Network(document.getElementById('visualization'), {nodes, edges}, {});
                     vis.moveTo({
-                            scale: 1.5,
+                            scale: 1,
                             animation: {
                                 duration: 1000000,
                                 easingFunction: "linear"

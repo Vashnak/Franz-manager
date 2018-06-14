@@ -1,4 +1,5 @@
 import React from 'react';
+import {withRouter} from 'react-router-dom';
 import Loader from '../../components/loader/Loader';
 import Error from '../../components/error/Error';
 import TopicsService from '../../services/TopicsService';
@@ -31,7 +32,9 @@ class Topics extends React.Component {
             maxShownTopics: 40,
             topicsFilters: queryParams,
             addTopicModal: false,
-            metrics: {}
+            metrics: {},
+            sortBy: 'id',
+            reverseSort: false
         }
     }
 
@@ -46,9 +49,9 @@ class Topics extends React.Component {
         this._loadTopics();
     }
 
-    _loadTopics(){
+    _loadTopics() {
         this.setState({loadingTopics: true});
-        TopicsService.getTopics()
+        TopicsService.getTopics(true)
             .then(topics => {
                 this.setState({topics, loadingTopics: false});
             })
@@ -110,7 +113,7 @@ class Topics extends React.Component {
             }
         }
 
-        return topics.filter(topic => {
+        let filteredTopics = topics.filter(topic => {
             let topicNameFilter = true;
 
             if (filters.filterByRegexp) topicNameFilter = regexp.test(topic.id);
@@ -120,8 +123,14 @@ class Topics extends React.Component {
             const showLogs = filters.hideLogsTopics ? topic.id.substr(topic.id.length - 4, 4) !== '.log' : true;
             return topicNameFilter && showLogs;
         }).sort((a, b) => {
-            return a.id < b.id ? -1 : 1;
+            let sort = a[this.state.sortBy] < b[this.state.sortBy] ? 1 : -1;
+            if (this.state.sortBy === "id") {
+                sort = sort * -1;
+            }
+            return sort;
         });
+
+        return this.state.reverseSort ? filteredTopics.reverse() : filteredTopics;
     }
 
     _handleOpenAddTopicModalClick() {
@@ -143,7 +152,6 @@ class Topics extends React.Component {
                     this.setState({topics: [topic].concat(this.state.topics)});
                     this._closeAddTopicModal();
                 });
-            console.log("Adding topic " + this.state.addTopicModalTopicName)
         }
     }
 
@@ -183,8 +191,51 @@ class Topics extends React.Component {
         this._loadTopics();
     }
 
+    _sortBy(field) {
+        if (this.state.sortBy === field) {
+            this.setState({reverseSort: !this.state.reverseSort});
+        } else {
+            this.setState({sortBy: field, reverseSort: false});
+        }
+    }
+
+    _goToTopicView(topicId) {
+        this.props.history.push('/franz-manager/topics/' + topicId.replace(/\./g, ','));
+    }
+
+    _renderTopics(topics) {
+        return (
+            <table>
+                <thead>
+                <tr>
+                    <th className={(this.state.sortBy === "id" ? "sort " : "") + (this.state.reverseSort ? "reverse" : "")}
+                        onClick={this._sortBy.bind(this, "id")}>Topic
+                    </th>
+                    <th className={(this.state.sortBy === "partitions" ? "sort " : "") + (this.state.reverseSort ? "reverse" : "")}
+                        onClick={this._sortBy.bind(this, "partitions")}>Partitions
+                    </th>
+                    <th className={(this.state.sortBy === "replications" ? "sort " : "") + (this.state.reverseSort ? "reverse" : "")}
+                        onClick={this._sortBy.bind(this, "replications")}>Replicas
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {
+                    topics.map((topic, index) => {
+                        return <tr key={index} onClick={this._goToTopicView.bind(this, topic.id)}>
+                            <td>{topic.id}</td>
+                            <td>{topic.partitions}</td>
+                            <td>{topic.replications}</td>
+                        </tr>
+                    })
+                }
+                </tbody>
+            </table>
+        );
+    }
+
     render() {
-        const topicsToShow = this._filterTopics(this.state.topics).sort((a, b) => a.id < b.id ? -1 : 1);
+        const topicsToShow = this._filterTopics(this.state.topics);
         return (
             <div className="topics view">
                 <div className="breadcrumbs">
@@ -249,7 +300,8 @@ class Topics extends React.Component {
                         this.state.loadingTopics ? <Loader/> : (
                             this.state.errorLoadingTopics ? <Error error="Cannot load topics."/> : (
                                 <PerfectScrollbar onYReachEnd={this._onTopicListScrolled.bind(this)}>
-                                    <div className="topics-classic-view">
+                                    {this._renderTopics(topicsToShow.slice(0, this.state.maxShownTopics))}
+                                    {/*<div className="topics-classic-view">
                                         {
                                             topicsToShow.slice(0, this.state.maxShownTopics).map(topic => {
                                                 return (
@@ -260,7 +312,7 @@ class Topics extends React.Component {
                                                 )
                                             })
                                         }
-                                    </div>
+                                    </div>*/}
                                 </PerfectScrollbar>
                             )
                         )}
@@ -300,4 +352,4 @@ class Topics extends React.Component {
     }
 }
 
-export default Topics;
+export default withRouter(Topics);

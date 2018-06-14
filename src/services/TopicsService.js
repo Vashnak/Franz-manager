@@ -1,9 +1,9 @@
 import ApiService from './ApiService';
 
 export default {
-    getTopics() {
+    getTopics(shortVersion) {
         return new Promise((resolve, reject) => {
-            ApiService.requestFranzManagerApi('GET', '/topics', null, {idOnly: true})
+            ApiService.requestFranzManagerApi('GET', '/topics', null, shortVersion ? {shortVersion: true} : {idOnly: true})
                 .then(resolve)
                 .catch(reject);
         })
