@@ -3,6 +3,19 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
+    devServer: {
+        proxy: {
+            '/*.*': { // Match all URL's with period/dot
+                target: 'http://localhost:8080/',  // send to webpack dev server
+                rewrite: function (req) {
+                    req.url = 'index.html';  // Send to react app
+                }
+            }
+        },
+        historyApiFallback: {
+            disableDotRule: true
+        }
+    },
     plugins: [
         new webpack.ProvidePlugin({
             'jQuery': 'jquery',
@@ -12,11 +25,11 @@ module.exports = {
         new webpack.DefinePlugin({
             'NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'SERVER_URL': JSON.stringify(process.env.SERVER_URL),
-            'process.env.NODE_ENV': JSON.stringify('development')
+            'process.env.NODE_ENV': JSON.stringify('production')
         }),
         new webpack.optimize.UglifyJsPlugin(), //minify everything
         new webpack.optimize.AggressiveMergingPlugin(), //Merge chunks
-        new CopyWebpackPlugin([{ from: 'src/images/favicon.ico', to: 'favicon.ico' }])
+        new CopyWebpackPlugin([{from: 'src/images/favicon.ico', to: 'favicon.ico'}])
     ],
     devtool: 'eval',
     entry: {

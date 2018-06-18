@@ -81,7 +81,7 @@ class Consumer extends React.Component {
                 <div className="breadcrumbs">
                     <span className="breadcrumb"><Link to="/franz-manager/consumers">Consumers</Link></span>
                     <span className="breadcrumb"><Link
-                        to={'/franz-manager/consumers/' + this.state.consumerId.replace(/\./g, ',')}>{this.state.consumerId}</Link></span>
+                        to={'/franz-manager/consumers/' + this.state.consumerId}>{this.state.consumerId}</Link></span>
                 </div>
                 <div className="search-bar">
                     <input type="text" className="search-input-text" placeholder="Filter by topic"
@@ -100,7 +100,7 @@ class Consumer extends React.Component {
                                 return (
                                     <div className="topic-consumed box">
                                         <span className="title">{topic} <Link
-                                            to={`/franz-manager/topics/${topic.replace(/\./g, ',')}`}>Go to topic view</Link></span>
+                                            to={`/franz-manager/topics/${topic}`}>Go to topic view</Link></span>
                                         <div className="topic-consumed-partitions">
                                             <table>
                                                 <thead>

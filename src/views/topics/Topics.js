@@ -200,7 +200,7 @@ class Topics extends React.Component {
     }
 
     _goToTopicView(topicId) {
-        this.props.history.push('/franz-manager/topics/' + topicId.replace(/\./g, ','));
+        this.props.history.push('/franz-manager/topics/' + topicId);
     }
 
     _renderTopics(topics) {

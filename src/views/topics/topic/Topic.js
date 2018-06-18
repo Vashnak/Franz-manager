@@ -25,6 +25,54 @@ import Metrics from '../../../components/metrics/Metrics';
 import './Topic.scss';
 import TopicSettingsModal from "./topicSettingsModal/TopicSettingsModal";
 
+const palette = [
+    "#42a5f5",
+    "#ffa726",
+    "#ec407a",
+    "#9ccc65",
+    "#9ccc6570",
+    "#26c6da70",
+    "#66bb6a40",
+    "#ab47bc70",
+    "#ffca2840",
+    "#ffca2870",
+    "#26c6da",
+    "#ec407a70",
+    "#42a5f570",
+    "#26a69a",
+    "#ef5350",
+    "#ffca28",
+    "#ec407a40",
+    "#5c6bc0",
+    "#ef535070",
+    "#ab47bc40",
+    "#5c6bc040",
+    "#66bb6a70",
+    "#ab47bc",
+    "#29b6f670",
+    "#ff7043",
+    "#7e57c2",
+    "#9ccc6540",
+    "#ffa72640",
+    "#26c6da40",
+    "#26a69a70",
+    "#ef535040",
+    "#29b6f640",
+    "#5c6bc070",
+    "#29b6f6",
+    "#7e57c240",
+    "#42a5f540",
+    "#ffa72670",
+    "#d4e15740",
+    "#7e57c270",
+    "#ff704340",
+    "#26a69a40",
+    "#66bb6a",
+    "#d4e15770",
+    "#ff704370",
+    "#d4e157"
+];
+
 class Topic extends React.Component {
     constructor(props) {
         super(props);
@@ -276,7 +324,7 @@ class Topic extends React.Component {
                                         <div className="consumer-item collection-item"
                                              key={consumer + "-" + index}>
                                             <Link
-                                                to={`/franz-manager/consumers/${consumer.replace(/\./g, ',')}`}>{consumer}</Link>
+                                                to={`/franz-manager/consumers/${consumer}`}>{consumer}</Link>
                                         </div>
                                     )
                                 }) : <div className="no-consumers">No consumers.</div>}
@@ -286,6 +334,36 @@ class Topic extends React.Component {
                 }
             </div>
         )
+    }
+
+    _sortReplicas(replicas, leader) {
+        let replicasCopy = _.cloneDeep(replicas);
+        let result = [];
+        let leaderIndex = replicasCopy.findIndex(r => r === leader);
+        result.push(replicasCopy[leaderIndex]);
+        replicasCopy.splice(leaderIndex, 1);
+        result = result.concat(replicasCopy.sort((a, b) => b - a));
+        return result;
+    };
+
+    _notPreferredReplicaMouseEnter(enabled, e) {
+        if (enabled) {
+            let target = e.target;
+            let overlay = document.createElement('div');
+            overlay.setAttribute('id', 'replicas-overlay');
+            let rect = target.getBoundingClientRect();
+            overlay.innerHTML = `This leader is not the preferred one.`;
+            overlay.style.top = rect.top - 20;
+            overlay.style.left = rect.left + 20;
+            document.body.appendChild(overlay);
+        }
+    }
+
+    _notPreferredReplicaMouseLeave(enabled) {
+        if (enabled) {
+            let overlay = document.querySelector('#replicas-overlay');
+            document.body.removeChild(overlay);
+        }
     }
 
     _renderPartitions() {
@@ -300,24 +378,33 @@ class Topic extends React.Component {
                                 <thead>
                                 <tr>
                                     <th>partition</th>
-                                    <th>leader</th>
                                     <th>beginning offset</th>
                                     <th>end offset</th>
                                     <th>replicas</th>
-                                    <th>in sync replicas</th>
+                                    <th>in sync</th>
+                                    <th>leader</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {
                                     this.state.partitions.sort((a, b) => a.partition - b.partition).map(partition => {
+                                        let preferredReplica = partition.replicas[0];
+                                        let replicas = this._sortReplicas(partition.replicas, partition.leader);
+                                        let inSyncReplicas = this._sortReplicas(partition.inSyncReplicas, partition.leader);
+                                        let notPreferredPartition = preferredReplica !== partition.leader;
                                         return <tr key={partition.partition}
                                                    className={classNames({notSync: !this._isPartitionSync(partition)})}>
-                                            <td>{partition.partition}</td>
-                                            <td>{partition.leader}</td>
+                                            <td>{partition.partition} <span className="color"
+                                                                            style={{backgroundColor: palette[partition.partition]}}/>
+                                            </td>
                                             <td>{partition.beginningOffset}</td>
                                             <td>{partition.endOffset}</td>
-                                            <td>({partition.replicas.join(', ')})</td>
-                                            <td>({partition.inSyncReplicas.join(', ')})</td>
+                                            <td>({replicas.join(', ')})</td>
+                                            <td>({inSyncReplicas.join(', ')})</td>
+                                            <td className={classNames("leader", {"not-preferred-leader": notPreferredPartition})}
+                                                onMouseEnter={this._notPreferredReplicaMouseEnter.bind(this, notPreferredPartition)}
+                                                onMouseLeave={this._notPreferredReplicaMouseLeave.bind(this, notPreferredPartition)}>
+                                                {partition.leader} {notPreferredPartition && <span>*</span>}</td>
                                         </tr>
                                     })
                                 }
@@ -405,25 +492,32 @@ class Topic extends React.Component {
                             {messages.length > 0 ? messages.splice(0, this.state.maxMessagesToShow).map((message, index) => {
                                 return (
                                     <div className="topic-preview-item" key={message + "-" + index}>
-                                        <span
-                                            className="topic-preview-timestamp"><b>timestamp:</b> {message.timestamp === -1 ? 'unknown' : new Date(message.timestamp).toISOString()}
-                                            <CopyIcon className="copy-icon"
-                                                      onClick={this._copyJSON.bind(this, message.message)}/>
+                                        <div className="top-message-container">
+                                            <div className="color-bar"
+                                                 style={{backgroundColor: palette[message.partition]}}/>
+                                            <div className="message-info">
+                                            <span className="topic-preview-timestamp">
+                                            <b>timestamp:</b> {message.timestamp === -1 ? 'unknown' : new Date(message.timestamp).toISOString()}
+                                                <CopyIcon className="copy-icon"
+                                                          onClick={this._copyJSON.bind(this, message.message)}/>
                                             </span><br/>
-                                        <span
-                                            className="topic-preview-key"><b>key:</b> {message.key || "null"}</span><br/>
-                                        <span className="topic-preview-value"><b>value:</b></span><br/>
-                                        {
-                                            (() => {
-                                                try {
-                                                    JSON.parse(message.message);
-                                                    return <JSONPretty className="json-pretty" json={message.message}/>;
-                                                } catch (e) {
-                                                    return <pre className="json-pretty">{message.message}</pre>
-                                                    // return <span className="message">{message.message}</span>;
+                                                <span
+                                                    className="topic-preview-key"><b>key:</b> {message.key || "null"}</span><br/>
+                                                <span className="topic-preview-value"><b>value:</b></span><br/>
+                                                {
+                                                    (() => {
+                                                        try {
+                                                            JSON.parse(message.message);
+                                                            return <JSONPretty className="json-pretty"
+                                                                               json={message.message}/>;
+                                                        } catch (e) {
+                                                            return <pre className="json-pretty">{message.message}</pre>;
+                                                            // return <span className="message">{message.message}</span>;
+                                                        }
+                                                    })()
                                                 }
-                                            })()
-                                        }
+                                            </div>
+                                        </div>
                                     </div>
                                 )
                             }) : (
@@ -445,12 +539,14 @@ class Topic extends React.Component {
                 <div className="breadcrumbs">
                     <span className="breadcrumb"><Link to="/franz-manager/topics">Topics</Link></span>
                     <span className="breadcrumb"><Link
-                        to={'/franz-manager/topics/' + this.state.topicId.replace(/\./g, ',')}>{this.state.topicId}</Link></span>
+                        to={'/franz-manager/topics/' + this.state.topicId}>{this.state.topicId}</Link></span>
                     <SettingsIcon className="settings-icon" width={20} onClick={this._openSettingsModal.bind(this)}/>
                     {this.state.deleteTopicButtons ?
                         <span className="confirm-delete-box">
-                            <CancelIcon className="cancel-icon" width={20} fill="red" onClick={this._closeDeleteTopicsButtons.bind(this)}/>
-                            <ValidIcon className="confirm-icon" width={20} fill="green" onClick={this._deleteTopic.bind(this)}/>
+                            <CancelIcon className="cancel-icon" width={20} fill="red"
+                                        onClick={this._closeDeleteTopicsButtons.bind(this)}/>
+                            <ValidIcon className="confirm-icon" width={20} fill="green"
+                                       onClick={this._deleteTopic.bind(this)}/>
                         </span> :
                         <DeleteIcon className="delete-icon" width={24}
                                     onClick={this._openDeleteTopicsButtons.bind(this)}/>

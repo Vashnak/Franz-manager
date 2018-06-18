@@ -78,7 +78,7 @@ class Consumers extends React.Component {
                                             return (
                                                 <li className="consumers-item collection-item">
                                                     <Link
-                                                        to={'/franz-manager/consumers/' + consumerId.replace(/\./g, ',')}>{consumerId}</Link>
+                                                        to={'/franz-manager/consumers/' + consumerId}>{consumerId}</Link>
                                                     <span className="consumers-item-topics-number">
                                                         {Object.keys(shownConsumers[consumerId]).length + ' topic' + (Object.keys(shownConsumers[consumerId]).length > 1 ? 's' : '')}
                                                     </span>

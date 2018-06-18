@@ -22,7 +22,8 @@ class Clusters extends React.Component {
             clusterSettings: {},
             metrics: {},
             loadingMetrics: true,
-            errorLoadingMetrics: false
+            errorLoadingMetrics: false,
+            settingsFilter: ""
         }
     }
 
@@ -109,6 +110,10 @@ class Clusters extends React.Component {
         return 'string';
     }
 
+    _handleFilterChange(e) {
+        this.setState({settingsFilter: e.target.value});
+    }
+
     render() {
         const metricsTranslation = {
             MessagesInPerSec: 'Messages in',
@@ -167,55 +172,66 @@ class Clusters extends React.Component {
                                     <div className="brokers-metrics box">
                                         <span className="title">Metrics</span>
                                         <PerfectScrollbar className="brokers-metrics-scrollbar">
-                                        {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
-                                            this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> :
-                                                <Metrics fields={{
-                                                    label: 'Metric (per sec)',
-                                                    OneMinuteRate: 'Last min',
-                                                    FiveMinuteRate: 'Last 5 min',
-                                                    FifteenMinuteRate: 'Last 15 min'
-                                                }} metrics={Object.keys(this.state.metrics).map(metricKey => {
-                                                    return {
-                                                        label: metricsTranslation[metricKey],
-                                                        OneMinuteRate: this.state.metrics[metricKey].OneMinuteRate,
-                                                        FifteenMinuteRate: this.state.metrics[metricKey].FifteenMinuteRate,
-                                                        FiveMinuteRate: this.state.metrics[metricKey].FiveMinuteRate
-                                                    }
-                                                })}/>
-                                        }
+                                            {this.state.loadingMetrics || !this.state.metrics ? <Loader/> :
+                                                this.state.errorLoadingMetrics ? <Error error="Cannot load metrics."/> :
+                                                    <Metrics fields={{
+                                                        label: 'Metric (per sec)',
+                                                        OneMinuteRate: 'Last min',
+                                                        FiveMinuteRate: 'Last 5 min',
+                                                        FifteenMinuteRate: 'Last 15 min'
+                                                    }} metrics={Object.keys(this.state.metrics).map(metricKey => {
+                                                        return {
+                                                            label: metricsTranslation[metricKey],
+                                                            OneMinuteRate: this.state.metrics[metricKey].OneMinuteRate,
+                                                            FifteenMinuteRate: this.state.metrics[metricKey].FifteenMinuteRate,
+                                                            FiveMinuteRate: this.state.metrics[metricKey].FiveMinuteRate
+                                                        }
+                                                    })}/>
+                                            }
                                         </PerfectScrollbar>
                                     </div>
                                 </div>
                                 <div className="right">
                                     <div className="brokers-settings box">
-                                        <span className="title">Settings</span>
+                                        <span className="title">Settings
+                                          <div className="input-field">
+                                              <input type="text" placeholder="filter" value={this.state.filter}
+                                                     onChange={this._handleFilterChange.bind(this)}/>
+                                          </div>
+                                        </span>
                                         <PerfectScrollbar className="brokers-settings-scrollbar">
                                             <div className="brokers-settings-containers">
-                                                {Object.keys(this.state.brokersSettings).map(settingCategory => {
-                                                    return (
-                                                        <div className="brokers-settings-container">
-                                                            <h4 className="brokers-settings-container-category">{settingCategory}</h4>
+                                                {Object.keys(this.state.brokersSettings)
+                                                    .filter(configurationGroupKey => {
+                                                        return Object.keys(this.state.brokersSettings[configurationGroupKey]).find(key => key.includes(this.state.settingsFilter));
+                                                    })
+                                                    .map(settingCategory => {
+                                                        return (
+                                                            <div className="brokers-settings-container">
+                                                                <h4 className="brokers-settings-container-category">{settingCategory}</h4>
 
-                                                            <div className="brokers-settings-container-lines">
-                                                                {Object.keys(this.state.brokersSettings[settingCategory]).sort((a, b) => a < b ? -1 : 1).map(settingName => {
-                                                                    return (
-                                                                        <div
-                                                                            className="brokers-settings-container-line">
+                                                                <div className="brokers-settings-container-lines">
+                                                                    {Object.keys(this.state.brokersSettings[settingCategory])
+                                                                        .filter(key => key.includes(this.state.settingsFilter))
+                                                                        .sort((a, b) => a < b ? -1 : 1).map(settingName => {
+                                                                            return (
+                                                                                <div
+                                                                                    className="brokers-settings-container-line">
                                                     <span className="broker-settings-container-line-key">
                                                         {settingName}
                                                     </span>
-                                                                            :
-                                                                            <span
-                                                                                className={ClassNames('broker-settings-container-line-value', this._getValueType(this.state.brokersSettings[settingCategory][settingName]))}>
+                                                                                    :
+                                                                                    <span
+                                                                                        className={ClassNames('broker-settings-container-line-value', this._getValueType(this.state.brokersSettings[settingCategory][settingName]))}>
                                                             {this._reduceValueSize(this.state.brokersSettings[settingCategory][settingName] || "null")}
                                                     </span>
-                                                                        </div>
-                                                                    )
-                                                                })}
+                                                                                </div>
+                                                                            )
+                                                                        })}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )
-                                                })}
+                                                        )
+                                                    })}
                                             </div>
                                         </PerfectScrollbar>
                                     </div>
