@@ -1,0 +1,42 @@
+@import '../../constants';
+
+.clusterBar {
+  position: fixed;
+  top: 0;
+  right: 30px;
+  display: flex;
+  align-items: center;
+
+  span {
+    padding: 0 15px;
+    font-size: 16px;
+    color: #8b8b8b;
+    font-style: italic;
+    margin-top: 6px;
+    margin-left: 10px;
+  }
+
+  ul {
+    display: flex;
+    box-shadow: 0 0 15px 1px rgba(206, 206, 206, 0.5);
+
+    li {
+      padding: 10px 15px;
+      cursor: pointer;
+      background-color: white;
+      color: $primary-color;
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      &.selected {
+        text-decoration: none;
+        pointer-events: none;
+        cursor: initial;
+        background-color: $primary-color;
+        color: white;
+      }
+    }
+  }
+}

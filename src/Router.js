@@ -12,12 +12,14 @@ import TopicsView from './views/topics/Topics';
 import TopicView from './views/topics/topic/Topic';
 import ConsumersView from './views/consumers/Consumers';
 import ConsumerView from './views/consumers/consumer/Consumer';
+import ClusterBar from "./components/clusterBar/ClusterBar";
 
 const routes = () => {
     return (
         <BrowserRouter>
             <div className="body">
                 <Sidenav/>
+                <ClusterBar/>
                 <div className="views">
                     <Switch>
                         <Route exact path="/" render={() => {return <Redirect to="/franz-manager/dashboard"/>}}/>
