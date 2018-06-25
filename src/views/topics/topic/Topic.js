@@ -24,6 +24,7 @@ import Metrics from '../../../components/metrics/Metrics';
 
 import './Topic.scss';
 import TopicSettingsModal from "./topicSettingsModal/TopicSettingsModal";
+import ClustersService from "../../../services/ClustersService";
 
 const palette = [
     "#42a5f5",
@@ -197,8 +198,8 @@ class Topic extends React.Component {
         this.socketSubscription = new WebSocket(ConstantsService.apis.franzManagerApi.webSocketUrl);
 
         this.socketSubscription.onopen = () => {
-            this.socketSubscription.send("subscribe:" + topicId);
-        };
+            this.socketSubscription.send("subscribe:" + topicId + ":" + ClustersService.getSelectedClusterId());
+        }
 
         this.socketSubscription.onmessage = e => {
             let currentMessages = this.state.lastMessages;
