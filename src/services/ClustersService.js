@@ -4,13 +4,15 @@ export default {
     getClusters() {
         return new Promise((resolve, reject) => {
             if(localStorage.getItem("clusters")){
-                return resolve(JSON.parse(localStorage.getItem("clusters")));
+                resolve(JSON.parse(localStorage.getItem("clusters")));
             }
 
             ApiService.requestFranzManagerApi('GET', '/clusters')
                 .then(res => {
+                    if(!localStorage.getItem("clusters")){
+                        resolve(res);
+                    }
                     window.localStorage.setItem("clusters", JSON.stringify(res));
-                    return resolve(JSON.parse(localStorage.getItem("clusters")));
                 })
                 .catch(reject);
         })
