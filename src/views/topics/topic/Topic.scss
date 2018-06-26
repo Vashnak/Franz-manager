@@ -317,7 +317,7 @@
 
   .content {
     height: 120px;
-    width: 320px;
+    width: 360px;
     position: absolute;
     right: 55px;
     background-color: #fff;
@@ -325,6 +325,15 @@
     border-radius: 3px;
     display: flex;
     align-items: center;
+
+    .input-field {
+      flex: 1 1;
+    }
+
+    .error {
+      color: red;
+      font-size: 11px;
+    }
 
     .icons {
       width: 90px;

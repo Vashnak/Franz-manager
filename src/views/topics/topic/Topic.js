@@ -250,15 +250,17 @@ class Topic extends React.Component {
         }
     }
 
-    _addPartition(quantity) {
-        this.setState({
-            addPartitionModal: false,
-            loadingPartition: true
-        });
-        TopicsService.addTopicPartitions(this.state.topicId, quantity)
-            .then(() => {
-                setTimeout(() => this._loadTopicPartitions(this.state.topicId), 500);
+    _addPartition(totalPartitions) {
+        if(!totalPartitions > this.state.partitions.length) {
+            this.setState({
+                addPartitionModal: false,
+                loadingPartition: true
             });
+            TopicsService.addTopicPartitions(this.state.topicId, totalPartitions - this.state.partitions.length)
+                .then(() => {
+                    setTimeout(() => this._loadTopicPartitions(this.state.topicId), 500);
+                });
+        }
     }
 
     _copyJSON(json) {
@@ -417,7 +419,7 @@ class Topic extends React.Component {
 
                 <div className="add-partition-button" ref="add-partition-button">
                     <a className="waves-effect waves-light btn"
-                       onClick={() => this.setState({addPartitionModal: true})}>Add</a>
+                       onClick={() => this.setState({addPartitionModal: true})}>Update</a>
                 </div>
 
                 {this.state.addPartitionModal && (
@@ -430,10 +432,13 @@ class Topic extends React.Component {
                                  }}>
                                 <div className="input-field">
                                     <input type="text"
-                                           placeholder="3"
+                                           placeholder={this.state.partitions.length}
                                            onChange={e => this.setState({partitionToAdd: e.target.value})}
                                            value={this.state.partitionToAdd}/>
-                                    <label className="active">How many partition to add</label>
+                                    <label className="active">How many partition do you want ?</label>
+                                    {this.state.partitionToAdd <= this.state.partitions.length && <span className="error">
+                                        Please set a number greater than {this.state.partitions.length}.
+                                    </span>}
                                 </div>
                                 <div className="icons">
                                 <span className="check"
