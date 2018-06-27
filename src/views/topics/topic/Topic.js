@@ -251,7 +251,7 @@ class Topic extends React.Component {
     }
 
     _addPartition(totalPartitions) {
-        if(!totalPartitions > this.state.partitions.length) {
+        if(totalPartitions > this.state.partitions.length) {
             this.setState({
                 addPartitionModal: false,
                 loadingPartition: true
