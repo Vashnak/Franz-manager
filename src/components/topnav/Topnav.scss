@@ -1,0 +1,97 @@
+
+.top-header {
+  @include center();
+  align-items: center;
+  min-height: 112px;
+  max-height: 112px;
+  background: map_get($layout-colors, nav-bars);
+  padding-right: 48px;
+
+  @if $theme-topnav-shadow {
+    box-shadow: 0 30px 60px rgba(map_get($layout-colors, 8), .3);
+  }
+
+  .logo {
+    @include center(true, true);
+    min-width: 120px;
+    min-height: 112px;
+    max-height: 112px;
+    background: linear-gradient(135deg, map_get($theme-colors, 1), map_get($theme-colors, 2));
+
+    svg {
+      fill: map_get($layout-colors, 7);
+    }
+  }
+  .breadcrumb {
+    @include center();
+    padding-left: 64px;
+
+    .item {
+      position: relative;
+      color: map_get($text-colors, breadcrumb-item);
+      font: map_get($fonts, breadcrumb-item);
+      padding-right: 24px;
+      margin-right: 24px;
+
+      &:after {
+        content: "\002F";
+        position: absolute;
+        right: 0;
+      }
+    }
+  }
+}
+
+.context-actions {
+  position: absolute;
+  z-index: 99;
+  top: 32px;
+  right: 352px;
+
+  .address {
+    max-width: 310px;
+    height: 48px;
+    margin-left: 16px;
+    border-radius: $theme-inline-radius;
+    background: map_get($layout-colors, 5);
+    overflow: hidden;
+
+    &.zookeeper .key {
+      color: map_get($theme-colors, zookeeper);
+    }
+    &.kafka .key {
+      color: map_get($theme-colors, kafka);
+    }
+
+    &:hover {
+      .key {
+        opacity: 0;
+        text-indent: -150px;
+        padding: 0;
+        margin: 0;
+        transition-delay: 0ms;
+      }
+    }
+
+    .key {
+      font: map_get($fonts, address);
+      text-transform: uppercase;
+      padding-left: 16px;
+      @include transition();
+      transition-property: opacity, text-indent, padding, margin;
+      margin-right: 16px;
+      transition-delay: 300ms;
+    }
+    .value {
+      font: map_get($fonts, code);
+      overflow: hidden;
+      padding-left: 16px;
+      text-overflow: ellipsis;
+    }
+  }
+
+  button {
+    height: 48px;
+    margin-left: 16px;
+  }
+}

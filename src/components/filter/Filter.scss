@@ -1,0 +1,28 @@
+.filter.component {
+  position: relative;
+
+
+
+  input[type="button"] {
+    border: none;
+    padding: 0 16px;
+    font-size: 18px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    &.active {
+      background-color: map_get($theme-colors, 1);
+      color: map_get($layout-colors, 5);
+    }
+  }
+
+  .reg{
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}

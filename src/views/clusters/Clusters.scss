@@ -1,0 +1,37 @@
+
+.scrollbar {
+  @include scroll();
+}
+
+.settings-list {
+
+  .settings-item {
+    height: 28px;
+    padding: 0 8px;
+
+    .settings-line-key {
+      color: map_get($text-colors, code-key);
+      font: map_get($fonts, code);
+    }
+    .settings-line-string {
+      color: map_get($text-colors, code-string);
+      font: map_get($fonts, code);
+    }
+    .settings-line-boolean {
+      color: map_get($text-colors, code-boolean);
+      font: map_get($fonts, code);
+    }
+    .settings-line-value, .settings-line-number {
+      color: map_get($text-colors, code-value);
+      font: map_get($fonts, code);
+    }
+    .settings-line-null {
+      color: map_get($text-colors, code-null);
+      font: map_get($fonts, code);
+    }
+
+    &:hover {
+      background: map_get($layout-colors, 7);
+    }
+  }
+}

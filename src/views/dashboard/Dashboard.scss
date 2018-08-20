@@ -1,0 +1,109 @@
+.dashboard-view {
+  margin: -$theme-content-padding;
+  //position: relative;
+
+  .cluster-stats {
+    height: 112px;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    right: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 60px;
+
+    .cluster-stat {
+      display: flex;
+      align-items: center;
+      margin-left: 60px;
+
+      .text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+
+        .value {
+          display: flex;
+          align-items: center;
+          color: map_get($text-colors, body);
+          font-style: italic;
+          font-family: 'Roboto Condensed', sans-serif;
+          font-size: 30px;
+          font-weight: 700;
+
+          .circle {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+          }
+        }
+
+        .label {
+          color: map_get($layout-colors, 2);
+          font-weight: 700;
+          font-family: 'Roboto Condensed', sans-serif;
+          font-style: italic;
+          font-size: 15px;
+        }
+      }
+
+      .icon {
+        margin-left: 20px;
+
+        svg {
+          fill: map_get($layout-colors, 2);
+          height: 40px;
+          width: 40px;
+        }
+
+        &.kafka {
+          margin-left: 16px;
+        }
+      }
+    }
+  }
+
+  .cluster-list {
+    position: absolute;
+    top: calc(112px + 60px);
+    right: 60px;
+
+    .cluster-item {
+      border-radius: 5px;
+      margin-top: 4px;
+      width: 150px;
+      height: 50px;
+      background-color: rgba(#454551, 0.4);
+      padding: 0 24px;
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+      color: #eaeaff;
+
+      &.selected {
+        background: linear-gradient(135deg, map_get($theme-colors, 1), map_get($theme-colors, 2));
+        color: map_get($layout-colors, 7);
+      }
+
+      .cluster-name {
+        font-size: 17px;
+        font-weight: bold;
+        font-style: italic;
+        color: inherit;
+      }
+
+      .cluster-status {
+      }
+    }
+  }
+
+  .circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #00e575;
+    border: 2px solid #474755;
+  }
+}

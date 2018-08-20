@@ -1,0 +1,90 @@
+
+@mixin hide(){
+  opacity: 0;
+  pointer-events: none;
+}
+
+@mixin show(){
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+@mixin scale($size){
+  width: $size;
+  height: $size;
+}
+
+@mixin center($vertical: true, $horizontal: false){
+  display: flex;
+  flex-direction: row;
+
+  @if($horizontal){
+    justify-content: center;
+  }
+  @if($vertical){
+    align-items: center;
+  }
+}
+
+@mixin elevate(){
+  box-shadow: 8px 8px 0px  rgba(map_get($layout-colors, 8), .5);
+}
+
+
+// Perfect scrollbar  styles
+@mixin scroll($height: 100vh){
+  &.ps{
+    position: relative;
+    overflow: hidden;
+    height: initial;
+    max-height: $height;
+    padding-right: 12px;
+    flex: 1;
+  }
+
+  &:hover .ps__rail-y .ps__thumb-y{
+    opacity: 1;
+    transition-delay: 0s
+  }
+
+  &:hover .ps__rail-y{
+    background: none;
+  }
+
+  .ps__rail-y{
+    &:hover .ps__thumb-y, &:focus .ps__thumb-y, &:active .ps__thumb-y,
+    .ps__thumb-y:hover, .ps__thumb-y:focus, .ps__thumb-y:active{
+      background: rgba(black, .5);
+    }
+
+    .ps__thumb-y{
+      width: 6px;
+      border-radius: 3px;
+      background: rgba(black, .2);
+      opacity: 1;
+      @include transition();
+    }
+  }
+
+  .ps__rail-y{
+    position: absolute;
+    right: 0px;
+    opacity: 1;
+    z-index: 100;
+
+    .ps__thumb-y{
+      position: absolute;
+      @include transition();
+      transition-delay: 1s;
+    }
+  }
+}
+
+@mixin fit-content(){
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}

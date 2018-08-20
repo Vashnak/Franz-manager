@@ -1,0 +1,187 @@
+.topic-item-view {
+
+  .left-column{
+    min-width: 540px;
+  }
+
+  .column.darker {
+    background: map_get($layout-colors, 7);
+    margin: #{-$theme-content-padding}  #{-$theme-content-padding} #{-$theme-content-padding} 0;
+    padding: 0 $theme-content-padding/2;
+    position: relative;
+
+    @if($theme-message-shadow){
+      &:after{
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        background: linear-gradient(to bottom, map_get($layout-colors, 8) 0%, transparent 5%, transparent 95%, map_get($layout-colors, 8) 100%);
+        pointer-events: none;
+        opacity: .5;
+      }
+    }
+
+    .message-fetch-type-wrapper{
+      position: absolute;
+      bottom: 0px;
+      right: 0;
+      z-index: 101;
+      display: flex;
+      align-items: center;
+
+      .dropdown-menu{
+        margin-left: 0;
+        .dropdown-menu-trigger{
+          background: linear-gradient(to right, map_get($theme-colors, 1), map_get($theme-colors, 2));
+          box-shadow: 0 -20px 40px 0 rgba(map_get($theme-colors, 1), .16);
+          color: map_get($layout-colors, 7);
+
+          .mdi-chevron-down{
+            color: map_get($layout-colors, 7);
+          }
+        }
+      }
+
+      .message-live-toggle{
+        color: map_get($theme-colors, 1);
+        background: map_get($layout-colors, 7);
+        padding: 0;
+        @include scale(48px);
+
+        .mdi{
+          color: map_get($theme-colors, 1);
+        }
+      }
+
+      .message-fetch-title{
+        display: flex;
+        flex-direction: column;
+        min-width: 300px;
+
+        .title{
+          font: map_get($fonts, message-fecth-title);
+          color: map_get($layout-colors, 7);
+        }
+        .stats{
+          font: map_get($fonts, message-fecth-stats);
+          color: map_get($layout-colors, 7);
+        }
+      }
+
+      .message-fetch-type-switch{
+
+        .dropdown-menu-trigger{
+          color: map_get($layout-colors, 6);
+
+          .mdi{
+            color: map_get($layout-colors, 6);
+          }
+        }
+
+      }
+    }
+
+    .messages-list {
+      padding-top: $theme-content-padding;
+      padding-bottom: calc(80px + #{$theme-content-padding} * 2);
+      padding-left: $theme-content-padding;
+      @include fit-content();
+
+      section {
+        padding: 0;
+        @include transition();
+        opacity: .8;
+        background: map_get($layout-colors, section);
+
+        &:hover{
+          opacity: 1;
+        }
+
+        header {
+          background: map_get($layout-colors, 8);
+          height: 56px;
+          @include center();
+          padding: 0 0 0 24px;
+
+          .key-message{
+            font: map_get($fonts, key-message);
+          }
+
+          .partition{
+            font: map_get($fonts, message-partition);
+            color: map_get($text-colors, message-partition);
+            text-transform: uppercase;
+            height: 100%;
+            @include center(true, true);
+            border-top-right-radius: $theme-section-radius;
+            padding: 0 16px;
+          }
+        }
+
+        .timestamp-wrapper {
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
+          .timestamp {
+            font: map_get($fonts, message-timestamp);
+            color: map_get($text-colors, message-timestamp);
+
+            .milliseconds{
+              font: inherit;
+              color: map_get($text-colors, message-timestamp-ms);
+            }
+          }
+        }
+
+        .simple-message{
+          font: map_get($fonts, code);
+          line-height: 21px;
+          padding: 0 24px 24px 24px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .json-pretty {
+          font: map_get($fonts, code);
+          line-height: 21px;
+          padding: 0 24px 16px 16px;
+          color: map_get($text-colors, code-punctuation);
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          .json-key {
+            color: map_get($text-colors, code-key);
+            font: map_get($fonts, code);
+          }
+          .json-string {
+            color: map_get($text-colors, code-string);
+            font: map_get($fonts, code);
+          }
+          .json-value {
+            color: map_get($text-colors, code-value);
+            font: map_get($fonts, code);
+          }
+        }
+
+      }
+    }
+  }
+
+  .partition-datatable, .messages-list {
+    @include scroll();
+  }
+
+  .consumer-list {
+    padding: 0 8px;
+
+    button {
+      height: 32px;
+      background: map_get($layout-colors, 5);
+      margin: 0 8px 8px 0;
+
+    }
+  }
+}

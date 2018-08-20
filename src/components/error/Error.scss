@@ -1,0 +1,21 @@
+.error{
+  p{
+    padding: 0 8px;
+    margin-bottom: 16px;
+
+    &.riddle{
+      font: map_get($fonts, riddle);
+      color: map_get($layout-colors, 2);
+    }
+  }
+
+  input, button{
+    background: map_get($layout-colors, 5);
+  }
+
+  button{
+    height: 48px;
+    background: map_get($layout-colors, 5);
+    margin: 0 16px;
+  }
+}

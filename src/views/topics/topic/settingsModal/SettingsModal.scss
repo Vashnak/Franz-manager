@@ -1,0 +1,50 @@
+.settingsModal.modal {
+  section {
+    height: 70%;
+    max-height: 650px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    width: 600px;
+    flex-direction: column;
+
+    .ps__rail-y {
+      right: 10px;
+    }
+  }
+
+  .settings-list {
+    h4 {
+      display: block;
+      padding: 0 8px;
+      margin-bottom: 16px;
+
+      &.filter {
+        padding: 0 8px;
+        align-items: center;
+
+        input {
+          background: map_get($layout-colors, 5);
+
+          &.regex {
+            letter-spacing: 3px;
+          }
+        }
+
+      }
+    }
+  }
+  input.setting-edit {
+    height: calc(100% - 2px);
+    text-align: right;
+    background-color: map_get($layout-colors, 7);
+    padding-right: 8px;
+    font: map_get($fonts, code);
+
+    &:focus {
+      box-shadow: none;
+    }
+    //padding: 5px;
+    //border: solid map_get($layout-colors, 4) 1px;
+  }
+}

@@ -1,0 +1,63 @@
+.topics-view {
+  .topic-datatable {
+    @include scroll();
+
+    .add-topic{
+      z-index: 999;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: map_get($theme-colors, 1);
+
+
+      .mdi{
+        color: map_get($layout-colors, 8);
+        &:before{
+          font-size: 32px;
+        }
+      }
+
+    }
+  }
+
+  .folder-icon, .subtree-icon {
+    fill: map_get($layout-colors, 3);
+  }
+
+  .folder-stat {
+    font: map_get($fonts, list-item-stat);
+    color: map_get($text-colors, list-item-stat);
+    margin-left: 12px;
+  }
+
+  .filtered {
+    &:after {
+      margin-left: 8px;
+      content: "\25BE";
+    }
+
+    &.reverse:after {
+      content: "\25B4";
+    }
+  }
+
+  .modal h2 {
+    @extend .danger;
+  }
+
+  .delete-topic-list {
+    .item {
+      line-height: 24px;
+    }
+  }
+
+  .bulk-delete-confirmation {
+    .bad-input {
+      border: solid map_get($theme-colors, danger) 1px;
+    }
+
+    .good-input {
+      border: solid map_get($theme-colors, 1) 1px;
+    }
+  }
+}

@@ -1,0 +1,21 @@
+.topic-consumed{
+  h4{
+    text-transform: initial;
+  }
+  a{
+    color: map_get($theme-colors, 1);
+    text-decoration: none;
+
+    &:hover{
+      text-decoration: underline;
+    }
+  }
+
+  .topic-lag{
+    font: inherit;
+
+  }
+}
+.topic-consumed-list{
+  @include scroll();
+}

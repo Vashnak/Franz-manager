@@ -1,0 +1,22 @@
+
+.consumers-list {
+  @include scroll();
+
+  .consumer-item{
+    height: 28px;
+    padding-left: 8px;
+
+    .list-item-stat{
+      font: map_get($fonts, list-item-stat);
+      color: map_get($text-colors, list-item-stat);
+      width: 120px;
+      text-align: right;
+      margin-right: 12px;
+    }
+
+
+    &:hover{
+      background: map_get($layout-colors, 7);
+    }
+  }
+}

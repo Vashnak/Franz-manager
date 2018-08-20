@@ -1,0 +1,17 @@
+.loader{
+  min-height: 64px;
+
+  .grid {
+    @include center(true, true);
+    background: rgba(map_get($layout-colors, 8), .5);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+
+    svg {
+      fill: map_get($theme-colors, 1);
+    }
+  }
+}

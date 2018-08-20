@@ -1,0 +1,36 @@
+
+.dropdown-menu{
+
+  .dropdown-menu-trigger{
+    color: map_get($text-colors, button-dropdown);
+    background: map_get($layout-colors, 5);
+    min-width: 240px;
+
+    .mdi{
+      color: map_get($text-colors, button-dropdown);
+    }
+
+    &:hover{
+      background: rgba(map_get($layout-colors, 5), .8);
+    }
+    &:active, &:focus{
+      background: rgba(map_get($layout-colors, 5), .5);
+    }
+  }
+
+  .dropdown-menu-content{
+    background: map_get($layout-colors, 5);
+
+    .dropdown-menu-item{
+      @include transition();
+      color: map_get($text-colors, button-dropdown);
+
+      &:hover, &.selected{
+        color: map_get($theme-colors, 1);
+      }
+      &:active{
+        color: map_get($theme-colors, 1);
+      }
+    }
+  }
+}

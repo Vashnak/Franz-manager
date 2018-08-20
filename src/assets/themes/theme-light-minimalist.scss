@@ -1,0 +1,119 @@
+/* MAIN CONFIGURATION - COLOR PALETTES */
+$layout-colors: (
+        1 : #333,
+        2 : #444,
+        3 : #666666,
+        4 : #cccccc,
+        5 : #f0f0f0,
+        6 : #f0f0f0,
+        7 : #fafafa,
+        8 : #fff,
+        section: #fff,
+        nav-bars: #fff
+);
+
+$theme-colors: (
+        1 : #111,
+        2 : #666,
+        3 : #999,
+        zookeeper : #00b3ba,
+        kafka : #ff62c1,
+        danger: #ff6751
+);
+
+$dashboard-colors: (
+        background: #e0e0e0,
+        default-hexagone-bc: #e6e6e6,
+        default-hexagone-border:#fff,
+        adjacent-hexagone-bc:#ececec,
+        adjacent-hexagone-border:#fff,
+        broker-color: #ff62c1,
+        broker-contrast: #fff,
+        zookeeper-color: #00b3ba,
+        disabled-background: #efefef,
+        disabled-border: #fff,
+        disabled-color: #aaa
+);
+
+/* FONT CONFIGURATION */
+$families: (
+        primary: "Roboto",
+        accent: 'Roboto',
+        code: "Inconsolata"
+);
+
+
+/* FONT CONFIGURATION */
+$fonts: (                                         //Weight, Size, Family, Style
+        body:                                     font(regular, normal, primary),
+  // TABLE
+        thead:                                    font(bold, small, accent),
+  // FORMS
+        input:                                    font(regular, normal, primary),
+        input-placeholder:                        font(regular, normal, primary, italic),
+        switch-value:                             font(bold, small, accent),
+  // BUTTONS
+        button:                                   font(semibold, very-big, accent),
+        button-dropdown:                          font(semibold, very-big, accent),
+        button-outline:                           font(semibold, very-big, accent),
+  // HEADINGS
+        h1:                                       font(semibold, title, accent),
+        h2:                                       font(semibold, enormous, accent),
+        h3:                                       font(semibold, normal, accent),
+        h4:                                       font(semibold, normal, primary),
+        subtitle:                                 "Roboto",
+        breadcrumb-item:                          font(regular, very-big, accent),
+        address:                                  font(semibold, normal, accent),
+  //MESSAGE FETCH WRAPPER
+        message-fecth-title:                      font(bold, very-huge, accent),
+        message-fecth-stats:                      font(regular, normal, primary),
+  //MESSAGE JSON
+        code:                                     font(regular, normal, code),
+        key-message:                              font(medium, normal, primary),
+        message-timestamp:                        font(regular, small, primary, italic),
+        message-partition:                        font(bold, small, primary, italic),
+  // SIMPLE LIST
+        list-item-stat:                           font(regular, normal, primary, italic),
+  //OTHER
+        riddle:                                   font(regular, big, accent)
+);
+
+$text-colors: (
+        body: #332e2e,
+        h1: map_get($theme-colors, 1),
+        h2: #332e2e,
+        h3: map_get($theme-colors, 1),
+        h4: #332e2e,
+        breadcrumb-item: map_get($layout-colors, 4),
+        button-dropdown: map_get($layout-colors, 2),
+        sidebar-links: map_get($layout-colors, 3),
+        sidebar-link-selected: map_get($theme-colors, 1),
+        thead: map_get($layout-colors, 4),
+        input: #332e2e,
+        input-placeholder: map_get($layout-colors, 4),
+        switch-label: #332e2e,
+        code-punctuation: rgba(map_get($theme-colors, 3), .5),
+        code-string: #199441,
+        code-null: #515958,
+        code-key: map_get($theme-colors, 3),
+        code-value: #258ee3,
+        message-timestamp: map_get($layout-colors, 4),
+        message-timestamp-ms: map_get($theme-colors, 3),
+        message-partition: map_get($layout-colors, 6),
+        list-item-stat: map_get($theme-colors, 1)
+);
+
+/*  LAYOUT CONFIGURATION */
+$theme-base-fontsize: 13px;
+
+$theme-topnav-shadow: false;
+$theme-sidebar-shadow: false;
+$theme-message-shadow: false;
+
+$theme-content-padding: 1px; // HAS TO BE ONE NUMBER IN PX
+$theme-section-padding: 16px;
+$theme-section-vertical-space: 1px;
+$theme-grid-gutter-size: 1px;
+
+$theme-inline-radius: 0px;
+$theme-section-radius: 0px;
