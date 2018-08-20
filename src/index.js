@@ -3,7 +3,10 @@ import ReactDOM from 'react-dom';
 import {AppContainer} from 'react-hot-loader'
 import Router from './Router';
 
+import 'mdi/css/materialdesignicons.css';
+import 'react-perfect-scrollbar/dist/css/styles.min.css'
 import './core.scss';
+
 import ThemesStore from "./stores/ThemesStore";
 
 (function(elmProto){

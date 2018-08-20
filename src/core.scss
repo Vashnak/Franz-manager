@@ -1,9 +1,5 @@
 $mdi-font-path: "/node_modules/mdi/fonts" !default;
 
-@import '../node_modules/react-perfect-scrollbar/dist/css/styles.css';
-@import '../node_modules/mdi/scss/materialdesignicons.scss';
-@import '../node_modules/font-face-mixin/_fontface.scss';
-
 @import "assets/scss/constants";
 @import "assets/scss/animations";
 @import "assets/scss/mixins";
