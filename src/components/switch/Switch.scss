@@ -1,0 +1,64 @@
+.switch-wrapper {
+  display: flex;
+  align-items: center;
+
+  .switch-label {
+    margin-right: 16px;
+    color: map_get($text-colors, switch-label);
+    font-size: inherit;
+  }
+
+  .switch {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    height: 24px;
+    line-height: 24px;
+    width: 56px;
+    border-radius: 12px;
+    @include transition();
+    background: map_get($layout-colors, 5);
+
+    .switch-value {
+      position: absolute;
+      top: 50%;
+      font: map_get($fonts, switch-value);
+      @include transition();
+      transition-property: left, background, transform;
+
+      // OFF STATE
+      left: calc(100% - 10px);
+      transform: translate(-100%, -50%);
+      color: map_get($layout-colors, 2);
+    }
+
+    .switch-handle{
+      @include scale(14px);
+      @include transition();
+      transition-property: left, background, transform;
+      position: absolute;
+      top: 5px;
+
+      // OFF STATE
+      background: map_get($layout-colors, 2);
+      left: 5px;
+    }
+
+    &.on {
+      background: map_get($theme-colors, 1);
+
+      .switch-value {
+        left: 10px;
+        transform: translate(0%, -50%);
+        color: map_get($layout-colors, 7);
+      }
+
+      .switch-handle{
+        background: map_get($layout-colors, 7);
+        left: calc(100% - 5px);
+        transform: translateX(-100%);
+      }
+    }
+
+  }
+}

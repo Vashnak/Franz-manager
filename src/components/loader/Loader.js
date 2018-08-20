@@ -1,24 +1,26 @@
 import React from 'react';
 
-import './Loader.scss';
+import {LoaderIcon} from "../../services/SvgService";
 
 class Loader extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {};
+
+        if(typeof(props.width) !== 'undefined'){
+            this.state.width = props.width;
+        } else{
+            this.state.width = 64;
+        }
+
+    }
+
     render() {
         return (
-            <div className="loader">
-                <div className="sk-fading-circle">
-                    <div className="sk-circle1 sk-circle"/>
-                    <div className="sk-circle2 sk-circle"/>
-                    <div className="sk-circle3 sk-circle"/>
-                    <div className="sk-circle4 sk-circle"/>
-                    <div className="sk-circle5 sk-circle"/>
-                    <div className="sk-circle6 sk-circle"/>
-                    <div className="sk-circle7 sk-circle"/>
-                    <div className="sk-circle8 sk-circle"/>
-                    <div className="sk-circle9 sk-circle"/>
-                    <div className="sk-circle10 sk-circle"/>
-                    <div className="sk-circle11 sk-circle"/>
-                    <div className="sk-circle12 sk-circle"/>
+            <div className="grid-wrapper loader">
+                <div className="grid">
+                     <LoaderIcon width={this.state.width} />
                 </div>
             </div>
         );

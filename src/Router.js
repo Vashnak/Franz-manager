@@ -12,25 +12,31 @@ import TopicsView from './views/topics/Topics';
 import TopicView from './views/topics/topic/Topic';
 import ConsumersView from './views/consumers/Consumers';
 import ConsumerView from './views/consumers/consumer/Consumer';
-import ClusterBar from "./components/clusterBar/ClusterBar";
+import Topnav from "./components/topnav/Topnav";
 
 const routes = () => {
     return (
         <BrowserRouter>
-            <div className="body">
-                <Sidenav/>
-                <ClusterBar/>
-                <div className="views">
-                    <Switch>
-                        <Route exact path="/" render={() => {return <Redirect to="/franz-manager/dashboard"/>}}/>
-                        <Route exact path="/franz-manager" render={() => {return <Redirect to="/franz-manager/dashboard"/>}}/>
-                        <Route exact path="/franz-manager/dashboard" component={DashboardView}/>
-                        <Route exact path="/franz-manager/cluster" component={ClusterView}/>
-                        <Route exact path="/franz-manager/topics" component={TopicsView}/>
-                        <Route exact path="/franz-manager/topics/:topicId" component={TopicView}/>
-                        <Route exact path="/franz-manager/consumers" component={ConsumersView}/>
-                        <Route exact path="/franz-manager/consumers/:consumerId" component={ConsumerView}/>
-                    </Switch>
+            <div className="document-wrapper">
+                <Topnav/>
+                <div className="page-wrapper">
+                    <Sidenav/>
+                    <div className="content-wrapper">
+                        <Switch>
+                            <Route exact path="/" render={() => {
+                                return <Redirect to="/franz-manager/dashboard"/>
+                            }}/>
+                            <Route exact path="/franz-manager" render={() => {
+                                return <Redirect to="/franz-manager/dashboard"/>
+                            }}/>
+                            <Route exact path="/franz-manager/dashboard" component={DashboardView}/>
+                            <Route exact path="/franz-manager/cluster" component={ClusterView}/>
+                            <Route exact path="/franz-manager/topics" component={TopicsView}/>
+                            <Route exact path="/franz-manager/topics/:topicId" component={TopicView}/>
+                            <Route exact path="/franz-manager/consumers" component={ConsumersView}/>
+                            <Route exact path="/franz-manager/consumers/:consumerId" component={ConsumerView}/>
+                        </Switch>
+                    </div>
                 </div>
             </div>
         </BrowserRouter>

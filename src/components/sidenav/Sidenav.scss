@@ -1,67 +1,82 @@
-@import '../../constants';
-
-.sidenav {
-  height: 100%;
+.sidebar {
+  width: 120px;
+  background: map_get($layout-colors, nav-bars);
+  padding-top: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   position: relative;
-  margin-right: 30px;
 
-  .sidenav-indicator {
-    transition: top 150ms;
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 80px;
-    width: 5px;
-    background-color: $primary-color;
+  @if $theme-sidebar-shadow {
+    box-shadow: 30px 0 60px rgba(map_get($layout-colors, 8), .3);
   }
 
   .sidenav-items {
     display: flex;
     flex-direction: column;
-    width: 160px;
+    align-items: center;
 
     .sidenav-item {
+      position: relative;
       cursor: pointer;
-      width: 160px;
-      height: 113px;
-      margin-top: 30px;
-      text-align: center;
+      width: 120px;
+      height: 120px;
+      color: map_get($text-colors, sidebar-links);
+      @include center(true, true);
       display: flex;
       flex-direction: column;
+      align-items: center;
 
-      .sidenav-item-icon svg {
-        height: 40px;
-        width: 40px;
+      .label {
+        display: block;
+        margin-top: 8px;
+        color: map_get($text-colors, sidebar-links);
+      }
 
-        path {
-          fill: $grey;
+      svg {
+        fill: map_get($text-colors, sidebar-links);
+      }
+
+      &.selected {
+        svg {
+          fill: map_get($text-colors, sidebar-link-selected);
+        }
+        .label {
+          color: map_get($text-colors, sidebar-link-selected);
         }
       }
+    }
+  }
 
-      .sidenav-item-label {
-        margin-top: 20px;
-        color: $dark-grey;
-        font-weight: 400;
-      }
+  .theme-menu {
+    padding: 8px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
 
-      &:after {
-        content: '.';
-        color: rgba(0,0,0,0);
-        height: 1px;
-        display: inline-block;
-        width: 80%;
-        margin-left: 10%;
-        margin-top: 30px;
-        background-color: $grey;
-      }
-
-      &.selected svg path {
-        fill: $primary-color;
-      }
+    .dropdown-menu-trigger {
+      min-width: 100% !important;
+      font-size: 16px !important;
+      padding-right: 0 !important;
+      border-radius: 0;
     }
 
-    .sidenav-item:last-child:after {
-      background-color: rgba(0, 0, 0, 0);
+    .dropdown-menu-content {
+      left: 8px;
+      width: 160px;
+    }
+  }
+
+  .themes {
+    padding: 5px;
+
+    .theme {
+      width: 100%;
+      padding: 5px 0;
+      cursor: pointer;
+      text-align: center;
+      display: block;
     }
   }
 }

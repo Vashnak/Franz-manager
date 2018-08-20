@@ -1,11 +1,12 @@
 import React, {Component} from 'react';
-
-import './ClusterBar.scss';
 import ClustersService from "../../services/ClustersService";
+import Menu from '../menu/Menu';
+import Option from '../menu/option/Option';
 
 class ClusterBar extends Component {
     constructor(props) {
         super(props);
+        this.clusterSelect = React.createRef();
 
         this.state = {
             selected: null,
@@ -28,22 +29,28 @@ class ClusterBar extends Component {
             })
     }
 
-    _selectCluster(clusterName){
-        ClustersService.setSelectedClusterId(clusterName);
+    _changeCluster(cluster) {
+        this.setState({selected: cluster});
+        ClustersService.setSelectedClusterId(cluster);
         window.location.reload(true);
     }
 
     render() {
         return (
-            <div className="clusterBar">
-                <span>Current cluster: </span>
-                <ul>
-                    {this.state.clusters.map(cluster => {
-                        return <li onClick={this._selectCluster.bind(this, cluster.name)}
-                            className={this.state.selected === cluster.name ? "selected" : ""}>{cluster.name}</li>
-                    })}
-                </ul>
-            </div>
+            <Menu label={'Cluster ' + this.state.selected} selected={this.state.selected} ref={this.clusterSelect}
+                  onChange={this._changeCluster.bind(this)}>
+                {this.state.clusters.map(cluster => {
+                    return <Option
+                        onChange={this.clusterSelect.current._selectOption.bind(this.clusterSelect.current)}
+                        value={cluster.name}
+                        ref={cluster.name}
+                        key={cluster.name}
+                        selected={this.state.selected}>
+                        Cluster {cluster.name}
+                    </Option>;
+                })}
+            </Menu>
+
         );
     }
 }

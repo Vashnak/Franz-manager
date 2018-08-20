@@ -1,109 +1,31 @@
-$fa-font-path: "../node_modules/font-awesome/fonts";
-@import "../node_modules/font-awesome/scss/font-awesome.scss";
-@import "./libs/materialize/sass/materialize";
-@import "./constants.scss";
-@import "./animations.scss";
+$mdi-font-path: "/node_modules/mdi/fonts" !default;
 
-* {
-  font-family: 'Roboto', sans-serif;
-  margin: 0;
-  padding: 0;
-  vertical-align: top;
-  box-sizing: border-box;
-}
+@import '../node_modules/react-perfect-scrollbar/dist/css/styles.css';
+@import '../node_modules/mdi/scss/materialdesignicons.scss';
+@import '../node_modules/font-face-mixin/_fontface.scss';
 
-body {
-  background-color: $light-grey;
-  height: 100% !important;
-  width: 100% !important;
-}
+@import "assets/scss/constants";
+@import "assets/scss/animations";
+@import "assets/scss/mixins";
+@import "assets/themes/theme-terminal.scss";
+@import "assets/scss/layout";
+@import "assets/scss/design";
 
-#root, #root .body {
-  height: 100%;
-  width: 100%;
-}
+@import "components/topnav/Topnav";
+@import "components/clusterBar/ClusterBar";
+@import "components/sidenav/Sidenav";
+@import "components/switch/Switch";
+@import "components/loader/Loader";
+@import "components/error/Error";
+@import "components/menu/Menu";
+@import "components/filter/Filter";
+@import "components/modal/Modal";
 
-a {
-  color: inherit;
-}
-
-.body {
-  padding: 30px;
-  display: flex;
-  flex-direction: row;
-
-
-
-  .views {
-    flex: 1 1;
-
-    .view {
-      height: 100%;
-      flex-wrap: wrap;
-
-      .breadcrumbs {
-        width: 100%;
-        height: 20px;
-        margin-bottom: 20px;
-      }
-
-      .breadcrumbs, .breadcrumb {
-        display: flex;
-        align-items: center;
-      }
-
-      .breadcrumb {
-        color: rgba($primary-text-color, 0.7);
-
-        &:first-child:before, &:before {
-          content: '\203A' !important;
-          display: inline-block;
-          font-size: 20px;
-          color: rgba($primary-text-color, 0.7) !important;
-        }
-      }
-
-      .breadcrumb:last-child {
-        color: $primary-text-color;
-      }
-    }
-  }
-}
-
-.title {
-  font-size: 24px;
-}
-
-.box {
-  position: relative;
-  background-color: white;
-  box-shadow: 0 0 15px 1px rgba($grey, 0.3);
-  padding: 10px 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0;
-
-  > * {
-    flex: 1 1;
-  }
-}
-
-.ps__rail-y, .ps__rail-x {
-  z-index: 9;
-}
-
-.scrollbar-container {
-  height: initial;
-}
-
-.lever {
-  margin: 0 15px 0 0!important;
-}
+@import "views/topics/Topics";
+@import "views/consumers/Consumers";
+@import "views/consumers/consumer/Consumer";
+@import "views/topics/topic/Topic";
+@import "views/topics/topic/settingsModal/SettingsModal";
+@import "views/clusters/Clusters";
+@import "views/dashboard/Dashboard";
 

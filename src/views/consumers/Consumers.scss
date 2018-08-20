@@ -1,70 +1,22 @@
-@import '../../constants';
 
-.consumers.view {
-  display: flex;
-  flex-direction: column;
+.consumers-list {
+  @include scroll();
 
-  .search-bar {
-    height: 42px;
-    margin-bottom: 16px;
+  .consumer-item{
+    height: 28px;
+    padding-left: 8px;
 
-    .search-input-text {
-      max-width: 250px;
-      padding: 0 15px;
-      height: 40px;
-      background-color: white;
-      border: solid lightgrey 1px;
-      border-radius: 3px;
-
-      &:focus {
-        border: solid lightgrey 1px;
-        box-shadow: none;
-        outline: none;
-      }
+    .list-item-stat{
+      font: map_get($fonts, list-item-stat);
+      color: map_get($text-colors, list-item-stat);
+      width: 120px;
+      text-align: right;
+      margin-right: 12px;
     }
 
-    .consumers-items-length {
-      font-size: 14px;
-      color: $dark-grey;
-      display: inline-block;
-      height: 42px;
-      font-style: italic;
-      vertical-align: bottom;
-      margin-left: 10px;
-    }
-  }
 
-
-  .consumers-items {
-    flex: 1 1;
-    flex-wrap: nowrap;
-    display: flex;
-    flex-direction: column;
-    border: none;
-    margin: 0;
-
-    .consumers-item {
-      cursor: pointer;
-      margin: 0 10px;
-      padding: 10px;
-      list-style-type: none;
-      display: flex;
-      justify-content: space-between;
-
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-
-      a {
-        flex: 1 1;
-      }
-
-      .consumers-item-topics-number {
-        float: right;
-        font-size: 14px;
-        color: $dark-grey;
-        font-style: italic;
-      }
+    &:hover{
+      background: map_get($layout-colors, 7);
     }
   }
 }

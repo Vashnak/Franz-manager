@@ -1,0 +1,119 @@
+/* MAIN CONFIGURATION - COLOR PALETTES */
+$layout-colors: (
+        1 : #fff,
+        2 : #f0f0f0,
+        3 : #e0e0e0,
+        4 : #ccc,
+        5 : #444,
+        6 : #444,
+        7 : #303030,
+        8 : #111,
+        section: #303030,
+        nav-bars: #303030
+);
+
+$theme-colors: (
+        1 : #fff,
+        2 : #fff,
+        3 : #999,
+        zookeeper : #00c6ce,
+        kafka : #ff92df,
+        danger: #ff6751
+);
+
+$dashboard-colors: (
+        background: #303030,
+        default-hexagone-bc: #3a3a3a,
+        default-hexagone-border:#666,
+        adjacent-hexagone-bc:#424242,
+        adjacent-hexagone-border:#777,
+        broker-color: #ffd36a,
+        broker-contrast: #454552,
+        zookeeper-color: #7cc0ff,
+        disabled-background: #424242,
+        disabled-border: #424242,
+        disabled-color: #999999
+);
+
+/* FONT CONFIGURATION */
+$families: (
+        primary: "Roboto",
+        accent: "Roboto",
+        code: "Inconsolata"
+);
+
+
+/* FONT CONFIGURATION */
+$fonts: (//Weight, Size, Family, Style
+        body:                                     font(regular, normal, primary),
+  // TABLE
+        thead:                                    font(bold, small, accent),
+  // FORMS
+        input:                                    font(regular, normal, primary),
+        input-placeholder:                        font(regular, normal, primary, italic),
+        switch-value:                             font(bold, small, accent),
+  // BUTTONS
+        button:                                   font(semibold, very-big, accent),
+        button-dropdown:                          font(semibold, very-big, accent),
+        button-outline:                           font(semibold, very-big, accent),
+  // HEADINGS
+        h1:                                       font(semibold, title, accent),
+        h2:                                       font(semibold, enormous, accent),
+        h3:                                       font(semibold, normal, accent),
+        h4:                                       font(semibold, normal, primary),
+        subtitle:                                 "Roboto",
+        breadcrumb-item:                          font(regular, very-big, accent),
+        address:                                  font(semibold, normal, accent),
+  //MESSAGE FETCH WRAPPER
+        message-fecth-title:                      font(bold, very-huge, accent),
+        message-fecth-stats:                      font(regular, normal, primary),
+  //MESSAGE JSON
+        code:                                     font(regular, normal, code),
+        key-message:                              font(medium, normal, primary),
+        message-timestamp:                        font(regular, small, primary, italic),
+        message-partition:                        font(bold, small, primary, italic),
+  // SIMPLE LIST
+        list-item-stat:                           font(regular, normal, primary, italic),
+  //OTHER
+        riddle:                                   font(regular, big, accent)
+);
+
+$text-colors: (
+        body: white,
+        h1: map_get($theme-colors, 1),
+        h2: white,
+        h3: map_get($theme-colors, 1),
+        h4: white,
+        breadcrumb-item: map_get($layout-colors, 4),
+        button-dropdown: map_get($layout-colors, 2),
+        sidebar-links: map_get($layout-colors, 3),
+        sidebar-link-selected: map_get($theme-colors, 1),
+        thead: map_get($layout-colors, 4),
+        input: white,
+        input-placeholder: map_get($layout-colors, 4),
+        switch-label: white,
+        code-punctuation: rgba(map_get($theme-colors, 3), .5),
+        code-string: #d9efec,
+        code-null: #899795,
+        code-key: map_get($theme-colors, 3),
+        code-value: #90d2e3,
+        message-timestamp: map_get($layout-colors, 3),
+        message-timestamp-ms: map_get($theme-colors, 3),
+        message-partition: map_get($layout-colors, 6),
+        list-item-stat: map_get($theme-colors, 1)
+);
+
+/*  LAYOUT CONFIGURATION */
+$theme-base-fontsize: 13px;
+
+$theme-topnav-shadow: false;
+$theme-sidebar-shadow: false;
+$theme-message-shadow: false;
+
+$theme-content-padding: 1px; // HAS TO BE ONE NUMBER IN PX
+$theme-section-padding: 16px;
+$theme-section-vertical-space: 1px;
+$theme-grid-gutter-size: 1px;
+
+$theme-inline-radius: 0px;
+$theme-section-radius: 0px;

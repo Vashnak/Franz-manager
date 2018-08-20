@@ -1,0 +1,120 @@
+/* --------------- */
+/*  RESET CSS */
+/* --------------- */
+
+* {
+  margin: 0;
+  padding: 0;
+  vertical-align: top;
+  box-sizing: border-box;
+  outline: none;
+}
+
+body {
+  font-size: $theme-base-fontsize;
+  line-height: 1.5em;
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+}
+
+#root, #root .body, body {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+a {
+  color: inherit;
+}
+
+/* --------------- */
+/*  HELPER CLASSES */
+/* --------------- */
+
+/* Layout FLEX classes */
+.flex {
+  display: flex;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.space-between {
+  justify-content: space-between;
+}
+
+.space-around {
+  justify-content: space-around;
+}
+
+/* Easy margins */
+@for $i from 1 through 16 {
+  $margin: $i * 4;
+
+  .margin-right-#{$margin}px {
+    margin-right: #{$margin}px;
+  }
+  .margin-left-#{$margin}px {
+    margin-left: #{$margin}px;
+  }
+  .margin-top-#{$margin}px {
+    margin-top: #{$margin}px;
+  }
+  .margin-bottom-#{$margin}px {
+    margin-bottom: #{$margin}px;
+  }
+}
+
+/* Ellipses */
+.ellipse {
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+}
+
+@for $i from 1 through 100 {
+  $size: $i * 4;
+
+  .ellipse-#{$size}px {
+    width: #{$size}px;
+    height: #{$size}px;
+  }
+}
+
+/* Some misc helpers */
+.justify-end {
+  justify-content: flex-end;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.scrollable {
+  overflow: auto;
+  max-height: 100%;
+}
+
+.va-middle {
+  vertical-align: middle;
+}
+
+a {
+  text-decoration: none;
+}

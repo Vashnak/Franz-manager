@@ -1,11 +1,11 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
+import {withRouter} from 'react-router-dom';
 import Loader from '../../components/loader/Loader';
-import Error from '../../components/error/Error';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import ConsumersService from "../../services/ConsumersService";
-
-import './Consumers.scss';
+import Error from "../../components/error/Error";
+import Link from "react-router-dom/es/Link";
+import Filter from "../../components/filter/Filter";
 
 class Consumers extends React.Component {
     constructor(props) {
@@ -15,7 +15,8 @@ class Consumers extends React.Component {
             loadingConsumers: true,
             errorLoadingConsumers: false,
             consumers: [],
-            filter: ''
+            filter: '',
+            filterByRegexp: false
         };
     }
 
@@ -24,72 +25,64 @@ class Consumers extends React.Component {
             .then(consumers => {
                 this.setState({
                     consumers: consumers.reduce((prev, next) => {
-                        if (!prev[next.group]) {
-                            prev[next.group] = {};
+                        if (!prev.find(p => p.id === next.group)) {
+                            prev.push({id: next.group, topics: [next.topic]})
+                        } else {
+                            prev.find(p => p.id === next.group).topics.push(next.topic);
                         }
-                        if (!prev[next.group][next.topic]) {
-                            prev[next.group][next.topic] = []
-                        }
-                        prev[next.group][next.topic].push(next);
                         return prev;
-                    }, {}),
+                    }, []),
                     loadingConsumers: false
                 });
             })
             .catch(() => this.setState({loadingConsumers: false, errorLoadingConsumers: true}))
     }
 
-    _updatefilter(e) {
+    _updateFilter(e) {
         this.setState({
-            filter: e.target.value
-        })
+            filter: e.filter,
+            filterByRegexp: e.filterByRegexp
+        });
     }
 
     render() {
-        const consumers = this.state.consumers;
-        const shownConsumers = {};
-        Object.keys(consumers).forEach(consumer => {
-            if(!this.state.filter || consumer.toLowerCase().includes(this.state.filter.toLowerCase())){
-                shownConsumers[consumer] = consumers[consumer];
+        const consumers = this.state.consumers.filter(c => {
+            if (this.state.filterByRegexp) {
+                return new RegExp(this.state.filter).test(c.id);
             }
+            return c.id.toLowerCase().includes(this.state.filter.toLowerCase())
         });
-        const totalConsumerLength = Object.keys(consumers).length;
-        const shownConsumerLength = Object.keys(shownConsumers).length;
-        return (
-            <div className="consumers view">
-                <div className="breadcrumbs">
-                    <span className="breadcrumb"><Link to="/franz-manager/consumers">Consumers</Link></span>
-                </div>
 
-                <div className="search-bar">
-                    <input type="text" className="search-input-text" placeholder="Filter by consumer"
-                           onChange={this._updatefilter.bind(this)}/>
-                    <span
-                        className="consumers-items-length">{shownConsumerLength + ' / ' + totalConsumerLength + ' shown consumers'}</span>
-                </div>
-                <div className="consumers-items collection box">
-                    {
-                        this.state.loadingConsumers ? <Loader/> : (
-                            this.state.errorLoadingConsumers ? <Error error="Cannot load consumers."/> : (
-                            <PerfectScrollbar>
-                                <div className="topics-classic-view">
-                                    {
-                                        Object.keys(shownConsumers).sort((a, b) => a < b ? -1 : 1).map(consumerId => {
-                                            return (
-                                                <li className="consumers-item collection-item">
-                                                    <Link
-                                                        to={'/franz-manager/consumers/' + consumerId}>{consumerId}</Link>
-                                                    <span className="consumers-item-topics-number">
-                                                        {Object.keys(shownConsumers[consumerId]).length + ' topic' + (Object.keys(shownConsumers[consumerId]).length > 1 ? 's' : '')}
-                                                    </span>
-                                                </li>
-                                            )
-                                        })
-                                    }
-                                </div>
-                            </PerfectScrollbar>
-                            )
-                        )}
+        return (
+            <div className="consumers-view grid-wrapper">
+                <div className="grid">
+                    <div className="column">
+                        <section className="flex-1">
+                            {this.state.loadingConsumers && <Loader/>}
+                            {this.state.errorLoadingConsumers && !this.state.loadingConsumers && <Error/>}
+                            {!this.state.loadingConsumers && !this.state.errorLoadingConsumers && (
+                                [
+                                    <header className="filter flex" key="headerConsumer">
+                                        <h3>860 consumers</h3>
+                                        <Filter onChange={this._updateFilter.bind(this)}/>
+                                    </header>,
+                                    <PerfectScrollbar className="consumers-list" key="scrollbarConsumer">
+                                        <div>
+                                            {consumers.map(consumer =>
+                                                <Link key={consumer.id} to={"/franz-manager/consumers/" + consumer.id}>
+                                                    <div className="consumer-item flex align-center pointer">
+                                            <span
+                                                className="list-item-stat">{[...new Set(consumer.topics)].length} topics
+                                            </span> {consumer.id}
+                                                    </div>
+                                                </Link>)}
+                                        </div>
+                                    </PerfectScrollbar>
+
+                                ]
+                            )}
+                        </section>
+                    </div>
                 </div>
             </div>
         );

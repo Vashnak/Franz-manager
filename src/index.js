@@ -3,9 +3,27 @@ import ReactDOM from 'react-dom';
 import {AppContainer} from 'react-hot-loader'
 import Router from './Router';
 
-import 'react-perfect-scrollbar/dist/css/styles.css';
-import 'materialize-css/dist/js/materialize.min';
 import './core.scss';
+import ThemesStore from "./stores/ThemesStore";
+
+(function(elmProto){
+        if ('scrollTopMax' in elmProto) {
+            return;
+        }
+        Object.defineProperties(elmProto, {
+            'scrollTopMax': {
+                get: function scrollTopMax() {
+                    return this.scrollHeight - this.clientTop;
+                }
+            },
+            'scrollLeftMax': {
+                get: function scrollLeftMax() {
+                    return this.scrollWidth - this.clientLeft;
+                }
+            }
+        });
+    }
+)(Element.prototype);
 
 if (!global._babelPolyfill) {
     require('babel-polyfill');
@@ -21,6 +39,8 @@ const render = Component => {
 };
 
 render(Router);
+
+ThemesStore.initTheme();
 
 if (module.hot) {
     module.hot.accept('./Router', () => {

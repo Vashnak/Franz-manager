@@ -23,6 +23,6 @@ export default {
     },
 
     setSelectedClusterId(clusterId){
-        return localStorage.setItem("selectedClusterId", clusterId);
+        localStorage.setItem("selectedClusterId", clusterId);
     }
 }

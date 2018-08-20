@@ -1,247 +1,63 @@
-@import '../../constants';
+.topics-view {
+  .topic-datatable {
+    @include scroll();
 
-.topics.view {
-  display: flex;
-  flex-direction: row;
+    .add-topic{
+      z-index: 999;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: map_get($theme-colors, 1);
 
-  .left-box {
-    flex: 1 1;
-    display: flex;
-    flex-direction: column;
 
-    .topics-filters {
-      min-width: 300px;
-      padding-bottom: 20px;
-
-      .row {
-        margin-top: 20px;
-        margin-bottom: 0;
-      }
-
-      .topics-filters-name {
-
-        input[type="text"] {
-          margin-bottom: 0;
-        }
-
-        .bad-formatted-regexp-input {
-          border-bottom: solid red 1px;
-
-          &:focus {
-            box-shadow: none;
-          }
-        }
-
-        .bad-formatted-regexp-message {
-          color: red;
-          font-size: 12px;
+      .mdi{
+        color: map_get($layout-colors, 8);
+        &:before{
+          font-size: 32px;
         }
       }
 
-      .topics-filters-regexp {
-        margin-top: 20px;
-        margin-left: 20px;
-        max-width: 100px;
-
-        label { // materialize checkbox
-          padding-left: 25px;
-          font-size: 12px;
-
-          &:after {
-            margin-top: 3px;
-          }
-
-          &:before {
-            top: 3px;
-          }
-        }
-      }
-
-      .topics-filters-tree-view, .topics-filters-logs-view {
-
-        .topics-filters-tree-view-switch {
-          margin-left: 0;
-        }
-      }
-    }
-
-    .topics-metrics {
-      display: flex;
-      flex: 1 1;
-      flex-direction: column;
-      margin-top: 15px;
-
-      .loader {
-        flex: 1 1;
-        height: auto;
-      }
     }
   }
 
-  .topics-items {
-    padding: 10px;
-    position: relative;
-    height: calc(100% - 40px);
-    border: none;
-    margin: 0 0 0 15px;
-    flex: 2 2;
+  .folder-icon, .subtree-icon {
+    fill: map_get($layout-colors, 3);
+  }
 
-    .title {
-      display: flex;
-      align-items: center;
-      margin-left: 10px;
+  .folder-stat {
+    font: map_get($fonts, list-item-stat);
+    color: map_get($text-colors, list-item-stat);
+    margin-left: 12px;
+  }
 
-      .topics-items-length {
-        font-size: 14px;
-        color: $dark-grey;
-        font-style: italic;
-        margin-top: 6px;
-        margin-left: 10px;
-      }
-
-      .menu {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-      }
+  .filtered {
+    &:after {
+      margin-left: 8px;
+      content: "\25BE";
     }
 
-    > div { //react-custom-scrollbar
-      height: calc(100% - 40px) !important;
-      margin-top: 10px;
-    }
-
-    table {
-      th {
-        font-size: 14px;
-        padding: 10px 5px;
-
-        &:nth-child(n + 1) {
-          width: 1px;
-        }
-
-        &.sort:after {
-          margin-left: 5px;
-          content: '\25be';
-          white-space: pre;
-        }
-
-        &.sort.reverse:after {
-          content: '\25b4';
-        }
-
-        &:nth-child(n + 1) {
-          padding-right: 15px;
-        }
-      }
-
-      tr {
-        cursor: pointer;
-
-        &:hover {
-          background-color: #f5f5f5;
-        }
-      }
-
-      td {
-        font-size: 14px;
-        padding: 5px 15px 5px 5px;
-        border-radius: 0;
-        text-align: right;
-
-        &:nth-child(1) {
-          text-align: left;
-          padding-right: 5px;
-        }
-
-        &:nth-child(n + 1) {
-          padding-right: 15px;
-        }
-      }
-    }
-
-    .topics-item {
-      cursor: pointer;
-      margin: 0 10px;
-      padding: 10px;
-      list-style-type: none;
-
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-
-      a {
-        display: inline-block;
-        width: 100%;
-      }
-    }
-
-    .topics-add-topic {
-      height: auto !important;
-      position: absolute;
-      bottom: 15px;
-      right: 15px;
+    &.reverse:after {
+      content: "\25B4";
     }
   }
-}
 
-@media screen and(max-width: 1000px) {
-  .topics.view {
-    flex-direction: column;
+  .modal h2 {
+    @extend .danger;
+  }
 
-    .left-box {
-      flex: initial !important;
-      margin-bottom: 15px !important;
-    }
-
-    .topics-items {
-      float: initial !important;
-      margin-left: 0 !important;
+  .delete-topic-list {
+    .item {
+      line-height: 24px;
     }
   }
-}
 
-.topics-add-topic-modal {
-  z-index: 999;
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-color: rgba(0, 0, 0, 0.3);
+  .bulk-delete-confirmation {
+    .bad-input {
+      border: solid map_get($theme-colors, danger) 1px;
+    }
 
-  .content {
-    position: absolute;
-    bottom: 110px;
-    right: 55px;
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-
-    .icons {
-      width: 90px;
-      height: fit-content;
-
-      span {
-        padding: 5px;
-        display: inline-block;
-        margin-left: 10px;
-        cursor: pointer;
-
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        &.check svg {
-          fill: green;
-        }
-
-        &.close svg {
-          fill: red;
-        }
-      }
+    .good-input {
+      border: solid map_get($theme-colors, 1) 1px;
     }
   }
 }

@@ -1,0 +1,16 @@
+@mixin transition($delay: 0ms){
+  transition-delay: $delay;
+  transition-duration: 150ms;
+  transition-property: opacity, transform, background, color, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+
+@mixin choregraphy($time, $delay:0){
+  @for $i from 1 through 100 {
+    &:nth-of-type(#{$i}) {
+      animation-delay: $time*$i + $delay;
+      transition-delay: $time*$i + $delay;
+    }
+  }
+}

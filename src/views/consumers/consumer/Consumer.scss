@@ -1,85 +1,21 @@
-@import '../../../constants';
+.topic-consumed{
+  h4{
+    text-transform: initial;
+  }
+  a{
+    color: map_get($theme-colors, 1);
+    text-decoration: none;
 
-.consumer.view {
-  display: flex;
-  flex-direction: column;
-
-  .title {
-    a {
-      display: inline-block;
-      vertical-align: bottom;
-      font-size: 14px;
-      margin-bottom: 4px;
-      margin-left: 10px;
-      font-style: italic;
-      color: $primary-color;
-
-      &:hover {
-        text-decoration: underline;
-      }
+    &:hover{
+      text-decoration: underline;
     }
   }
 
-  .search-bar {
-    height: 42px;
-    margin-bottom: 8px;
-    display: flex;
+  .topic-lag{
+    font: inherit;
 
-    .search-input-text {
-      max-width: 250px;
-      padding: 0 15px;
-      height: 40px;
-      background-color: white;
-      border: solid lightgrey 1px;
-      border-radius: 3px;
-
-      &:focus {
-        border: solid lightgrey 1px;
-        box-shadow: none;
-        outline: none;
-      }
-    }
-
-    .topics-items-length, .consumer-total-lag {
-      font-size: 14px;
-      color: $dark-grey;
-      display: inline-block;
-      align-self: flex-end;
-      font-style: italic;
-      margin-left: 10px;
-    }
   }
-
-  .topics {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1;
-    overflow: auto;
-
-    .topic-consumed {
-      margin: 7.5px 0;
-      width: 100%;
-
-      .topic-consumed-partitions {
-        border: none;
-
-        .topic-lag {
-          display: inline-block;
-          font-size: 14px;
-          color: $dark-grey;
-          font-style: italic;
-          margin-top: 2px;
-          margin-left: 5px;
-        }
-
-        thead th {
-          font-weight: 400;
-        }
-
-        td {
-          padding: 8px 5px;
-        }
-      }
-    }
-  }
+}
+.topic-consumed-list{
+  @include scroll();
 }

@@ -1,0 +1,31 @@
+/* Font Sizes */
+$fontSizes: (
+        very-small: 73em,
+        small: .86em,
+        normal: 1em,
+        big: 1.13em,
+        very-big: 1.26em,
+        huge: 1.39em,
+        very-huge: 1.52em,
+        enormous: 1.66em,
+        title: 1.8em
+);
+
+/* Font Sizes */
+$weights: (
+        thin: 100,
+        light: 200,
+        regular: 300,
+        medium: 400,
+        semibold: 500,
+        bold: 600,
+        black: 700,
+        extra: 800
+);
+
+@function font($weight, $size, $family, $style:normal){
+
+  $result: $style map_get($weights, $weight) map_get($fontSizes, $size) map_get($families, $family);
+
+  @return $result;
+}

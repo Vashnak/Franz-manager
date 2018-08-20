@@ -11,5 +11,9 @@ export default {
         } else {
             return n;
         }
+    },
+    newTab(url) {
+        window.open("http://jsbin.com/agimor");
+        window.focus();
     }
 };

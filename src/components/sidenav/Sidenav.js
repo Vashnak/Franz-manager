@@ -1,34 +1,34 @@
 import React, {Component} from 'react';
-import Classnames from 'classnames';
+import classnames from 'classnames';
 import PropTypes from 'prop-types';
 
-import SpeedometerIcon from 'mdi-react/SpeedometerIcon';
-import ViewParallelIcon from 'mdi-react/ViewParallelIcon';
-import FormatListNumbersIcon from 'mdi-react/FormatListNumbersIcon';
-import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
-
-import './Sidenav.scss';
+import {DashboardIcon, ClusterIcon, TopicsIcon, ConsumerIcon} from "../../services/SvgService";
+import Ink from 'react-ink';
+import themes from '../../assets/themes/themes';
+import ThemesStore from "../../stores/ThemesStore";
+import Menu from "../menu/Menu";
+import Option from "../menu/option/Option";
 
 const sidenavItems = [
     {
         label: 'Dashboard',
         link: '/franz-manager/dashboard',
-        icon: <SpeedometerIcon/>
+        icon: <DashboardIcon/>
     },
     {
         label: 'Cluster',
         link: '/franz-manager/cluster',
-        icon: <ViewParallelIcon/>
+        icon: <ClusterIcon/>
     },
     {
         label: 'Topics',
         link: '/franz-manager/topics',
-        icon: <FormatListNumbersIcon/>
+        icon: <TopicsIcon/>
     },
     {
         label: 'Consumers',
         link: '/franz-manager/consumers',
-        icon: <AccountMultipleIcon/>
+        icon: <ConsumerIcon/>
     }
 ];
 
@@ -48,7 +48,8 @@ class Sidenav extends Component {
         }
 
         this.state = {
-            selectedSidenavItem: currentSelectedSidenavItem ? currentSelectedSidenavItem.label : 'unknown'
+            selectedSidenavItem: currentSelectedSidenavItem ? currentSelectedSidenavItem.label : 'unknown',
+            selectedTheme: ThemesStore.getTheme().file
         };
 
         this.context.router.history.listen(location => {
@@ -56,7 +57,7 @@ class Sidenav extends Component {
         })
     }
 
-    _updateRoute(location){
+    _updateRoute(location) {
         this.setState({selectedSidenavItem: sidenavItems.find(m => m.link.split('/')[2] === location.pathname.split('/')[2]).label})
     }
 
@@ -65,30 +66,48 @@ class Sidenav extends Component {
         this.setState({selectedSidenavItem: sidenavItem.label});
     }
 
-    _calcIndicatorPosition() {
-        let sidenavItemIndex = sidenavItems.findIndex(m => m.label === this.state.selectedSidenavItem);
-        return sidenavItemIndex * 142 + 31;
+    _switchTheme(theme) {
+        ThemesStore.updateTheme(theme);
     }
 
     render() {
         return (
-            <div className="sidenav box">
+            <div className="sidebar">
                 <div className="sidenav-items">
                     {
                         sidenavItems.map((sidenavItem, index) => {
                             return (
-                                <div onClick={this._selectSidenavItem.bind(this, sidenavItem)}
-                                     key={index}
-                                     className={Classnames("sidenav-item", {selected: sidenavItem.label === this.state.selectedSidenavItem})}>
-                                    <div className="sidenav-item-icon">{sidenavItem.icon}</div>
-                                    <span className="sidenav-item-label">{sidenavItem.label}</span>
-                                </div>
+                                <a onClick={this._selectSidenavItem.bind(this, sidenavItem)}
+                                   key={index}
+                                   className={classnames("sidenav-item", {selected: sidenavItem.label === this.state.selectedSidenavItem})}>
+                                    {sidenavItem.icon}
+                                    <span className="label">{sidenavItem.label}</span>
+                                    <Ink/>
+                                </a>
                             )
                         })
                     }
                 </div>
-                <div className="sidenav-indicator"
-                     style={{top: this._calcIndicatorPosition()}}/>
+
+                <Menu
+                    className="theme-menu"
+                    label={"Theme"}
+                    selected={this.state.selectedTheme}
+                    ref={"theme-menu"}
+                    onChange={this._switchTheme.bind(this)}>
+
+                    {themes.map(theme => {
+                        return <Option
+                            onChange={this._switchTheme.bind(this)}
+                            value={theme}
+                            ref={theme.file}
+                            key={theme.file}
+                            selected={this.state.selectedTheme}>
+                            {theme.file.replace('theme-', '')}
+                        </Option>;
+                    })}
+
+                </Menu>
             </div>
         );
     }

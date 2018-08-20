@@ -1,0 +1,119 @@
+/* MAIN CONFIGURATION - COLOR PALETTES */
+$layout-colors: (
+        1 : #bcbcd6,
+        2 : #afafde,
+        3 : #9090ab,
+        4 : #8787ab,
+        5 : #5a5a6b,
+        6 : #4a4a58,
+        7 : #454552,
+        8 : #383842,
+        section: #4a4a58,
+        nav-bars: #454552
+);
+
+$theme-colors: (
+        1 : #f4fc7c,
+        2 : #fcd97c,
+        3 : #cec385,
+        zookeeper : #6fff98,
+        kafka : #f4f07c,
+        danger: #ff7d6c
+);
+
+$dashboard-colors: (
+        background: #444456,
+        default-hexagone-bc: #4a4a5b,
+        default-hexagone-border:#66667d,
+        adjacent-hexagone-bc:#535364,
+        adjacent-hexagone-border:#85859c,
+        broker-color: #f4f07c,
+        broker-contrast: #454552,
+        zookeeper-color: #6fff97,
+        disabled-background: #77778e,
+        disabled-border: #7f7f98,
+        disabled-color: #afafd1
+);
+
+/* FONT CONFIGURATION */
+$families: (
+        primary: "Roboto",
+        accent: "Roboto condensed",
+        code: "Inconsolata"
+);
+
+/* FONT CONFIGURATION */
+$fonts: (//Weight, Size, Family, Style
+        body: font(regular, normal, primary),
+  // TABLE
+        thead: font(bold, small, accent),
+  // FORMS
+        input: font(regular, normal, primary),
+        input-placeholder: font(regular, normal, primary, italic),
+        switch-value: font(bold, small, accent, italic),
+  // BUTTONS
+        button: font(semibold, very-big, accent, italic),
+        button-dropdown: font(semibold, very-big, accent, italic),
+        button-outline: font(semibold, very-big, accent, italic),
+  // HEADINGS
+        h1: font(semibold, title, accent),
+        h2: font(semibold, enormous, accent, italic),
+        h3: font(semibold, normal, accent),
+        h4: font(semibold, normal, primary),
+        subtitle: "Roboto",
+        breadcrumb-item: font(regular, very-big, accent),
+        address: font(semibold, normal, accent, italic),
+  //MESSAGE FETCH WRAPPER
+        message-fecth-title: font(bold, very-huge, accent),
+        message-fecth-stats: font(regular, normal, primary),
+  //MESSAGE JSON
+        code: font(regular, normal, code),
+        key-message: font(regular, normal, code),
+        message-timestamp: font(regular, small, primary, italic),
+        message-partition: font(bold, small, primary, italic),
+  // SIMPLE LIST
+        list-item-stat: font(regular, normal, primary, italic),
+  //OTHER
+        riddle: font(regular, big, accent, italic)
+);
+
+$text-colors: (
+        body: white,
+        h1: map_get($theme-colors, 1),
+        h2: white,
+        h3: map_get($theme-colors, 1),
+        h4: white,
+        breadcrumb-item: map_get($layout-colors, 4),
+        button-dropdown: map_get($layout-colors, 2),
+        sidebar-links: map_get($layout-colors, 3),
+        sidebar-link-selected: map_get($theme-colors, 1),
+        thead: map_get($layout-colors, 4),
+        input: white,
+        input-placeholder: map_get($layout-colors, 4),
+        switch-label: white,
+        code-punctuation: rgba(map_get($theme-colors, 3), .5),
+        code-string: #d9efec,
+        code-null: #899795,
+        code-key: map_get($theme-colors, 3),
+        code-boolean: #5298e3,
+        code-value: #90d2e3,
+        message-timestamp: map_get($layout-colors, 4),
+        message-timestamp-ms: map_get($theme-colors, 3),
+        message-partition: map_get($layout-colors, 6),
+        list-item-stat: map_get($theme-colors, 1)
+);
+
+/*  LAYOUT CONFIGURATION */
+$theme-base-fontsize: 15px;
+
+$theme-topnav-shadow: true;
+$theme-sidebar-shadow: true;
+$theme-message-shadow: true;
+
+$theme-content-padding: 8px; // HAS TO BE ONE NUMBER IN PX
+$theme-section-padding: 32px;
+$theme-section-vertical-space: 8px;
+$theme-grid-gutter-size: 8px;
+
+$theme-inline-radius: 4px;
+$theme-section-radius: 8px;

@@ -1,21 +1,23 @@
-import React from 'react';
+import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
-import PerfectScrollbar from 'react-perfect-scrollbar';
-
-import './Consumer.scss';
 import ConsumersService from "../../../services/ConsumersService";
 import TopicsService from "../../../services/TopicsService";
+import PerfectScrollbar from 'react-perfect-scrollbar';
 
-class Consumer extends React.Component {
+import Loader from "../../../components/loader/Loader";
+import Error from "../../../components/error/Error";
+
+class Consumer extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            consumerId: this.props.match.params.consumerId.replace(/,/g, '.'),
-            topics: {},
+            topics: [],
             loadingTopics: true,
+            loadingTopicsError: false,
+            consumerId: this.props.match.params.consumerId,
             filter: ''
-        };
+        }
     }
 
     componentWillMount() {
@@ -30,11 +32,10 @@ class Consumer extends React.Component {
                         delete next.offset;
                         prev[next.topic].push(next);
                         return prev;
-                    }, {}),
-                    loadingTopics: false
+                    }, {})
                 });
 
-                const tasks = Object.keys(this.state.topics).map(topic => TopicsService.getTopicPartitions(topic))
+                const tasks = Object.keys(this.state.topics).map(topic => TopicsService.getTopicPartitions(topic));
                 return Promise.all(tasks);
             })
             .then(partitionsArray => {
@@ -42,16 +43,16 @@ class Consumer extends React.Component {
                 const partitions = partitionsArray.flatten();
                 partitions.forEach(partition => {
                     let topic = topics[partition.topic].find(t => t.partition === partition.partition);
-                    if(topic) topic.topicOffset = partition.endOffset;
+                    if (topic) topic.topicOffset = partition.endOffset;
                 });
-                this.setState({topics})
+                this.setState({
+                    topics,
+                    loadingTopics: false
+                })
             })
-    }
-
-    _updatefilter(e) {
-        this.setState({
-            filter: e.target.value
-        })
+            .catch(e => {
+                this.setState({loadingTopicsError: true});
+            })
     }
 
     _calcLag(topic) {
@@ -66,77 +67,79 @@ class Consumer extends React.Component {
         return '?';
     }
 
+    _updateFilter(e) {
+        this.setState({filter: e.target.value});
+    }
+
     render() {
-        const topics = this.state.topics;
-        const shownTopics = {};
-        Object.keys(topics).forEach(topic => {
-            if (!this.state.filter || topic.includes(this.state.filter)) {
-                shownTopics[topic] = topics[topic];
-            }
-        });
-        const shownTopicsLength = Object.keys(shownTopics).length;
-        const totalTopicsLength = Object.keys(topics).length;
+        const topics = Object.keys(this.state.topics || []).filter(t => t.toLowerCase().includes(this.state.filter.toLowerCase()));
         return (
-            <div className="consumer view">
-                <div className="breadcrumbs">
-                    <span className="breadcrumb"><Link to="/franz-manager/consumers">Consumers</Link></span>
-                    <span className="breadcrumb"><Link
-                        to={'/franz-manager/consumers/' + this.state.consumerId}>{this.state.consumerId}</Link></span>
-                </div>
-                <div className="search-bar">
-                    <input type="text" className="search-input-text" placeholder="Filter by topic"
-                           onChange={this._updatefilter.bind(this)}/>
-                    <span
-                        className="topics-items-length">{shownTopicsLength + ' / ' + totalTopicsLength + ' shown topics'}</span>
+            <div className="consumer-item-view grid-wrapper">
+                <div className="grid">
+                    <div className="column left-column">
 
-                    <div style={{flex: '1 1'}}/>
-                    {topics && <span
-                        className="consumer-total-lag"> Total lag: {Object.values(topics).flatten().reduce((prev, next) => prev + (next.topicOffset - next.consumerOffset), 0)} message(s)</span>}
-                </div>
-                <div className="topics">
-                    <PerfectScrollbar>
-                        {
-                            Object.keys(shownTopics).map(topic => {
-                                return (
-                                    <div className="topic-consumed box">
-                                        <span className="title">{topic} <Link
-                                            to={`/franz-manager/topics/${topic}`}>Go to topic view</Link></span>
-                                        <div className="topic-consumed-partitions">
-                                            <table>
-                                                <thead>
-                                                <tr>
-                                                    <th>Partition</th>
-                                                    <th>Topic offset</th>
-                                                    <th>Consumer offset</th>
-                                                    <th>Lag <span className="topic-lag">({this._calcLag(topic)})</span>
-                                                    </th>
-                                                    <th>Commit timestamp</th>
-                                                </tr>
-                                                </thead>
+                        {this.state.loadingTopics && !this.state.loadingTopicsError && <Loader/>}
+                        {this.state.loadingTopicsError && <Error/>}
+                        {!this.state.loadingTopics && !this.state.loadingTopicsError && (
 
-                                                <tbody>
-                                                {
-                                                    shownTopics[topic].sort((a, b) => a.partition - b.partition).map(partition => {
-                                                        return (
-                                                            <tr className="topic-consumed-partition">
-                                                                <td>{partition.partition}</td>
-                                                                <td>{typeof partition.topicOffset !== 'undefined' ? partition.topicOffset : 'unknown'}</td>
-                                                                <td>{partition.consumerOffset}</td>
-                                                                <td>{typeof partition.topicOffset !== 'undefined' ? partition.topicOffset - partition.consumerOffset : 'unknown'}</td>
-                                                                <td>{partition.commitTimestamp}</td>
-                                                            </tr>
-                                                        )
-                                                    })
-                                                }
-                                                </tbody>
-                                            </table>
-                                        </div>
+                            <PerfectScrollbar className="topic-consumed-list">
+                                <div className="topics">
+                                    <section>
+                                        <header className="filter flex">
+                                            <h3>Consuming {topics.length} topics</h3>
+                                            <input onChange={this._updateFilter.bind(this)} type="text"
+                                                   placeholder="filter"
+                                                   className="flex-1 margin-left-32px"/>
+                                        </header>
+                                    </section>
 
-                                    </div>
-                                )
-                            })
-                        }
-                    </PerfectScrollbar>
+                                    {topics.map(topic => {
+                                        return (
+                                            <section className="topic-consumed" key={topic.id}>
+                                                <header className="title flex space-between"><h4
+                                                    className="flex-1">{topic} </h4><Link
+                                                    to={`/franz-manager/topics/${topic}`}>Go to topic</Link></header>
+                                                <div className="topic-consumed-partitions">
+                                                    <table>
+                                                        <thead>
+                                                        <tr>
+                                                            <th className="text-left">Partition</th>
+                                                            <th className="text-right">Topic offset</th>
+                                                            <th className="text-right">Consumer offset</th>
+                                                            <th className="text-right">Lag {this._calcLag(topic)} <span
+                                                                className="topic-lag">({this._calcLag(topic)})</span>
+                                                            </th>
+                                                            <th className="text-right">Commit timestamp</th>
+                                                        </tr>
+                                                        </thead>
+
+                                                        <tbody>
+                                                        {
+                                                            this.state.topics[topic].sort((a, b) => a.partition - b.partition).map(partition => {
+                                                                return (
+                                                                    <tr className="topic-consumed-partition">
+                                                                        <td className="text-left">{partition.partition}</td>
+                                                                        <td className="text-right">{typeof partition.topicOffset !== 'undefined' ?
+                                                                            partition.topicOffset.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : 'unknown'}</td>
+                                                                        <td className="text-right">{partition.consumerOffset.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
+                                                                        <td className="text-right">{typeof partition.topicOffset !== 'undefined' ?
+                                                                            (partition.topicOffset - partition.consumerOffset).toLocaleString('fr-FR', {maximumFractionDigits: 0}) : 'unknown'}</td>
+                                                                        <td className="text-right">{partition.commitTimestamp}</td>
+                                                                    </tr>
+                                                                )
+                                                            })
+                                                        }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </section>
+                                        )
+                                    })
+                                    }
+                                </div>
+                            </PerfectScrollbar>
+                        )}
+                    </div>
                 </div>
             </div>
         );

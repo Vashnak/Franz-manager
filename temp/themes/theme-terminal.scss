@@ -1,0 +1,101 @@
+/* MAIN CONFIGURATION - COLOR PALETTES */
+$layout-colors: (
+        1 : #eeeeee,
+        2 : #bbbbbb,
+        3 : #999999,
+        4 : #7e7e7e,
+        5 : #4e4e4e,
+        6 : #3a3a3a,
+        7 : #424242,
+        8 : #2a2a2a,
+        section: #3a3a3a,
+        nav-bars: #424242
+);
+
+$theme-colors: (
+        1 : #34f999,
+        2 : #34f999,
+        3 : #7bc3a8,
+        zookeeper : #6fff98,
+        kafka : #f4f07c,
+);
+
+/* FONT CONFIGURATION */
+$families: (
+        primary: "Roboto Mono",
+        accent: "Ubuntu Mono",
+        code: "Ubuntu Mono"
+);
+
+/* FONT CONFIGURATION */
+$fonts: (//Weight, Size, Family, Style
+        body: font(regular, normal, primary),
+  // TABLE
+        thead: font(bold, small, accent),
+  // FORMS
+        input: font(regular, normal, primary),
+        input-placeholder:font(regular, normal, primary, italic),
+        switch-value: font(bold, small, accent, italic),
+  // BUTTONS
+        button: font(semibold, very-big, accent, italic),
+        button-dropdown: font(semibold, very-big, accent, italic),
+        button-outline: font(semibold, very-big, accent, italic),
+  // HEADINGS
+        h1: font(semibold, title, accent),
+        h2: font(semibold, enormous, accent, italic),
+        h3: font(semibold, big, accent),
+        h4:                                       font(semibold, normal, primary),
+        subtitle: "Roboto",
+        breadcrumb-item: font(regular, very-big, accent),
+        address:                                  font(semibold, normal, accent, italic),
+  //MESSAGE FETCH WRAPPER
+        message-fecth-title: font(bold, very-huge, accent),
+        message-fecth-stats: font(regular, normal, primary),
+  //MESSAGE JSON
+        code: font(regular, normal, code),
+        key-message: font(regular, normal, code),
+        message-timestamp: font(regular, small, primary, italic),
+        message-partition: font(bold, small, primary, italic),
+  // SIMPLE LIST
+        list-item-stat: font(regular, normal, primary, italic)
+);
+
+$text-colors: (
+        body: white,
+        h1: map_get($theme-colors, 1),
+        h2: white,
+        h3: map_get($theme-colors, 1),
+        h4: white,
+        breadcrumb-item: map_get($layout-colors, 4),
+        button-dropdown: map_get($layout-colors, 2),
+        sidebar-links: map_get($layout-colors, 3),
+        sidebar-link-selected: map_get($theme-colors, 1),
+        thead: map_get($layout-colors, 3),
+        input: white,
+        input-placeholder: map_get($layout-colors, 4),
+        switch-label: white,
+        code-punctuation: rgba(map_get($theme-colors, 3), .5),
+        code-string: #d9efec,
+        code-null: #898989,
+        code-key: map_get($theme-colors, 3),
+        code-value: #90d2e3,
+        message-timestamp: map_get($layout-colors, 4),
+        message-timestamp-ms: map_get($theme-colors, 3),
+        message-partition: map_get($layout-colors, 6),
+        list-item-stat: map_get($theme-colors, 1),
+);
+
+/*  LAYOUT CONFIGURATION */
+$theme-base-fontsize: 13px;
+
+$theme-topnav-shadow: false;
+$theme-sidebar-shadow: false;
+$theme-message-shadow: true;
+
+$theme-content-padding: 0; // HAS TO BE ONE NUMBER IN PX
+$theme-section-padding: 16px 16px 16px 4px;
+$theme-section-vertical-space: 4px;
+$theme-grid-gutter-size: 4px;
+
+$theme-inline-radius: 0px;
+$theme-section-radius: 0px;

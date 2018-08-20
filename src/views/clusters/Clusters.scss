@@ -1,155 +1,37 @@
-@import '../../constants';
 
-.clusters.view {
-  display: flex;
-  flex-direction: column;
+.scrollbar {
+  @include scroll();
+}
 
-  .loader {
-    flex: 1 1;
-  }
+.settings-list {
 
-  .cluster-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1;
-    min-height: 0;
+  .settings-item {
+    height: 28px;
+    padding: 0 8px;
 
-    .cluster-settings {
-      display: block;
-      width: 100%;
-      margin-bottom: 15px;
-
-      .cluster-settings-lines {
-        margin-top: 10px;
-
-        .cluster-settings-line {
-          .cluster-settings-line-value {
-            color: #347138;
-
-            &:before, &:after {
-              content: '"'
-            }
-          }
-        }
-      }
+    .settings-line-key {
+      color: map_get($text-colors, code-key);
+      font: map_get($fonts, code);
+    }
+    .settings-line-string {
+      color: map_get($text-colors, code-string);
+      font: map_get($fonts, code);
+    }
+    .settings-line-boolean {
+      color: map_get($text-colors, code-boolean);
+      font: map_get($fonts, code);
+    }
+    .settings-line-value, .settings-line-number {
+      color: map_get($text-colors, code-value);
+      font: map_get($fonts, code);
+    }
+    .settings-line-null {
+      color: map_get($text-colors, code-null);
+      font: map_get($fonts, code);
     }
 
-    .panel {
-      display: flex;
-      flex: 1 1;
-      min-height: 0;
-
-      .left, .right {
-        display: flex;
-        flex: 1 1;
-        flex-direction: column;
-      }
-
-      .right {
-        margin-left: 15px;
-        min-height: 0;
-      }
-
-      .brokers-summary {
-        width: 100%;
-        max-height: 250px;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .brokers-metrics {
-        width: 100%;
-        margin-top: 15px;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .brokers-settings {
-        padding-right: 5px;
-        width: 100%;
-        min-height: 0;
-        flex: 1 1;
-
-        .title {
-          .input-field {
-            float: right;
-            display: inline-block;
-            margin: 0;
-            margin-right: 10px;
-
-            input {
-              border: solid lightgrey 1px;
-              border-radius: 3px;
-              width: 120px;
-              padding: 0 10px;
-              height: 32px;
-              margin: 0;
-            }
-          }
-        }
-
-        .brokers-settings-containers {
-          padding-right: 20px;
-          display: flex;
-          flex-direction: column;
-
-          .brokers-settings-container {
-            margin-bottom: 20px;
-
-            .brokers-settings-container-category {
-              font-size: 18px;
-            }
-
-            .brokers-settings-container-line {
-              &:hover {
-                background-color: rgba($grey, 0.3);
-              }
-
-              .broker-settings-container-line-value {
-                margin-left: 50px;
-                float: right;
-
-                &.string {
-                  color: #347138;
-
-                  &:before, &:after {
-                    content: '"'
-                  }
-                }
-
-                &.number {
-                  color: #0D47A1;
-                }
-
-                &.boolean {
-                  color: #00b0ff;
-                }
-
-                &.null {
-                  color: #adadad;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    @media screen and(max-width: 1050px) {
-      .panel, .right, .left {
-        display: block !important;
-        width: 100%;
-      }
-
-      .left {
-        margin-bottom: 15px;
-      }
-      
-      .right {
-        margin-bottom: 15px;
-        margin-left: 0 !important;
-        float: initial !important;
-      }
+    &:hover {
+      background: map_get($layout-colors, 7);
     }
   }
 }
