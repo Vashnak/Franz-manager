@@ -8,8 +8,8 @@ let path = process.env.BASE_NGINX + '/' + process.env.APP + '/' + fileName;
 
 let file = fs.readFileSync(path, 'utf8');
 
-let apiUrl = process.env.SERVER_URL ? process.env.SERVER_URL : 'http://localhost:1337/franz-manager-api';
-let webSocketUrl = process.env.WEBSOCKET_SERVER_URL ? process.env.WEBSOCKET_SERVER_URL : 'ws://localhost:5443/franz-manager-api';
+let apiUrl = process.env.SERVER_URL ? process.env.SERVER_URL : '';
+let webSocketUrl = process.env.WEBSOCKET_SERVER_URL ? process.env.WEBSOCKET_SERVER_URL : '';
 
 file = file.replace(/%SERVER_URL%/g, apiUrl);
 file = file.replace(/%WEBSOCKET_SERVER_URL%/g, webSocketUrl);
