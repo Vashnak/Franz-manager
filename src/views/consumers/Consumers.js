@@ -63,7 +63,7 @@ class Consumers extends React.Component {
                             {!this.state.loadingConsumers && !this.state.errorLoadingConsumers && (
                                 [
                                     <header className="filter flex" key="headerConsumer">
-                                        <h3>860 consumers</h3>
+                                        <h3>{consumers.length} consumer{(consumers.length > 1 ? 's' : '')}</h3>
                                         <Filter onChange={this._updateFilter.bind(this)}/>
                                     </header>,
                                     <PerfectScrollbar className="consumers-list" key="scrollbarConsumer">
