@@ -3,15 +3,15 @@
   //position: relative;
 
   .cluster-stats {
-    height: 112px;
-    position: absolute;
-    z-index: 99;
-    top: 0;
-    right: 0;
+    //height: 112px;
+    //position: absolute;
+    //z-index: 99;
+    //top: 0;
+    //right: 0;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding: 0 60px;
+    //padding: 0 60px;
 
     .cluster-stat {
       display: flex;
@@ -99,11 +99,5 @@
     }
   }
 
-  .circle {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #00e575;
-    border: 2px solid #474755;
-  }
+
 }

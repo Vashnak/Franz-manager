@@ -69,7 +69,8 @@ class Topnav extends Component {
                     </div>
                 </div>
 
-                {this.state.selectedSidenavItem !== 'Dashboard' && <ClusterBar/>}
+                {/*{this.state.selectedSidenavItem !== 'Dashboard' && <ClusterBar/>}*/}
+                <ClusterBar/>
             </header>
         );
     }

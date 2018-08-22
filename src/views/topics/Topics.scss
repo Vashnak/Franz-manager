@@ -12,9 +12,6 @@
 
       .mdi{
         color: map_get($layout-colors, 8);
-        &:before{
-          font-size: 32px;
-        }
       }
 
     }

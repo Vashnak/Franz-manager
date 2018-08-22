@@ -15,7 +15,7 @@ class Option extends Component {
     render() {
         return (
             <button onClick={this._selectOption.bind(this, this.props.value)}
-                    className={classnames({selected: this.props.selected === this.props.value}, "dropdown-menu-item")}>
+                    className={classnames({selected: this.props.selected === this.props.value}, this.props.className, "dropdown-menu-item")}>
                 {this.props.children}
                 <Ink/>
             </button>

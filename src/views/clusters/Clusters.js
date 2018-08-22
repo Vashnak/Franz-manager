@@ -121,18 +121,6 @@ class Clusters extends React.Component {
 
     _renderContextActions() {
         return <div className="clusters-context-actions context-actions flex">
-            <div className="zookeeper address flex align-center">
-                <span className="key">
-                    zookeeper
-                </span>
-                <span className="value">
-                    {this.state.zookeeperString}
-                </span>
-                <button onClick={copyToClipboard.bind(null, this.state.zookeeperString)}>
-                    <i className="mdi mdi-content-copy"/>
-                    <Ink/>
-                </button>
-            </div>
             <div className="kafka address flex align-center">
                 <span className="key">
                     kafka
@@ -140,7 +128,25 @@ class Clusters extends React.Component {
                 <span className="value">
                     {this.state.kafkaString}
                 </span>
+                <span className="tooltip">
+                    {this.state.kafkaString}
+                </span>
                 <button onClick={copyToClipboard.bind(null, this.state.kafkaString)}>
+                    <i className="mdi mdi-content-copy"/>
+                    <Ink/>
+                </button>
+            </div>
+            <div className="zookeeper address flex align-center">
+                <span className="key">
+                    zookeeper
+                </span>
+                <span className="value">
+                    {this.state.zookeeperString}
+                </span>
+                <span className="tooltip">
+                    {this.state.zookeeperString}
+                </span>
+                <button onClick={copyToClipboard.bind(null, this.state.zookeeperString)}>
                     <i className="mdi mdi-content-copy"/>
                     <Ink/>
                 </button>
