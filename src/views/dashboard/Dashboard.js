@@ -288,7 +288,8 @@ class Dashboard extends React.Component {
         let modal = new Konva.Rect({
             x: 0,
             y: -7,
-            fill: this.state.selectedTheme['layout-colors']['nav-bars'] + '98',
+            fill: this.state.selectedTheme['layout-colors']['nav-bars'],
+            opacity: 0.9,
             width: 400,
             height: 450,
             cornerRadius: 7
@@ -411,6 +412,10 @@ class Dashboard extends React.Component {
             this._focusCluster(this.state.selectedCluster);
             this.firstDraw = false;
         }
+        setTimeout(() => {
+            this.stage.batchDraw()
+            this.stage.draw();
+        });
     }
 
     _focusCluster(cluster) {
@@ -555,7 +560,8 @@ class Dashboard extends React.Component {
 
     render() {
         return (
-            <div className="dashboard-view flex flex-1" ref="view" style={{background: this.state.selectedTheme['dashboard-colors']['background']}}>
+            <div className="dashboard-view flex flex-1" ref="view"
+                 style={{background: this.state.selectedTheme['dashboard-colors']['background']}}>
                 <div id="konva" ref="konva" className="flex-1"/>
                 <div className="cluster-stats">
                     <div className="cluster-stat">

@@ -8,6 +8,7 @@ import themes from '../../assets/themes/themes';
 import ThemesStore from "../../stores/ThemesStore";
 import Menu from "../menu/Menu";
 import Option from "../menu/option/Option";
+import {Link} from "react-router-dom";
 
 const sidenavItems = [
     {
@@ -62,7 +63,6 @@ class Sidenav extends Component {
     }
 
     _selectSidenavItem(sidenavItem) {
-        this.context.router.history.push(sidenavItem.link);
         this.setState({selectedSidenavItem: sidenavItem.label});
     }
 
@@ -77,13 +77,14 @@ class Sidenav extends Component {
                     {
                         sidenavItems.map((sidenavItem, index) => {
                             return (
-                                <a onClick={this._selectSidenavItem.bind(this, sidenavItem)}
-                                   key={index}
-                                   className={classnames("sidenav-item", {selected: sidenavItem.label === this.state.selectedSidenavItem})}>
+                                <Link to={sidenavItem.link}
+                                      onClick={this._selectSidenavItem.bind(this, sidenavItem)}
+                                      key={index}
+                                      className={classnames("sidenav-item", {selected: sidenavItem.label === this.state.selectedSidenavItem})}>
                                     {sidenavItem.icon}
                                     <span className="label">{sidenavItem.label}</span>
                                     <Ink/>
-                                </a>
+                                </Link>
                             )
                         })
                     }

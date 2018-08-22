@@ -23,7 +23,7 @@ module.exports = {
         }),
         new webpack.optimize.UglifyJsPlugin(), //minify everything
         new webpack.optimize.AggressiveMergingPlugin(), //Merge chunks
-        new CopyWebpackPlugin([{from: 'src/assets/images/favicon.ico', to: 'favicon.ico'}])
+        new CopyWebpackPlugin([{from: 'src/assets/images/favicon.png', to: 'favicon.png'}])
     ],
     devtool: 'eval',
     entry: {
