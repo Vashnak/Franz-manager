@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CustomThemePlugin = require('./customThemePlugin');
 
 module.exports = {
     devServer: {
@@ -9,6 +10,9 @@ module.exports = {
                 {from: /\./, to: '/'}
             ]
         }
+    },
+    optimization: {
+        minimize: false
     },
     plugins: [
         new webpack.ProvidePlugin({
@@ -21,9 +25,9 @@ module.exports = {
             'SERVER_URL': JSON.stringify(process.env.SERVER_URL),
             'process.env.NODE_ENV': JSON.stringify('development')
         }),
-        new webpack.optimize.UglifyJsPlugin(), //minify everything
         new webpack.optimize.AggressiveMergingPlugin(), //Merge chunks
-        new CopyWebpackPlugin([{from: 'src/assets/images/favicon.png', to: 'favicon.png'}])
+        new CopyWebpackPlugin([{from: 'src/assets/images/favicon.png', to: 'favicon.png'}]),
+        new CustomThemePlugin()
     ],
     devtool: 'eval',
     entry: {
@@ -38,16 +42,13 @@ module.exports = {
         path: path.resolve(__dirname, './dist'),
         filename: '[name].js'
     },
+    mode: "development",
     module: {
         rules: [
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 loader: 'babel-loader'
-            },
-            {
-                test: /\.json$/,
-                loader: 'json-loader'
             },
             {
                 test: /\.scss|\.css$/,

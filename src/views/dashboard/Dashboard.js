@@ -295,7 +295,6 @@ class Dashboard extends React.Component {
             cornerRadius: 7
         });
         this.modal.add(modal);
-
         //title
         this.modal.add(newText(76, 36, 'Kafka broker ' + selectedBroker.id, 28, 'Roboto Condensed', 'bold italic', this.state.selectedTheme['dashboard-colors']['broker-color']));
 
