@@ -562,7 +562,7 @@ class Dashboard extends React.Component {
             <div className="dashboard-view flex flex-1" ref="view"
                  style={{background: this.state.selectedTheme['dashboard-colors']['background']}}>
                 <div id="konva" ref="konva" className="flex-1"/>
-                <div className="cluster-stats">
+                <div className="context-actions cluster-stats">
                     <div className="cluster-stat">
                         <div className="text">
                             <span className="value">{this.state.stats.topics}</span>
@@ -598,15 +598,15 @@ class Dashboard extends React.Component {
                         </div>
                     </div>
                 </div>
-                <div className="cluster-list">
-                    {this.state.clusters.map(c => <div
-                        key={c.name}
-                        className={classnames("cluster-item", {selected: c.name === this.state.selectedCluster})}
-                        onClick={this._selectCluster.bind(this, c.name)}>
-                        <span className="cluster-name">{c.name}</span>
-                        <span className="cluster-status"><div className="circle"/></span>
-                    </div>)}
-                </div>
+                {/*<div className="cluster-list">*/}
+                    {/*{this.state.clusters.map(c => <div*/}
+                        {/*key={c.name}*/}
+                        {/*className={classnames("cluster-item", {selected: c.name === this.state.selectedCluster})}*/}
+                        {/*onClick={this._selectCluster.bind(this, c.name)}>*/}
+                        {/*<span className="cluster-name">{c.name}</span>*/}
+                        {/*<span className="cluster-status"><div className="circle"/></span>*/}
+                    {/*</div>)}*/}
+                {/*</div>*/}
                 {this.state.loading && <Loader/>}
             </div>
         );

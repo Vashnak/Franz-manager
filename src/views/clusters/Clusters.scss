@@ -1,6 +1,11 @@
 
-.scrollbar {
-  @include scroll();
+.clusters-view{
+  .column{
+    width: 50%;
+  }
+  .scrollbar {
+    @include scroll();
+  }
 }
 
 .settings-list {

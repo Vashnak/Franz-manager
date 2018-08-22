@@ -394,7 +394,7 @@ class Topics extends React.Component {
                                             {this.state.topicsFilters.treeView ? this._renderTreeView(topics) : this._renderTopics(topics)}
                                         </table>
 
-                                        <button className="add-topic ellipse ellipse-64px"
+                                        <button className="add-topic ellipse ellipse-56px"
                                                 onClick={this._openAddTopicModal.bind(this)}>
                                             <i className="mdi mdi-plus mdi-24px"/><Ink/>
                                         </button>

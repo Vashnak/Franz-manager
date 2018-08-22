@@ -55,6 +55,7 @@
     border-radius: $theme-inline-radius;
     background: map_get($layout-colors, 5);
     overflow: hidden;
+    position: relative;
 
     &.zookeeper .key {
       color: map_get($theme-colors, zookeeper);
@@ -63,13 +64,26 @@
       color: map_get($theme-colors, kafka);
     }
 
+    .tooltip{
+      font: map_get($fonts, code);
+      padding: 8px 12px;
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, -16px);
+      top: calc(100% + 4px);
+      background: rgba(map_get($layout-colors, 6), .8);
+      border: 1px solid map_get($layout-colors, 6);
+      border-radius: $theme-inline-radius;
+      @include transition();
+      @include hide();
+    }
+
     &:hover {
-      .key {
-        opacity: 0;
-        text-indent: -150px;
-        padding: 0;
-        margin: 0;
-        transition-delay: 0ms;
+      overflow: initial;
+      .tooltip{
+        display: block;
+        @include show();
+        transform: translate(-50%, 0);
       }
     }
 
@@ -77,10 +91,7 @@
       font: map_get($fonts, address);
       text-transform: uppercase;
       padding-left: 16px;
-      @include transition();
-      transition-property: opacity, text-indent, padding, margin;
       margin-right: 16px;
-      transition-delay: 300ms;
     }
     .value {
       font: map_get($fonts, code);

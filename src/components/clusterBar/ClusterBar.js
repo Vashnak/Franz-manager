@@ -45,8 +45,9 @@ class ClusterBar extends Component {
                         value={cluster.name}
                         ref={cluster.name}
                         key={cluster.name}
-                        selected={this.state.selected}>
-                        Cluster {cluster.name}
+                        selected={this.state.selected}
+                        className="flex align-center space-between">
+                        Cluster {cluster.name} <i className="ellipse-8px ellipse green"/>
                     </Option>;
                 })}
             </Menu>

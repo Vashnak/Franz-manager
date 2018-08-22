@@ -86,6 +86,10 @@ a {
   border-radius: 50%;
   display: inline-block;
   position: relative;
+
+  &.green{
+    background: map_get($theme-colors, good);
+  }
 }
 
 @for $i from 1 through 100 {
