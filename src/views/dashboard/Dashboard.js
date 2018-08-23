@@ -302,7 +302,7 @@ class Dashboard extends React.Component {
         });
         this.modal.add(modal);
         //title
-        this.modal.add(newText(76, 36, 'Kafka broker ' + selectedBroker.id, 28, 'Roboto Condensed', 'bold italic', this.state.selectedTheme['dashboard-colors']['broker-color']));
+        this.modal.add(newText(76, 36, 'Kafka broker ' + selectedBroker.id, 28, 'Roboto Condensed', 'bold italic', this.state.selectedTheme['dashboard-colors']['kafka-color']));
 
         //url
         this.modal.add(newText(76, 72, selectedBroker.host + ':' + selectedBroker.port, 20, 'Roboto Condensed', '', this.state.selectedTheme["layout-colors"]["1"]));
@@ -353,7 +353,7 @@ class Dashboard extends React.Component {
             closed: true
         }));
 
-        this.modal.add(drawKafkaIcon(167, 22, this.state.selectedTheme['dashboard-colors']["broker-color"]));
+        this.modal.add(drawKafkaIcon(167, 22, this.state.selectedTheme['dashboard-colors']["kafka-color"]));
 
         this.mainLayer.add(this.modal);
     }
@@ -514,8 +514,8 @@ class Dashboard extends React.Component {
         };
 
         if (isActive) {
-            hexagonesProperties.fill = this.state.selectedTheme['dashboard-colors']['broker-color'];
-            hexagonesProperties.stroke = this.state.selectedTheme['dashboard-colors']['broker-color'];
+            hexagonesProperties.fill = this.state.selectedTheme['dashboard-colors']['kafka-color'];
+            hexagonesProperties.stroke = this.state.selectedTheme['dashboard-colors']['kafka-color'];
         } else if (disabled) {
             hexagonesProperties.fill = this.state.selectedTheme['dashboard-colors']['disabled-background'];
             hexagonesProperties.stroke = this.state.selectedTheme['dashboard-colors']['disabled-background'];
