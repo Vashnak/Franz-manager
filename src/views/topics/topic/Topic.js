@@ -191,6 +191,10 @@ class Topic extends Component {
             });
     }
 
+    _selectPartition() {
+        this.setState({selectedPartition: ''})
+    }
+
     _renderContextActions() {
         return <div className="context-actions topic-context-actions">
             <button onClick={this._openSettings.bind(this)} className='toggle'>
@@ -289,7 +293,9 @@ class Topic extends Component {
                         {this.state.partitions.sort((a, b) => a.partition - b.partition).map(partition => {
                             const partitionColor = partitionColors[partition.partition % partitionColors.length];
                             return (
-                                <tr key={partition.partition}>
+                                <tr key={partition.partition}
+                                    className="pointer"
+                                    onClick={this._selectPartition.bind(this, partition)}>
                                     <td className="text-left">
                                         <div className="flex align-center">
                                             <i className="ellipse margin-right-8px ellipse-8px"

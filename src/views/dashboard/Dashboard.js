@@ -79,11 +79,17 @@ class Dashboard extends React.Component {
 
     componentWillUnmount() {
         ThemesStore.unwatch(this.themeStore);
+        window.removeEventListener('resize', this._handleResize.bind(this));
     }
 
     componentDidMount() {
         this.refs.konva.addEventListener('DOMMouseScroll', this._onMouseScroll.bind(this), false);
         this.refs.konva.addEventListener('mousewheel', this._onMouseScroll.bind(this), false);
+        window.addEventListener('resize', this._handleResize.bind(this));
+    }
+
+    _handleResize() {
+        this._clearEverythingAndRedraw();
     }
 
     _clearEverythingAndRedraw() {
@@ -179,7 +185,7 @@ class Dashboard extends React.Component {
                 prev.push(next.brokers.map(b => {
                     return {
                         cluster: next.name,
-                        type: 'broker',
+                        type: 'kafka',
                         id: b.id
                     }
                 }));
@@ -381,7 +387,7 @@ class Dashboard extends React.Component {
                 } else if (matrix[i][j] !== -2) {
                     let elem = matrix[i][j];
                     let hexagone = this._generateHexagone(x, y, elem.type, elem.id, false, this.state.selectedCluster !== elem.cluster);
-                    if (this.state.selectedCluster === elem.cluster && elem.type === 'broker') {
+                    if (this.state.selectedCluster === elem.cluster && elem.type === 'kafka') {
                         hexagone.on('mouseenter', () => {
                             this.stage.container().style.cursor = 'pointer';
                         });
@@ -399,6 +405,20 @@ class Dashboard extends React.Component {
                     if (!onlyClusters) {
                         let clone = defaultHexagone.clone({x, y});
                         this.mainLayer.add(clone);
+
+                        clone.on('mouseenter', () => {
+                            this.stage.container().style.cursor = 'pointer';
+                            clone.children[0].fill(this.state.selectedTheme['dashboard-colors']['adjacent-hexagone-bc']);
+                            clone.children[0].stroke(this.state.selectedTheme['dashboard-colors']['adjacent-hexagone-border']);
+                            this.mainLayer.draw();
+                        });
+
+                        clone.on('mouseleave', () => {
+                            this.stage.container().style.cursor = 'default';
+                            clone.children[0].fill(this.state.selectedTheme['dashboard-colors']['default-hexagone-bc']);
+                            clone.children[0].stroke(this.state.selectedTheme['dashboard-colors']['default-hexagone-border']);
+                            this.mainLayer.draw();
+                        });
                     }
                 }
             }
@@ -452,7 +472,7 @@ class Dashboard extends React.Component {
 
     _onStageClick(e) {
         let group = e.target.parent;
-        if ((!group || !group.attrs || group.attrs.type !== 'broker') && this.modal) {
+        if ((!group || !group.attrs || group.attrs.type !== 'kafka') && this.modal) {
             this._clearModalAndSelectedNode();
         }
     }
@@ -505,7 +525,7 @@ class Dashboard extends React.Component {
                     hexagonesProperties.fill = this.state.selectedTheme['dashboard-colors']['adjacent-hexagone-bc'];
                     hexagonesProperties.stroke = this.state.selectedTheme['dashboard-colors']['adjacent-hexagone-border'];
                     break;
-                case 'broker':
+                case 'kafka':
                 case 'zookeeper':
                     hexagonesProperties.fill = this.state.selectedTheme['dashboard-colors'][type + '-color'] + '30';
                     hexagonesProperties.stroke = this.state.selectedTheme['dashboard-colors'][type + '-color'] + '30';
@@ -584,7 +604,7 @@ class Dashboard extends React.Component {
                     <div className="cluster-stat">
                         <div className="text">
                             <span className="value">{this.state.stats.brokers}</span>
-                            <span className="label">Brokers Kafka</span>
+                            <span className="label">Kafka Brokers</span>
                         </div>
                         <div className="icon kafka">
                             <KafkaIcon/>
@@ -592,21 +612,12 @@ class Dashboard extends React.Component {
                     </div>
                     <div className="cluster-stat">
                         <div className="text">
-                            <span className="value"><div className="circle"/>
+                            <span className="value"><div className="ellipse ellipse-12px green margin-right-8px"/>
                                 {this.state.stats.status}</span>
                             <span className="label">Cluster status</span>
                         </div>
                     </div>
                 </div>
-                {/*<div className="cluster-list">*/}
-                    {/*{this.state.clusters.map(c => <div*/}
-                        {/*key={c.name}*/}
-                        {/*className={classnames("cluster-item", {selected: c.name === this.state.selectedCluster})}*/}
-                        {/*onClick={this._selectCluster.bind(this, c.name)}>*/}
-                        {/*<span className="cluster-name">{c.name}</span>*/}
-                        {/*<span className="cluster-status"><div className="circle"/></span>*/}
-                    {/*</div>)}*/}
-                {/*</div>*/}
                 {this.state.loading && <Loader/>}
             </div>
         );
