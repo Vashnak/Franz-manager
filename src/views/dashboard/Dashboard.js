@@ -2,15 +2,14 @@ import React from 'react';
 import Konva from 'konva';
 import BrokersService from '../../services/BrokersService';
 import WebFont from 'webfontloader';
-
-import classnames from 'classnames';
+import numeral from 'numeral';
 
 import ClustersService from "../../services/ClustersService";
 import TopicsService from "../../services/TopicsService";
-import {KafkaIcon, TopicsIcon, ZookeeperIcon} from "../../services/SvgService";
-import themes from '../../assets/themes/themes';
+import {KafkaIcon, PartitionIcon, TopicsIcon, ZookeeperIcon} from "../../services/SvgService";
 import ThemesStore from "../../stores/ThemesStore";
 import Loader from "../../components/loader/Loader";
+import MetricsService from "../../services/MetricsService";
 
 const hexagonesWidth = 108;
 const hexagonesMargin = 6;
@@ -29,7 +28,8 @@ class Dashboard extends React.Component {
                 zookeeper: '-',
                 brokers: '-',
                 status: '-'
-            }
+            },
+            brokersStats: {}
         };
 
         this.firstDraw = true;
@@ -45,7 +45,7 @@ class Dashboard extends React.Component {
                 });
             }
         });
-
+        let clusters;
         ClustersService.getClusters()
             .then(clusters => {
                 return Promise.all(clusters.map(c => {
@@ -59,7 +59,11 @@ class Dashboard extends React.Component {
                     })
                 }))
             })
-            .then(clusters => {
+            .then(c => {
+                clusters = c;
+                return this._loadMetrics();
+            })
+            .then(() => {
                 let cpt = 0;
                 WebFont.load({
                     google: {
@@ -88,6 +92,91 @@ class Dashboard extends React.Component {
         window.addEventListener('resize', this._handleResize.bind(this));
     }
 
+    _loadMetrics() {
+        return new Promise((resolve, reject) => {
+            const wantedMetrics = [
+                {
+                    label: 'Bytes in (per sec)',
+                    location: 'kafka.server',
+                    type: 'BrokerTopicMetrics',
+                    name: 'BytesInPerSec'
+                },
+                {
+                    label: 'Bytes out (per sec)',
+                    location: 'kafka.server',
+                    type: 'BrokerTopicMetrics',
+                    name: 'BytesOutPerSec'
+                },
+                {
+                    label: 'Messages in (per sec)',
+                    location: 'kafka.server',
+                    type: 'BrokerTopicMetrics',
+                    name: 'MessagesInPerSec'
+                },
+                {label: 'Partition count', location: 'kafka.server', type: 'ReplicaManager', name: 'PartitionCount'},
+                {label: 'Leader count', location: 'kafka.server', type: 'ReplicaManager', name: 'LeaderCount'},
+                {
+                    label: 'Under replicated',
+                    location: 'kafka.server',
+                    type: 'ReplicaManager',
+                    name: 'UnderReplicatedPartitions'
+                },
+                {
+                    label: 'Active controller',
+                    location: 'kafka.controller',
+                    type: 'KafkaController',
+                    name: 'ActiveControllerCount'
+                },
+                {label: 'Memory Heap', location: 'java.lang', type: 'Memory', name: 'HeapMemoryUsage'},
+                {label: 'Load average', location: 'java.lang', type: 'OperatingSystem', name: null}
+            ];
+
+            Promise.all(wantedMetrics.map(metric => MetricsService.getMetrics(metric.location, metric.type, metric.name)))
+                .then(brokersMetrics => {
+                    const brokersStats = {};
+                    brokersMetrics.forEach(brokersMetric => {
+                        brokersMetric.forEach(brokerMetric => {
+                            if (!brokersStats[brokerMetric.brokerId]) brokersStats[brokerMetric.brokerId] = [];
+                            if (brokerMetric.type === 'ReplicaManager') {
+                                brokersStats[brokerMetric.brokerId].push({
+                                    label: wantedMetrics.find(m => m.name === brokerMetric.name).label,
+                                    key: brokerMetric.name,
+                                    value: brokerMetric.metrics.Value
+                                })
+                            } else if (brokerMetric.type === 'OperatingSystem') {
+                                brokersStats[brokerMetric.brokerId].push({
+                                    label: wantedMetrics.find(m => m.name === brokerMetric.name).label,
+                                    key: "LoadAverage",
+                                    value: parseInt(brokerMetric.metrics.ProcessCpuLoad * 100)
+                                })
+                            } else if (brokerMetric.type === 'KafkaController') {
+                                brokersStats[brokerMetric.brokerId].push({
+                                    label: 'isActiveController',
+                                    key: brokerMetric.name,
+                                    value: brokerMetric.metrics.Value === 1
+                                })
+                            } else if (brokerMetric.type === 'BrokerTopicMetrics') {
+                                brokersStats[brokerMetric.brokerId].push({
+                                    label: wantedMetrics.find(m => m.name === brokerMetric.name).label,
+                                    key: brokerMetric.name,
+                                    value: brokerMetric.metrics.OneMinuteRate
+                                })
+                            } else if (brokerMetric.type === 'Memory') {
+                                brokersStats[brokerMetric.brokerId].push({
+                                    label: wantedMetrics.find(m => m.name === brokerMetric.name).label,
+                                    key: brokerMetric.name,
+                                    value: (brokerMetric.metrics.used / brokerMetric.metrics.max * 100).toFixed(1)
+                                })
+                            }
+                        });
+                    });
+                    this.setState({brokersStats});
+                    resolve();
+                })
+                .catch(reject);
+        })
+    }
+
     _handleResize() {
         this._clearEverythingAndRedraw();
     }
@@ -107,12 +196,14 @@ class Dashboard extends React.Component {
             topics: '-',
             zookeeper: '-',
             brokers: '-',
-            status: '-'
+            status: '-',
+            partitions: '-'
         };
         this.setState({stats});
         TopicsService.getTopics(true)
             .then(topics => {
                 stats.topics = topics.length;
+                stats.partitions = topics.reduce((prev, next) => prev + next.partitions, 0);
                 this.setState({stats});
             });
         BrokersService.getBrokers(this.state.selectedCluster)
@@ -122,6 +213,7 @@ class Dashboard extends React.Component {
                 stats.status = 'OK';
                 this.setState({stats});
             });
+
     }
 
     _onMouseScroll(event) {
@@ -279,70 +371,109 @@ class Dashboard extends React.Component {
         }
         this.selectedNode = this._generateHexagone(hexagone.position().x, hexagone.position().y, node.type, node.id, true);
         this._drawModal();
-        this.mainLayer.add(this.selectedNode);
-        this.mainLayer.draw();
     }
 
-    _drawModal() {
-        let selectedBroker = this.state.clusters
+    _drawModals(hexagone) {
+        this._drawSmallModal(hexagone);
+        this.setState({showModal: true});
+    }
+
+    _renderModal() {
+        const stats = this.state.brokersStats[+this.hoveredNode.attrs.id];
+
+        return !stats ? <div/> : <div className="broker-modal">
+            <div className="modal-part">
+                <h3 className="modal-part-title">
+                    DOWNLOAD/UPLOAD
+                </h3>
+                <div className="modal-part-content">
+                    <div className="modal-part-line">
+                        <span className="key">Messages in / s</span>
+                        <span className="value">{stats.find(s => s.key === 'MessagesInPerSec').value.toFixed(0)}</span>
+                    </div>
+                    <div className="modal-part-line">
+                        <span className="key">Bytes in / s</span>
+                        <span
+                            className="value">{numeral(stats.find(s => s.key === 'BytesInPerSec').value.toString()).format('0b')}</span>
+                    </div>
+                    <div className="modal-part-line">
+                        <span className="key">Bytes in / s</span>
+                        <span
+                            className="value">{numeral(stats.find(s => s.key === 'BytesOutPerSec').value.toString()).format('0b')}</span>
+                    </div>
+                </div>
+            </div>
+            <div className="modal-part">
+                <h3 className="modal-part-title">
+                    PARTITIONS
+                </h3>
+                <div className="modal-part-content">
+                    <div className="modal-part-line">
+                        <span className="key">Partitions</span>
+                        <span className="value">{stats.find(s => s.key === 'PartitionCount').value.toString()}</span>
+                    </div>
+                    <div className="modal-part-line">
+                        <span className="key">Under replicated</span>
+                        <span
+                            className="value">{stats.find(s => s.key === 'UnderReplicatedPartitions').value.toString()}</span>
+                    </div>
+                    <div className="modal-part-line">
+                        <span className="key">Leaders</span>
+                        <span className="value">{stats.find(s => s.key === 'LeaderCount').value.toString()}</span>
+                    </div>
+                </div>
+            </div>
+            <div className="modal-part">
+                <h3 className="modal-part-title">
+                    OTHER METRICS
+                </h3>
+                <div className="modal-part-content">
+                    <div className="modal-part-line">
+                        <span className="key">Load average</span>
+                        <span className="value">{stats.find(s => s.key === 'LoadAverage').value.toString()}</span>
+                    </div>
+                    <div className="modal-part-line">
+                        <span className="key">Memory heap</span>
+                        <span className="value">{stats.find(s => s.key === 'HeapMemoryUsage').value.toString()}</span>
+                    </div>
+                </div>
+            </div>
+        </div>;
+    }
+
+    _drawSmallModal(hexagone) {
+        let group = hexagone.parent || hexagone.attrs.parent;
+        this.drawnHoveredNode = this._generateHexagone(group.position().x, group.position().y, group.attrs.type, group.attrs.id, true);
+        let hoveredBroker = this.state.clusters
             .find(c => c.name === this.state.selectedCluster)
-            .brokers.find(b => b.id === this.selectedNode.attrs.id);
-        if (this.modal) {
-            this.modal.destroy();
+            .brokers.find(b => b.id === this.drawnHoveredNode.attrs.id);
+        if (this.smallModal) {
+            this.smallModal.destroy();
         }
-        this.modal = new Konva.Group({x: this.selectedNode.x() + hexagonesWidth / 2 - 1, y: this.selectedNode.y() - 5});
-        let modal = new Konva.Rect({
-            x: 0,
-            y: -7,
+        this.smallModal = new Konva.Group({
+            x: this.drawnHoveredNode.x() + hexagonesWidth / 2 - 1,
+            y: this.drawnHoveredNode.y() - 5
+        });
+        let smallModal = new Konva.Rect({
+            x: -5,
+            y: 2,
             fill: this.state.selectedTheme['layout-colors']['nav-bars'],
             opacity: 0.9,
             width: 400,
-            height: 450,
+            height: 126,
             cornerRadius: 7
         });
-        this.modal.add(modal);
+        this.smallModal.add(smallModal);
         //title
-        this.modal.add(newText(76, 36, 'Kafka broker ' + selectedBroker.id, 28, 'Roboto Condensed', 'bold italic', this.state.selectedTheme['dashboard-colors']['kafka-color']));
+        this.smallModal.add(newText(76, 36, 'Kafka broker ' + hoveredBroker.id, 28, 'Roboto Condensed', 'bold italic', this.state.selectedTheme['dashboard-colors']['kafka-color']));
 
         //url
-        this.modal.add(newText(76, 72, selectedBroker.host + ':' + selectedBroker.port, 20, 'Roboto Condensed', '', this.state.selectedTheme["layout-colors"]["1"]));
-
-        //Download/Upload
-        this.modal.add(newText(35, 140, 'DOWNLOAD/UPLOAD', 16, 'Roboto Condensed', 'bold', this.state.selectedTheme["layout-colors"]["2"]));
-
-        //stats
-        this.modal.add(newText(35, 175, 'Bytes in', 20, 'Roboto Condensed', '', this.state.selectedTheme["layout-colors"]["1"]));
-        let bytesIn = newText(0, 175, '203k', 20, 'Roboto Condensed', '', this.state.selectedTheme["text-colors"]["body"]);
-        bytesIn.x(365 - bytesIn.getWidth());
-        this.modal.add(bytesIn);
-        this.modal.add(newText(35, 210, 'Bytes out', 20, 'Roboto Condensed', '', this.state.selectedTheme["layout-colors"]["1"]));
-        let bytesOut = newText(0, 210, '209k', 20, 'Roboto Condensed', '', this.state.selectedTheme["text-colors"]["body"]);
-        bytesOut.x(365 - bytesOut.getWidth());
-        this.modal.add(bytesOut);
-
-        //Other metrics
-        this.modal.add(newText(35, 275, 'OTHER METRICS', 16, 'Roboto Condensed', 'bold', this.state.selectedTheme["layout-colors"]["2"]));
-
-        //stats
-        this.modal.add(newText(35, 310, 'Failed fetch requests', 20, 'Roboto Condensed', '', this.state.selectedTheme["layout-colors"]["1"]));
-        let failedFetch = newText(0, 310, '0', 20, 'Roboto Condensed', '', this.state.selectedTheme["text-colors"]["body"]);
-        failedFetch.x(365 - failedFetch.getWidth());
-        this.modal.add(failedFetch);
-
-        this.modal.add(newText(35, 345, 'Fetch message conversation', 20, 'Roboto Condensed', '', this.state.selectedTheme["layout-colors"]["1"]));
-        let fetchMessage = newText(0, 345, '484', 20, 'Roboto Condensed', '', this.state.selectedTheme["text-colors"]["body"]);
-        fetchMessage.x(365 - fetchMessage.getWidth());
-        this.modal.add(fetchMessage);
-
-        this.modal.add(newText(35, 380, 'Produce message conversation', 20, 'Roboto Condensed', '', this.state.selectedTheme["layout-colors"]["1"]));
-        let produceMessage = newText(0, 380, '22', 20, 'Roboto Condensed', '', this.state.selectedTheme["text-colors"]["body"]);
-        produceMessage.x(365 - produceMessage.getWidth());
-        this.modal.add(produceMessage);
+        this.smallModal.add(newText(76, 72, hoveredBroker.host + ':' + hoveredBroker.port, 20, 'Roboto Condensed', '', this.state.selectedTheme["layout-colors"]["1"]));
 
         let mutableX = 0;
         let mutableY = 0;
 
-        this.modal.add(new Konva.Line({
+        this.smallModal.add(new Konva.Line({
             points: [mutableX, mutableY - 1,
                 mutableX += 60, mutableY += 35,
                 mutableX, mutableY += 60,
@@ -353,9 +484,21 @@ class Dashboard extends React.Component {
             closed: true
         }));
 
-        this.modal.add(drawKafkaIcon(167, 22, this.state.selectedTheme['dashboard-colors']["kafka-color"]));
+        this.smallModal.add(drawKafkaIcon(167, 22, this.state.selectedTheme['dashboard-colors']["kafka-color"]));
+        this.mainLayer.add(this.smallModal);
+        this.mainLayer.add(this.drawnHoveredNode);
+    }
 
-        this.mainLayer.add(this.modal);
+    _removeModals() {
+        if (this.smallModal) {
+            this.smallModal.destroy();
+            this.smallModal = null;
+        }
+        if (this.drawnHoveredNode) {
+            this.drawnHoveredNode.destroy();
+            this.drawnHoveredNode = null;
+        }
+        this.setState({showModal: false});
     }
 
     _renderMatrix(matrix, onlyClusters = false) {
@@ -363,6 +506,7 @@ class Dashboard extends React.Component {
         this.clusterHexagones = this.clusterHexagones || [];
         let x;
         let defaultHexagone = this._generateHexagone(0, 0);
+
         defaultHexagone.cache();
 
         if (onlyClusters) {
@@ -405,25 +549,35 @@ class Dashboard extends React.Component {
                     if (!onlyClusters) {
                         let clone = defaultHexagone.clone({x, y});
                         this.mainLayer.add(clone);
-
-                        clone.on('mouseenter', () => {
-                            this.stage.container().style.cursor = 'pointer';
-                            clone.children[0].fill(this.state.selectedTheme['dashboard-colors']['adjacent-hexagone-bc']);
-                            clone.children[0].stroke(this.state.selectedTheme['dashboard-colors']['adjacent-hexagone-border']);
-                            this.mainLayer.draw();
-                        });
-
-                        clone.on('mouseleave', () => {
-                            this.stage.container().style.cursor = 'default';
-                            clone.children[0].fill(this.state.selectedTheme['dashboard-colors']['default-hexagone-bc']);
-                            clone.children[0].stroke(this.state.selectedTheme['dashboard-colors']['default-hexagone-border']);
-                            this.mainLayer.draw();
-                        });
                     }
                 }
             }
         }
-        this.mainLayer.draw();
+        this.mainLayer.on('mousemove', e => {
+            let oldNode = this.hoveredNode;
+            let newNode = e.target;
+            if ((!oldNode && newNode.attrs.isHexagone)
+                || (oldNode && oldNode._id !== newNode._id && newNode.attrs.isHexagone)) {
+                this._removeModals();
+
+                if (oldNode) {
+                    oldNode.fill(oldNode.oldColor);
+                }
+
+                this.hoveredNode = newNode;
+                this.hoveredNode.oldColor = newNode.fill();
+                if (this.hoveredNode.attrs.type === "zookeeper" || this.hoveredNode.attrs.type === "kafka") {
+                    this.hoveredNode.fill(shadeColor(newNode.fill(), 10));
+                    this._drawModals(this.hoveredNode);
+                } else {
+                    this.hoveredNode.fill(shadeColor(newNode.fill(), 3));
+                }
+            }
+            this.mainLayer.batchDraw();
+        });
+
+
+        this.mainLayer.batchDraw();
         if (!onlyClusters) {
             this.stage.add(this.mainLayer);
         }
@@ -431,10 +585,7 @@ class Dashboard extends React.Component {
             this._focusCluster(this.state.selectedCluster);
             this.firstDraw = false;
         }
-        setTimeout(() => {
-            this.stage.batchDraw()
-            this.stage.draw();
-        });
+        this.stage.draw();
     }
 
     _focusCluster(cluster) {
@@ -510,7 +661,9 @@ class Dashboard extends React.Component {
             strokeWidth: 0.5,
             closed: true,
             type,
-            id
+            id,
+            isHexagone: true,
+            parent: group
         };
 
         if (isActive) {
@@ -527,8 +680,9 @@ class Dashboard extends React.Component {
                     break;
                 case 'kafka':
                 case 'zookeeper':
-                    hexagonesProperties.fill = this.state.selectedTheme['dashboard-colors'][type + '-color'] + '30';
-                    hexagonesProperties.stroke = this.state.selectedTheme['dashboard-colors'][type + '-color'] + '30';
+                    hexagonesProperties.fill = this.state.selectedTheme['dashboard-colors'][type + '-color'];
+                    hexagonesProperties.stroke = this.state.selectedTheme['dashboard-colors'][type + '-color'];
+                    hexagonesProperties.opacity = 0.3;
                     break;
                 default:
                     hexagonesProperties.fill = this.state.selectedTheme['dashboard-colors']['default-hexagone-bc'];
@@ -594,6 +748,15 @@ class Dashboard extends React.Component {
                     </div>
                     <div className="cluster-stat">
                         <div className="text">
+                            <span className="value">{this.state.stats.partitions}</span>
+                            <span className="label">Partitions</span>
+                        </div>
+                        <div className="icon">
+                            <PartitionIcon/>
+                        </div>
+                    </div>
+                    <div className="cluster-stat">
+                        <div className="text">
                             <span className="value">{this.state.stats.zookeeper}</span>
                             <span className="label">Zookeeper</span>
                         </div>
@@ -619,6 +782,7 @@ class Dashboard extends React.Component {
                     </div>
                 </div>
                 {this.state.loading && <Loader/>}
+                {this.state.showModal && this._renderModal()}
             </div>
         );
     }
@@ -934,5 +1098,10 @@ function drawKafkaIcon(x = 0, y = 0, color = "black") {
     });
 }
 
-export default Dashboard;
+function shadeColor(color, percent) {  // deprecated. See below.
+    var num = parseInt(color.slice(1), 16), amt = Math.round(2.55 * percent), R = (num >> 16) + amt,
+        G = (num >> 8 & 0x00FF) + amt, B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+}
 
+export default Dashboard;

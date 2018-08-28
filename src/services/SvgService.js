@@ -154,6 +154,16 @@ export let TopicsIcon = props => {
         </svg>
     );
 };
+export let PartitionIcon = props => {
+    return (
+        <svg width="32" height="32" viewBox="0 0 32 32" {...props}>
+            <title>partition</title>
+            <path d="M19.06,6.94V26.06H12.94V6.94h6.12M20,6H12V27h8V6Z"/>
+            <rect x="14" y="16" width="4" height="9"/>
+            <rect x="14" y="11" width="4" height="4"/>
+        </svg>
+    );
+};
 export let ConsumerIcon = props => {
     return (
         <svg width="32" height="32" viewBox="0 0 32 32" {...props}>
@@ -189,7 +199,6 @@ export let SubTreeIcon = props => {
 
     );
 };
-
 
 export let ZookeeperIcon = props => {
     return (

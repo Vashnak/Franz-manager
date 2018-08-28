@@ -330,7 +330,7 @@ class Topics extends React.Component {
                 Hide logs topics
                 <Ink/>
             </button>
-            {this.state.topicsFilters.topicName && (
+            {this.state.topicsFilters.topicName && topics.length > 0 && (
                 <button className="toggle danger" onClick={this._openBulkDeleteModal.bind(this, topics)}>
                     Delete all
                     <Ink/>
@@ -407,7 +407,8 @@ class Topics extends React.Component {
 
                 {this.state.bulkDeleteModal &&
                 <Modal title={`You are going to delete ${topics.length} topics`}
-                       close={this._closeBulkDeleteModal.bind(this)}>
+                       close={this._closeBulkDeleteModal.bind(this)}
+                className="deleteTopicsModal">
                     <section className="delete-topic-list">
                         <PerfectScrollbar>
                             {this.state.topicsToDelete.map(topic => <div key={topic.id}

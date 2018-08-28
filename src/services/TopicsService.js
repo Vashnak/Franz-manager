@@ -17,18 +17,6 @@ export default {
         });
     },
 
-    getTopicMetrics(topicId, metricName) {
-        return new Promise((resolve, reject) => {
-            const queryParams = {metricName, metricType: "BrokerTopicMetrics"};
-            if (topicId) {
-                queryParams.topic = topicId;
-            }
-            ApiService.requestFranzManagerApi('GET', '/metrics', null, queryParams)
-                .then(resolve)
-                .catch(reject);
-        });
-    },
-
     getTopicPartitions(topicId) {
         return new Promise((resolve, reject) => {
             ApiService.requestFranzManagerApi('GET', '/topics/' + topicId + '/partitions', null)

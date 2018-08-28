@@ -12,6 +12,9 @@ import Option from '../../../components/menu/option/Option';
 
 import Error from "../../../components/error/Error";
 import SettingsModal from "./settingsModal/SettingsModal";
+import classnames from "classnames";
+import MetricsService from "../../../services/MetricsService";
+import EditPartitionsModal from "./editPartitionsModal/EditPartitionsModal";
 
 const partitionColors = [
     '#e57373',
@@ -108,12 +111,21 @@ class Topic extends Component {
             {id: 'BytesInPerSec', label: 'Bytes in'},
             {id: 'BytesOutPerSec', label: 'Bytes out'}
         ];
-        Promise.all(wantedMetrics.map(metric => TopicsService.getTopicMetrics(this.state.topicId, metric.id)))
-            .then(metrics => {
+        Promise.all(wantedMetrics.map(metric => MetricsService.getMetrics('kafka.server', 'BrokerTopicMetrics', metric.id, 'topic=' + this.state.topicId)))
+            .then(brokersMetrics => {
                 this.setState({
-                    metrics: metrics.map(metric => {
-                        metric.label = wantedMetrics.find(w => w.id === metric.name).label;
-                        return metric;
+                    metrics: brokersMetrics.map(brokersMetric => {
+                        return brokersMetric.reduce((prev, next) => {
+                            prev.label = wantedMetrics.find(w => w.id === next.name).label;
+                            if (!prev.metrics) {
+                                prev.metrics = next.metrics;
+                            } else {
+                                ["Count", "FifteenMinuteRate", "FiveMinuteRate", "MeanRate", "OneMinuteRate"].forEach(metricName => {
+                                    prev.metrics[metricName] += next.metrics[metricName];
+                                });
+                            }
+                            return prev;
+                        }, {});
                     }),
                     loadingMetrics: false
                 });
@@ -184,6 +196,14 @@ class Topic extends Component {
         this.setState({settingsModal: false})
     }
 
+    _openEditPartitionModal() {
+        this.setState({editPartitionModal: true});
+    }
+
+    _closeEditPartitionModal() {
+        this.setState({editPartitionModal: false});
+    }
+
     _deleteTopic() {
         TopicsService.deleteTopic(this.state.topicId)
             .then(() => {
@@ -191,14 +211,21 @@ class Topic extends Component {
             });
     }
 
-    _selectPartition() {
-        this.setState({selectedPartition: ''})
+    _selectPartition(partition) {
+        if (this.state.selectedPartition && this.state.selectedPartition.partition === partition.partition) {
+            return this.setState({selectedPartition: null});
+        }
+        this.setState({selectedPartition: partition})
     }
 
     _renderContextActions() {
         return <div className="context-actions topic-context-actions">
             <button onClick={this._openSettings.bind(this)} className='toggle'>
                 Settings
+                <Ink/>
+            </button>
+            <button onClick={this._openEditPartitionModal.bind(this)} className='toggle'>
+                Add Partitions
                 <Ink/>
             </button>
             {this.state.confirmDelete ? [
@@ -237,7 +264,7 @@ class Topic extends Component {
     _renderMetrics() {
         return <div className="metrics">
             <header>
-                <h3>Brokers</h3>
+                <h3>Metrics</h3>
             </header>
             {this.state.loadingMetrics && <Loader width="32"/>}
             {this.state.errorLoadingMetrics && !this.state.loadingMetrics && <Error noRiddle={true}/>}
@@ -269,8 +296,12 @@ class Topic extends Component {
     }
 
     _renderPartitions() {
+        const messagesPerPartition = {};
+        const messages = this.state.messages;
+        this.state.partitions.forEach(p => {
+            messagesPerPartition[p.partition] = messages.filter(m => m.partition === p.partition).length
+        });
         return <div className="partitions flex flex-1 flex-column">
-
             <header>
                 <h3>Partitions</h3>
             </header>
@@ -281,7 +312,7 @@ class Topic extends Component {
                     <table>
                         <thead>
                         <tr>
-                            <th className="text-left">partitions</th>
+                            <th className="text-left">partitions <span className="">(Messages)</span></th>
                             <th className="text-right">beginning offset</th>
                             <th className="text-right">end offset</th>
                             <th className="text-right">replicas</th>
@@ -294,19 +325,20 @@ class Topic extends Component {
                             const partitionColor = partitionColors[partition.partition % partitionColors.length];
                             return (
                                 <tr key={partition.partition}
-                                    className="pointer"
+                                    className={classnames({selected: this.state.selectedPartition && this.state.selectedPartition.partition === partition.partition}, "pointer")}
                                     onClick={this._selectPartition.bind(this, partition)}>
                                     <td className="text-left">
                                         <div className="flex align-center">
                                             <i className="ellipse margin-right-8px ellipse-8px"
                                                style={{backgroundColor: partitionColor}}/>
-                                            {partition.partition}
+                                            {partition.partition} <span
+                                            className="margin-left-12px">({messagesPerPartition[partition.partition]})</span>
                                         </div>
                                     </td>
                                     <td className="text-right">{partition.beginningOffset}</td>
                                     <td className="text-right">{partition.endOffset}</td>
-                                    <td className="text-right">({partition.replicas})</td>
-                                    <td className="text-right">({partition.inSyncReplicas})</td>
+                                    <td className="text-right">({partition.replicas.join(', ')})</td>
+                                    <td className="text-right">({partition.inSyncReplicas.join(', ')})</td>
                                     <td className="text-right">{partition.leader}</td>
                                 </tr>
                             )
@@ -335,33 +367,20 @@ class Topic extends Component {
     }
 
     _renderMessages() {
+        let messages;
+        if (this.state.selectedPartition) {
+            messages = this.state.messages.filter(m => m.partition === this.state.selectedPartition.partition).slice(0, this.state.maxShownMessages);
+        } else {
+            messages = this.state.messages.slice(0, this.state.maxShownMessages);
+        }
+
         return <div className="flex flex-1">
-            <div className="message-fetch-type-wrapper">
-                {this.state.messageTypeSelected === 'Live message' && <button className="message-live-toggle">
-                    <i className="mdi mdi-pause mdi-24px"/>
-                    <Ink/>
-                </button>}
-                <Menu label={this.state.messageTypeSelected}>
-                    {messageTypes.map(type => {
-                        return <Option
-                            onChange={this._changeMessageType.bind(this)}
-                            value={type}
-                            ref={type}
-                            key={type}
-                            selected={this.state.messageTypeSelected}>
-                            {type}
-                        </Option>;
-                    })}
-                </Menu>
-            </div>
-
-
             <PerfectScrollbar className="messages-list" onYReachEnd={this._onMessagesScroll.bind(this)}>
                 {this.state.loadingMessages && <Loader width="32"/>}
                 {!this.state.loadingMessages && this.state.errorLoadingMessages && <Error noRiddle={true}/>}
                 {!this.state.loadingMessages && !this.state.errorLoadingMessages &&
 
-                this.state.messages.slice(0, this.state.maxShownMessages).map((message, index) => {
+                messages.map((message, index) => {
                     const partitionColor = partitionColors[message.partition % partitionColors.length];
                     return <section key={index}>
                         <div className="timestamp-wrapper">
@@ -387,6 +406,29 @@ class Topic extends Component {
                 })
                 }
             </PerfectScrollbar>
+
+            <div className="message-fetch-type-wrapper">
+                {this.state.messageTypeSelected === 'Live message' ? <button className="message-live-toggle">
+                    <i className="mdi mdi-pause mdi-24px"/>
+                    <Ink/>
+                </button> : <button className="message-live-toggle"
+                                    onClick={this._loadTopicMessages.bind(this, this.state.messages.length)}>
+                    <i className="mdi mdi-refresh mdi-24px"/>
+                    <Ink/>
+                </button>}
+                <Menu label={this.state.messageTypeSelected}>
+                    {messageTypes.map(type => {
+                        return <Option
+                            onChange={this._changeMessageType.bind(this)}
+                            value={type}
+                            ref={type}
+                            key={type}
+                            selected={this.state.messageTypeSelected}>
+                            {type}
+                        </Option>;
+                    })}
+                </Menu>
+            </div>
         </div>;
     }
 
@@ -406,6 +448,8 @@ class Topic extends Component {
                 </div>
                 {this.state.settingsModal &&
                 <SettingsModal topic={this.state.topicId} close={this._closeSettings.bind(this)}/>}
+                {this.state.editPartitionModal &&
+                <EditPartitionsModal refreshPartitions={this._loadTopicPartitions.bind(this)} topic={this.state.topicId} currentPartitions={this.state.partitions.length} close={this._closeEditPartitionModal.bind(this)}/>}
             </div>
         );
     }

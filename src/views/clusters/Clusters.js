@@ -8,6 +8,7 @@ import TopicsService from "../../services/TopicsService";
 import Filter from "../../components/filter/Filter";
 import _ from "lodash";
 import querystring from "querystring";
+import MetricsService from "../../services/MetricsService";
 
 class Clusters extends React.Component {
     constructor(props) {
@@ -73,12 +74,21 @@ class Clusters extends React.Component {
             {id: 'TotalFetchRequestsPerSec', label: 'Total fetch requests'},
             {id: 'TotalProduceRequestsPerSec', label: 'Total produce requests'},
         ];
-        Promise.all(wantedMetrics.map(metric => TopicsService.getTopicMetrics(null, metric.id)))
-            .then(metrics => {
+        Promise.all(wantedMetrics.map(metric => MetricsService.getMetrics('kafka.server', 'BrokerTopicMetrics', metric.id, null)))
+            .then(brokersMetrics => {
                 this.setState({
-                    metrics: metrics.map(metric => {
-                        metric.label = wantedMetrics.find(w => w.id === metric.name).label;
-                        return metric;
+                    metrics: brokersMetrics.map(brokersMetric => {
+                        return brokersMetric.reduce((prev, next) => {
+                            prev.label = wantedMetrics.find(w => w.id === next.name).label;
+                            if (!prev.metrics) {
+                                prev.metrics = next.metrics;
+                            } else {
+                                ["Count", "FifteenMinuteRate", "FiveMinuteRate", "MeanRate", "OneMinuteRate"].forEach(metricName => {
+                                    prev.metrics[metricName] += next.metrics[metricName];
+                                });
+                            }
+                            return prev;
+                        }, {});
                     }),
                     loadingMetrics: false
                 });
@@ -242,6 +252,7 @@ class Clusters extends React.Component {
     }
 
     _renderMetrics() {
+        console.log(this.state.metrics)
         return <section className="flex-1">
             {this.state.loadingMetrics && <Loader width="32"/>}
             {this.state.errorLoadingMetrics && !this.state.loadingMetrics && <Error noRiddle={true}/>}

@@ -99,5 +99,45 @@
     }
   }
 
+  .broker-modal {
+    border-radius: 7px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 350px;
+    width: 320px;
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    background-color: rgba(map_get($layout-colors, nav-bars), 0.9);
+    padding: 30px;
 
+    .modal-part-title {
+      color: map_get($layout-colors, 2);
+      font-family: "Roboto Condensed";
+      font-weight: bold;
+    }
+
+    .modal-part-content {
+      margin-top: 8px;
+
+      .modal-part-line {
+        display: flex;
+        margin-top: 4px;
+        justify-content: space-between;
+
+        .key {
+          color: map_get($layout-colors, 1);
+          font-weight: 400;
+        }
+
+        .value {
+          color: map_get($text-colors, body);
+          font-weight: 400;
+        }
+      }
+    }
+
+  }
 }

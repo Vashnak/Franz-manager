@@ -3,6 +3,10 @@
   justify-content: center;
   align-items: center;
 
+  h2 {
+    @extend .danger;
+  }
+
   .content {
     position: relative;
     bottom: initial;
