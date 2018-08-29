@@ -1,4 +1,4 @@
-FROM nginx:alpine
+FROM nginx:stable-alpine
 
 ENV APP franz-manager
 ENV BASE_NGINX /usr/share/nginx/html
