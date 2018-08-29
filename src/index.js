@@ -9,7 +9,7 @@ import './core.scss';
 
 import ThemesStore from "./stores/ThemesStore";
 
-(function(elmProto){
+(function (elmProto) {
         if ('scrollTopMax' in elmProto) {
             return;
         }
@@ -35,7 +35,7 @@ if (!global._babelPolyfill) {
 const render = Component => {
     ReactDOM.render(
         <AppContainer>
-            <Component />
+            <Component/>
         </AppContainer>,
         document.getElementById('root')
     )

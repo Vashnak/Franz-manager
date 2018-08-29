@@ -45,7 +45,7 @@ class Topnav extends Component {
         const splittedPath = location.pathname.split('/');
         let selectedSidenavItem = sidenavItems.find(m => m.link.split('/')[2] === location.pathname.split('/')[2]);
         this.setState({
-            selectedSidenavItem: selectedSidenavItem ? selectedSidenavItem.label : sidenavItems[0].label,
+            selectedSidenavItem: selectedSidenavItem ? selectedSidenavItem : sidenavItems[0],
             subLocation: splittedPath[3] || ''
         })
     }
@@ -62,10 +62,10 @@ class Topnav extends Component {
                 <div className="breadcrumb flex-1">
                     <div>
                         <div className="flex margin-bottom-4px">
-                            <span className="item">Cluster production</span>
-                            {this.state.subLocation && <span className="item">{this.state.selectedSidenavItem}</span>}
+                            <Link className="item" to="/franz-manager/dashboard">Cluster production</Link>
+                            {this.state.subLocation && <Link className="item" to={this.state.selectedSidenavItem.link}>{this.state.selectedSidenavItem.label}</Link>}
                         </div>
-                        <h1>{this.state.subLocation || this.state.selectedSidenavItem}</h1>
+                        <h1>{this.state.subLocation || this.state.selectedSidenavItem.label}</h1>
                     </div>
                 </div>
 

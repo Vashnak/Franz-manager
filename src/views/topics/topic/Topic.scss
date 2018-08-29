@@ -1,6 +1,6 @@
 .topic-item-view {
 
-  .left-column{
+  .left-column {
     min-width: 540px;
   }
 
@@ -10,8 +10,8 @@
     padding: 0 $theme-content-padding/2;
     position: relative;
 
-    @if($theme-message-shadow){
-      &:after{
+    @if ($theme-message-shadow) {
+      &:after {
         content: "";
         position: absolute;
         top: 0;
@@ -24,7 +24,7 @@
       }
     }
 
-    .message-fetch-type-wrapper{
+    .message-fetch-type-wrapper {
       position: absolute;
       bottom: 0px;
       right: 0;
@@ -32,51 +32,51 @@
       display: flex;
       align-items: center;
 
-      .dropdown-menu{
+      .dropdown-menu {
         margin-left: 0;
-        .dropdown-menu-trigger{
+        .dropdown-menu-trigger {
           background: linear-gradient(to right, map_get($theme-colors, 1), map_get($theme-colors, 2));
           box-shadow: 0 -20px 40px 0 rgba(map_get($theme-colors, 1), .16);
           color: map_get($layout-colors, 7);
 
-          .mdi-chevron-down{
+          .mdi-chevron-down {
             color: map_get($layout-colors, 7);
           }
         }
       }
 
-      .message-live-toggle{
+      .message-live-toggle {
         color: map_get($theme-colors, 1);
         background: map_get($layout-colors, 7);
         padding: 0;
         @include scale(48px);
 
-        .mdi{
+        .mdi {
           color: map_get($theme-colors, 1);
         }
       }
 
-      .message-fetch-title{
+      .message-fetch-title {
         display: flex;
         flex-direction: column;
         min-width: 300px;
 
-        .title{
+        .title {
           font: map_get($fonts, message-fecth-title);
           color: map_get($layout-colors, 7);
         }
-        .stats{
+        .stats {
           font: map_get($fonts, message-fecth-stats);
           color: map_get($layout-colors, 7);
         }
       }
 
-      .message-fetch-type-switch{
+      .message-fetch-type-switch {
 
-        .dropdown-menu-trigger{
+        .dropdown-menu-trigger {
           color: map_get($layout-colors, 6);
 
-          .mdi{
+          .mdi {
             color: map_get($layout-colors, 6);
           }
         }
@@ -96,21 +96,22 @@
         opacity: .8;
         background: map_get($layout-colors, section);
 
-        &:hover{
+        &:hover {
           opacity: 1;
         }
 
         header {
+          position: relative;
           background: map_get($layout-colors, 8);
           height: 56px;
           @include center();
           padding: 0 0 0 24px;
 
-          .key-message{
+          .key-message {
             font: map_get($fonts, key-message);
           }
 
-          .partition{
+          .partition {
             font: map_get($fonts, message-partition);
             color: map_get($text-colors, message-partition);
             text-transform: uppercase;
@@ -118,6 +119,21 @@
             @include center(true, true);
             border-top-right-radius: $theme-section-radius;
             padding: 0 16px;
+          }
+
+          .copy-icon {
+            cursor: pointer;
+            position: absolute;
+            right: 8px;
+            bottom: -44px;
+            padding: 8px;
+            border-radius: 50%;
+
+            svg {
+              fill: map_get($text-colors, code-punctuation);
+              height: 18px;
+              width: 18px;
+            }
           }
         }
 
@@ -129,14 +145,14 @@
             font: map_get($fonts, message-timestamp);
             color: map_get($text-colors, message-timestamp);
 
-            .milliseconds{
+            .milliseconds {
               font: inherit;
               color: map_get($text-colors, message-timestamp-ms);
             }
           }
         }
 
-        .simple-message{
+        .simple-message {
           font: map_get($fonts, code);
           line-height: 21px;
           padding: 0 24px 24px 24px;

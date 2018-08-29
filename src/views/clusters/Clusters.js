@@ -62,8 +62,8 @@ class Clusters extends React.Component {
 
         const wantedMetrics = [
             {id: 'MessagesInPerSec', label: 'Messages in'},
-            {id: 'BytesInPerSec', label: 'Bytes in'},
-            {id: 'BytesOutPerSec', label: 'Bytes out'},
+            {id: 'BytesInPerSec', label: 'Bytes in per sec'},
+            {id: 'BytesOutPerSec', label: 'Bytes out per sec'},
             {id: 'BytesRejectedPerSec', label: 'Bytes rejected'},
             {id: 'FailedFetchRequestsPerSec', label: 'Failed fetch request'},
             {id: 'FailedProduceRequestsPerSec', label: 'Failed produce request'},
@@ -177,8 +177,8 @@ class Clusters extends React.Component {
                             <th className="text-left">Broker Id</th>
                             <th className="text-right">Host</th>
                             <th className="text-right">Port</th>
-                            <th className="text-right">Bytes in</th>
-                            <th className="text-right">bytes Out</th>
+                            <th className="text-right">Bytes In per sec</th>
+                            <th className="text-right">bytes Out per sec</th>
                         </tr>
                         </thead>
                         <tbody>

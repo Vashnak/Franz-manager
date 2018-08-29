@@ -4,6 +4,7 @@ import ConsumersService from '../../../services/ConsumersService';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import JSONPretty from 'react-json-pretty';
 import moment from 'moment';
+import {ToastStore, ToastContainer} from 'react-toasts';
 
 import Ink from 'react-ink';
 import Loader from '../../../components/loader/Loader';
@@ -15,6 +16,8 @@ import SettingsModal from "./settingsModal/SettingsModal";
 import classnames from "classnames";
 import MetricsService from "../../../services/MetricsService";
 import EditPartitionsModal from "./editPartitionsModal/EditPartitionsModal";
+import {CopyIcon} from "../../../services/SvgService";
+import {Link} from "react-router-dom";
 
 const partitionColors = [
     '#e57373',
@@ -67,6 +70,16 @@ class Topic extends Component {
         this._loadTopicPartitions();
         this._loadTopicConsumers();
         this._loadTopicMetrics();
+    }
+
+    _copyJSON(json) {
+        const textarea = document.createElement('textarea');
+        textarea.value = json;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        ToastStore.success('Message content copied.')
     }
 
     _changeMessageType(type) {
@@ -360,7 +373,7 @@ class Topic extends Component {
             {this.state.errorLoadingConsumers && !this.state.loadingConsumers && <Error noRiddle={true}/>}
             {!this.state.loadingConsumers && !this.state.errorLoadingConsumers && (
                 <div className="consumer-list">
-                    {this.state.consumers.map(consumer => <button key={consumer}>{consumer} <Ink/></button>)}
+                    {this.state.consumers.map(consumer => <Link to={`/franz-manager/consumers/${consumer}`}><button key={consumer}>{consumer} <Ink/></button></Link>)}
                 </div>
             )}
         </div>;
@@ -392,6 +405,10 @@ class Topic extends Component {
                             </div>
                             <div className="partition" style={{backgroundColor: partitionColor}}>
                                 Partition {message.partition}
+                            </div>
+                            <div className="copy-icon" onClick={this._copyJSON.bind(this, message.message)}>
+                                <CopyIcon/>
+                                <Ink/>
                             </div>
                         </header>
                         {(() => {
@@ -449,7 +466,10 @@ class Topic extends Component {
                 {this.state.settingsModal &&
                 <SettingsModal topic={this.state.topicId} close={this._closeSettings.bind(this)}/>}
                 {this.state.editPartitionModal &&
-                <EditPartitionsModal refreshPartitions={this._loadTopicPartitions.bind(this)} topic={this.state.topicId} currentPartitions={this.state.partitions.length} close={this._closeEditPartitionModal.bind(this)}/>}
+                <EditPartitionsModal refreshPartitions={this._loadTopicPartitions.bind(this)} topic={this.state.topicId}
+                                     currentPartitions={this.state.partitions.length}
+                                     close={this._closeEditPartitionModal.bind(this)}/>}
+                <ToastContainer store={ToastStore}/>
             </div>
         );
     }
