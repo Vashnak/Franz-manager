@@ -25,6 +25,7 @@ class Dashboard extends React.Component {
             selectedTheme: ThemesStore.getTheme().maps,
             stats: {
                 topics: '-',
+                partitions: '-',
                 zookeeper: '-',
                 brokers: '-',
                 status: '-'
@@ -201,6 +202,7 @@ class Dashboard extends React.Component {
     _loadClusterStats() {
         let stats = {
             topics: '-',
+            partitions: '-',
             zookeeper: '-',
             brokers: '-',
             status: '-',
@@ -360,6 +362,7 @@ class Dashboard extends React.Component {
                 selectedCluster: clusterName,
                 stats: {
                     topics: '-',
+                    partitions: '-',
                     zookeeper: '-',
                     brokers: '-',
                     status: '-'
@@ -782,20 +785,20 @@ class Dashboard extends React.Component {
                     </div>
                     <div className="cluster-stat">
                         <div className="text">
-                            <span className="value">{this.state.stats.zookeeper}</span>
-                            <span className="label">Zookeeper</span>
-                        </div>
-                        <div className="icon">
-                            <ZookeeperIcon/>
-                        </div>
-                    </div>
-                    <div className="cluster-stat">
-                        <div className="text">
                             <span className="value">{this.state.stats.brokers}</span>
                             <span className="label">Kafka Brokers</span>
                         </div>
                         <div className="icon kafka">
                             <KafkaIcon/>
+                        </div>
+                    </div>
+                    <div className="cluster-stat">
+                        <div className="text">
+                            <span className="value">{this.state.stats.zookeeper}</span>
+                            <span className="label">Zookeeper</span>
+                        </div>
+                        <div className="icon">
+                            <ZookeeperIcon/>
                         </div>
                     </div>
                     <div className="cluster-stat">

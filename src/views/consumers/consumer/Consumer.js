@@ -7,6 +7,19 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import Loader from "../../../components/loader/Loader";
 import Error from "../../../components/error/Error";
 
+const partitionColors = [
+    '#e57373',
+    '#f06292',
+    '#ba68c8',
+    '#9575cd',
+    '#64b5f6',
+    '#4dd0e1',
+    '#81c784',
+    '#dce775',
+    '#ffd54f',
+    '#ffb74d',
+];
+
 class Consumer extends Component {
     constructor(props) {
         super(props);
@@ -96,9 +109,11 @@ class Consumer extends Component {
                                     {topics.map(topic => {
                                         return (
                                             <section className="topic-consumed" key={topic.id}>
-                                                <header className="title flex space-between"><h4
-                                                    className="flex-1">{topic} </h4><Link
-                                                    to={`/franz-manager/topics/${topic}`}>Go to topic</Link></header>
+                                                <header className="title flex space-between">
+                                                    <Link to={`/franz-manager/topics/${topic}`}>
+                                                        <h4 className="flex-1">{topic} </h4>
+                                                    </Link>
+                                                </header>
                                                 <div className="topic-consumed-partitions">
                                                     <table>
                                                         <thead>
@@ -116,9 +131,13 @@ class Consumer extends Component {
                                                         <tbody>
                                                         {
                                                             this.state.topics[topic].sort((a, b) => a.partition - b.partition).map(partition => {
+                                                                const partitionColor = partitionColors[partition.partition % partitionColors.length];
                                                                 return (
                                                                     <tr className="topic-consumed-partition">
-                                                                        <td className="text-left">{partition.partition}</td>
+                                                                        <td className="text-left flex align-center">
+                                                                            <i className="ellipse margin-right-8px ellipse-8px"
+                                                                               style={{backgroundColor: partitionColor}}/>
+                                                                            {partition.partition}</td>
                                                                         <td className="text-right">{typeof partition.topicOffset !== 'undefined' ?
                                                                             partition.topicOffset.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : 'unknown'}</td>
                                                                         <td className="text-right">{partition.consumerOffset.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>

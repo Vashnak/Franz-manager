@@ -1,0 +1,32 @@
+.tooltip-component {
+  .tooltip {
+    position: fixed;
+    background-color: rgba(25, 25, 25, 0.8);
+    color: #fff;
+    z-index: 999;
+    white-space: nowrap;
+    padding: 2px 4px;
+    border-radius: 3px;
+
+    &.animate {
+      animation: fadeInFromNone .2s ease;
+    }
+  }
+}
+
+@-webkit-keyframes fadeInFromNone {
+  0% {
+    display: none;
+    opacity: 0;
+  }
+
+  1% {
+    display: block;
+    opacity: 0;
+  }
+
+  100% {
+    display: block;
+    opacity: 1;
+  }
+}

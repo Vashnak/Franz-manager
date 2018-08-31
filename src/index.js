@@ -51,3 +51,10 @@ if (module.hot) {
         render(router)
     })
 }
+
+let t = {
+    "id": "2178a602-6e20-471c-9c43-bdf7f7318c50",
+    "label": "Big-beta-test",
+    "price": 0,
+    "validationsPerDay": 10000
+}

@@ -6,6 +6,7 @@ import JSONPretty from 'react-json-pretty';
 import moment from 'moment';
 import {ToastStore, ToastContainer} from 'react-toasts';
 
+import ReactTooltip from 'react-tooltip'
 import Ink from 'react-ink';
 import Loader from '../../../components/loader/Loader';
 import Menu from '../../../components/menu/Menu';
@@ -18,6 +19,7 @@ import MetricsService from "../../../services/MetricsService";
 import EditPartitionsModal from "./editPartitionsModal/EditPartitionsModal";
 import {CopyIcon} from "../../../services/SvgService";
 import {Link} from "react-router-dom";
+import Tooltip from "../../../components/tooltip/Tooltip";
 
 const partitionColors = [
     '#e57373',
@@ -373,7 +375,9 @@ class Topic extends Component {
             {this.state.errorLoadingConsumers && !this.state.loadingConsumers && <Error noRiddle={true}/>}
             {!this.state.loadingConsumers && !this.state.errorLoadingConsumers && (
                 <div className="consumer-list">
-                    {this.state.consumers.map(consumer => <Link to={`/franz-manager/consumers/${consumer}`}><button key={consumer}>{consumer} <Ink/></button></Link>)}
+                    {this.state.consumers.map(consumer => <Link to={`/franz-manager/consumers/${consumer}`}>
+                        <button key={consumer}>{consumer} <Ink/></button>
+                    </Link>)}
                 </div>
             )}
         </div>;
@@ -406,10 +410,12 @@ class Topic extends Component {
                             <div className="partition" style={{backgroundColor: partitionColor}}>
                                 Partition {message.partition}
                             </div>
-                            <div className="copy-icon" onClick={this._copyJSON.bind(this, message.message)}>
-                                <CopyIcon/>
-                                <Ink/>
-                            </div>
+                            <Tooltip content="Copy message">
+                                <div className="copy-icon" onClick={this._copyJSON.bind(this, message.message)}>
+                                    <CopyIcon/>
+                                    <Ink/>
+                                </div>
+                            </Tooltip>
                         </header>
                         {(() => {
                             try {
@@ -470,6 +476,7 @@ class Topic extends Component {
                                      currentPartitions={this.state.partitions.length}
                                      close={this._closeEditPartitionModal.bind(this)}/>}
                 <ToastContainer store={ToastStore}/>
+                <ReactTooltip/>
             </div>
         );
     }
