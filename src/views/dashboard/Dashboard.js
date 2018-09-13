@@ -72,21 +72,12 @@ class Dashboard extends React.Component {
                 return this._loadMetrics();
             })
             .then(() => {
-                let cpt = 0;
-                WebFont.load({
-                    google: {
-                        families: ['Inconsolata', 'Roboto Condensed', 'Roboto']
-                    },
-                    fontactive: (e) => {
-                        cpt++;
-                        if (cpt === 3) {
-                            this.setState({clusters, loading: false});
-                            this._initCanvas();
-                        }
-                    }
-                });
                 return this._loadClusterStats();
-            });
+            })
+            .then(() => {
+                this.setState({clusters, loading: false});
+                this._initCanvas();
+            })
     }
 
     componentWillUnmount() {
@@ -209,20 +200,27 @@ class Dashboard extends React.Component {
             partitions: '-'
         };
         this.setState({stats});
-        TopicsService.getTopics(true)
-            .then(topics => {
-                stats.topics = topics.length;
-                stats.partitions = topics.reduce((prev, next) => prev + next.partitions, 0);
-                this.setState({stats});
-            });
-        BrokersService.getBrokers(this.state.selectedCluster)
-            .then(brokers => {
-                stats.brokers = brokers.length;
-                stats.zookeeper = brokers[0].configurations['zookeeper.connect'].split(',').length;
-                stats.status = 'OK';
-                this.setState({stats});
-            });
-
+        return Promise.all([
+            new Promise(resolve => {
+                TopicsService.getTopics(true)
+                    .then(topics => {
+                        stats.topics = topics.length;
+                        stats.partitions = topics.reduce((prev, next) => prev + next.partitions, 0);
+                        this.setState({stats});
+                        resolve();
+                    });
+            }),
+            new Promise(resolve => {
+                BrokersService.getBrokers(this.state.selectedCluster)
+                    .then(brokers => {
+                        stats.brokers = brokers.length;
+                        stats.zookeeper = brokers[0].configurations['zookeeper.connect'].split(',').length;
+                        stats.status = 'OK';
+                        this.setState({stats});
+                        resolve();
+                    });
+            })
+        ]);
     }
 
     _onMouseScroll(event) {
@@ -392,7 +390,7 @@ class Dashboard extends React.Component {
         let type = hexagone.attrs.type === 'kafka' ? 'brokers' : hexagone.attrs.type === 'zookeeper' ? 'zookeepers' : null;
         if (!type) return;
         let group = hexagone.parent || hexagone.attrs.parent;
-        this.drawnHoveredNode = this._generateHexagone(group.position().x, group.position().y, group.attrs.type, group.attrs.id, true);
+        this.drawnHoveredNode = this._generateHexagone(group.position().x, group.position().y, group.attrs.type, group.attrs.id, true, false, group.attrs.cluster, group.attrs.badges);
         let hoveredNode = this.state.clusters
             .find(c => c.name === this.state.selectedCluster)[type]
             .find(b => b.id === this.drawnHoveredNode.attrs.id);
@@ -409,7 +407,7 @@ class Dashboard extends React.Component {
             fill: this.state.selectedTheme['layout-colors']['nav-bars'],
             opacity: 0.9,
             width: 400,
-            height: 126,
+            height: hexagone.attrs.badges && hexagone.attrs.badges.length > 0 ? 160 : 126,
             cornerRadius: 7
         });
         this.smallModal.add(smallModal);
@@ -419,6 +417,14 @@ class Dashboard extends React.Component {
 
         //url
         this.smallModal.add(newText(76, 72, hoveredNode.host + ':' + hoveredNode.port, 20, 'Roboto Condensed', '', this.state.selectedTheme["layout-colors"]["1"]));
+
+        if (hexagone.attrs.badges && hexagone.attrs.badges) {
+            hexagone.attrs.badges.forEach((badge, index) => {
+                let clone = badge.clone();
+                clone.position({x: 90, y: 123});
+                this.smallModal.add(clone)
+            });
+        }
 
         let mutableX = 0;
         let mutableY = 0;
@@ -503,14 +509,15 @@ class Dashboard extends React.Component {
         this.mainLayer.draw();
     }
 
-    _generateHexagone(x, y, type = "default", id = null, isActive, disabled = false, cluster = null) {
+    _generateHexagone(x, y, type = "default", id = null, isActive, disabled = false, cluster = null, badges = []) {
         const group = new Konva.Group({
             x: x,
             y: y,
             type,
             id,
             disabled,
-            cluster
+            cluster,
+            badges
         });
 
         let mutableX = 0;
@@ -534,7 +541,8 @@ class Dashboard extends React.Component {
             isHexagone: true,
             parent: group,
             disabled,
-            cluster
+            cluster,
+            badges
         };
 
         if (isActive) {
@@ -606,6 +614,30 @@ class Dashboard extends React.Component {
         return group;
     }
 
+    _findBadges(node, x, y) {
+        let badges = [];
+        let stats = this.state.brokersStats[node.id];
+        if (stats && stats.find(s => s.label === 'isActiveController').value) {
+            const icon = drawCrownIcon(this.state.selectedTheme['dashboard-colors'][node.type === 'kafka' ? 'kafka-color' : 'zookeeper-color'], 0.3);
+            let badge = drawBadge(x + hexagonesWidth / 2, y + 4,
+                this.state.selectedTheme['dashboard-colors']['background'],
+                this.state.selectedTheme['dashboard-colors'][node.type === 'kafka' ? 'kafka-color' : 'zookeeper-color'],
+                0.3,
+                node.id, icon);
+            badges.push(badge);
+        }
+        if (node.id === '?') {
+            const icon = drawSkullIcon(this.state.selectedTheme['dashboard-colors'][node.type === 'kafka' ? 'kafka-color' : 'zookeeper-color'], 0.3);
+            let badge = drawBadge(x + hexagonesWidth / 2, y + 4,
+                this.state.selectedTheme['dashboard-colors']['background'],
+                this.state.selectedTheme['dashboard-colors'][node.type === 'kafka' ? 'kafka-color' : 'zookeeper-color'],
+                0.3,
+                node.id, icon);
+            badges.push(badge);
+        }
+        return badges;
+    }
+
     _renderMatrix(matrix, onlyClusters = false) {
         this.mainLayer = this.mainLayer || new Konva.Layer();
         this.clusterHexagones = this.clusterHexagones || [];
@@ -619,6 +651,8 @@ class Dashboard extends React.Component {
                 hexagone.destroy();
             })
         }
+
+        let badges = [];
 
         for (let i = 0; i < matrix.length; i++) {
             for (let j = 0; j < matrix[i].length; j++) {
@@ -635,12 +669,13 @@ class Dashboard extends React.Component {
                     }
                 } else if (matrix[i][j] !== -2) {
                     let elem = matrix[i][j];
-                    let hexagone = this._generateHexagone(x, y, elem.type, elem.id, false, this.state.selectedCluster !== elem.cluster, elem.cluster);
+                    elem.badges = this._findBadges(elem, x, y);
+                    let hexagone = this._generateHexagone(x, y, elem.type, elem.id, false, this.state.selectedCluster !== elem.cluster, elem.cluster, elem.badges);
                     if (this.state.selectedCluster === elem.cluster && elem.type === 'kafka') {
+                        elem.badges.forEach(badge => badges.push(badge));
                         hexagone.on('mouseenter', () => {
                             this.stage.container().style.cursor = 'pointer';
                         });
-
                         hexagone.on('mouseleave', () => {
                             this.stage.container().style.cursor = 'default';
                         });
@@ -658,13 +693,14 @@ class Dashboard extends React.Component {
                 }
             }
         }
+
         this.mainLayer.on('mousemove', e => {
             let oldNode = this.hoveredNode;
             let newNode = e.target;
             if (newNode.className === 'Text') {
                 newNode = [...newNode.parent.children].find(c => c.className === 'Line');
             }
-            if ((!oldNode && newNode.attrs.isHexagone )
+            if ((!oldNode && newNode.attrs.isHexagone)
                 || (oldNode && oldNode._id !== newNode._id && newNode.attrs.isHexagone)) {
                 this._removeModals();
 
@@ -675,16 +711,23 @@ class Dashboard extends React.Component {
                 this.hoveredNode = newNode;
                 this.hoveredNode.oldColor = newNode.fill();
                 if ((this.hoveredNode.attrs.type === "zookeeper" || this.hoveredNode.attrs.type === "kafka") && !newNode.attrs.disabled) {
+                    deleteBadge(this.activeBadge);
                     this.hoveredNode.fill(shadeColor(newNode.fill(), 10));
                     this._drawModals(this.hoveredNode);
+                    if (newNode.attrs.badges.length > 0) {
+                        this.activeBadge = newNode.attrs.badges[0].clone();
+                        this.activeBadge.children[1].opacity(1);
+                        this.mainLayer.add(this.activeBadge);
+                    }
                 } else {
                     this.hoveredNode.fill(shadeColor(newNode.fill(), 3));
+                    deleteBadge(this.activeBadge);
                 }
             }
             this.mainLayer.batchDraw();
         });
 
-
+        badges.forEach(badge => this.mainLayer.add(badge));
         this.mainLayer.batchDraw();
         if (!onlyClusters) {
             this.stage.add(this.mainLayer);
@@ -819,7 +862,6 @@ class Dashboard extends React.Component {
 function generateClusterMatrix(cluster) {
     let maxMatrixSize = 0;
     if (cluster.length === 0) return 0;
-    if (cluster.length === 1) return 1;
     for (let i = 1; ; i++) {
         let maxElements = 1 + i * 6;
         maxMatrixSize = i * 2 + 3; // +1 because of center and +2 because of lighter hexagones
@@ -889,7 +931,6 @@ function fillMatrixWithCluster(matrix, cluster, x, y) {
     let center = [x, y];
     while (clusterCopy.length > 0) {
         let strSeed = clusterCopy[0].type + '-' + clusterCopy[0].id;
-        // console.log(seed)
         let freeNeighbourPosition = findFreeNeighbourPosition(strSeed, matrixCopy, center[0], center[1]);
         if (freeNeighbourPosition) {
             matrixCopy[freeNeighbourPosition[0]][freeNeighbourPosition[1]] = clusterCopy[0];
@@ -931,14 +972,6 @@ function getRandomNeighbourPosition(x, y) {
     let positions = ["topLeft", "topRight", "right", "bottomRight", "bottomLeft", "left"];
     let position = positions[Math.floor(Math.random() * positions.length)];
     return getNeighbourCellPosition(position, x, y);
-}
-
-function shuffleArray(a) {
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
 }
 
 function newText(x, y, text, fsize, ff, fstyle, color) {
@@ -1411,24 +1444,115 @@ function drawZookeeperIcon(x = 0, y = 0, color = "black") {
     });
 }
 
+function drawCrownIcon(color = "black", opacity = 1) {
+    return new Konva.Shape({
+        x: -6,
+        y: -4,
+        sceneFunc: ctx => {
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineWidth = 0.261734;
+            ctx.fillStyle = color;
+            ctx.moveTo(12.170834, 0);
+            ctx.lineTo(10.142362, 3.175);
+            ctx.lineTo(8.113889, 0);
+            ctx.lineTo(6.085416, 3.175);
+            ctx.lineTo(4.056945, 0);
+            ctx.lineTo(2.028473, 3.175);
+            ctx.lineTo(0.000000, 0);
+            ctx.lineTo(0.000000, 3.175);
+            ctx.lineTo(0.000000, 6.35);
+            ctx.lineTo(12.168180, 6.35);
+            ctx.moveTo(0.002655, 8);
+            ctx.lineTo(12.170834, 8);
+            ctx.lineTo(12.170834, 7);
+            ctx.lineTo(0.002655, 7);
+            ctx.fill();
+            ctx.restore();
+        }
+    });
+}
+
+function drawSkullIcon(color = "black", opacity = 1) {
+    return new Konva.Shape({
+        x: -6,
+        y: -7,
+        sceneFunc: ctx => {
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineWidth = 0.261734;
+            ctx.fillStyle = color;
+            ctx.moveTo(6.948964, 5.406939);
+            ctx.bezierCurveTo(6.948964, 4.530221, 7.655381, 3.818459, 8.525518, 3.818459);
+            ctx.bezierCurveTo(9.398686, 3.818459, 10.105104, 4.530221, 10.105104, 5.406939);
+            ctx.bezierCurveTo(10.105104, 6.286711, 10.029314, 6.998473, 9.159171, 6.998473);
+            ctx.bezierCurveTo(8.286003, 6.998473, 6.948964, 6.286711, 6.948964, 5.406939);
+            ctx.moveTo(6.836786, 8.907702);
+            ctx.lineTo(6.206165, 8.907702);
+            ctx.lineTo(6.427489, 7.636919);
+            ctx.lineTo(7.058110, 7.636919);
+            ctx.moveTo(5.572511, 7.636919);
+            ctx.lineTo(5.796866, 8.907702);
+            ctx.lineTo(5.163214, 8.907702);
+            ctx.lineTo(4.941890, 7.636919);
+            ctx.moveTo(5.054068, 5.406939);
+            ctx.bezierCurveTo(5.054068, 6.286711, 3.713997, 6.998473, 2.840829, 6.998473);
+            ctx.bezierCurveTo(1.970692, 6.998473, 1.894897, 6.286711, 1.894897, 5.406939);
+            ctx.bezierCurveTo(1.894897, 4.530221, 2.601314, 3.818459, 3.474482, 3.818459);
+            ctx.bezierCurveTo(4.344619, 3.818459, 5.054068, 4.530221, 5.054068, 5.406939);
+            ctx.moveTo(12.000000, 6.045385);
+            ctx.bezierCurveTo(12.000000, 5.935413, 12.000000, 5.834606, 11.993947, 5.727689);
+            ctx.bezierCurveTo(11.830218, 2.532403, 9.207681, 0.000000, 6.000000, 0.000000);
+            ctx.bezierCurveTo(2.792319, 0.000000, 0.169783, 2.532403, 0.006064, 5.727689);
+            ctx.bezierCurveTo(0.000000, 5.834606, 0.000000, 5.935413, 0.000000, 6.045385);
+            ctx.lineTo(0.385043, 7.560550);
+            ctx.bezierCurveTo(0.151592, 7.832425, 0.000000, 8.831334, 0.000000, 9.225398);
+            ctx.bezierCurveTo(0.000000, 10.105172, 0.706417, 10.816932, 1.579586, 10.816932);
+            ctx.bezierCurveTo(1.637191, 10.816932, 1.685701, 10.804702, 1.737241, 10.798602);
+            ctx.bezierCurveTo(1.788783, 10.810832, 1.837292, 10.816932, 1.894896, 10.816932);
+            ctx.lineTo(2.525518, 12.090771);
+            ctx.lineTo(4.420414, 12.090771);
+            ctx.lineTo(4.420414, 10.816932);
+            ctx.lineTo(5.054067, 10.816932);
+            ctx.lineTo(5.054067, 12.090771);
+            ctx.lineTo(6.948964, 12.090771);
+            ctx.lineTo(6.948964, 10.816932);
+            ctx.lineTo(7.579586, 10.816932);
+            ctx.lineTo(7.579586, 12.090771);
+            ctx.lineTo(9.474482, 12.090771);
+            ctx.lineTo(10.105104, 10.816932);
+            ctx.bezierCurveTo(10.162714, 10.816932, 10.214250, 10.810732, 10.262759, 10.798602);
+            ctx.bezierCurveTo(10.314299, 10.804802, 10.365841, 10.816932, 10.420414, 10.816932);
+            ctx.bezierCurveTo(11.293583, 10.816932, 12.000000, 10.105172, 12.000000, 9.225398);
+            ctx.bezierCurveTo(12.000000, 8.831334, 11.848409, 7.832425, 11.614957, 7.560550);
+            ctx.moveTo(0.006064, 5.727689);
+            ctx.bezierCurveTo(0.000000, 5.834606, 0.000000, 5.935413, 0.000000, 6.045385);
+            ctx.lineTo(0.000000, 5.727689);
+            ctx.moveTo(12.000000, 5.727689);
+            ctx.lineTo(12.000000, 6.045385);
+            ctx.bezierCurveTo(12.000000, 5.935408, 12.000000, 5.834606, 11.993908, 5.727689);
+            ctx.moveTo(4.420414, 14.000000);
+            ctx.lineTo(3.159171, 14.000000);
+            ctx.lineTo(2.525518, 12.726161);
+            ctx.lineTo(4.420414, 12.726161);
+            ctx.moveTo(6.948964, 14.000000);
+            ctx.lineTo(5.054068, 14.000000);
+            ctx.lineTo(5.054068, 12.726161);
+            ctx.lineTo(6.948964, 12.726161);
+            ctx.moveTo(8.843860, 14.000000);
+            ctx.lineTo(7.579586, 14.000000);
+            ctx.lineTo(7.579586, 12.726161);
+            ctx.lineTo(9.474482, 12.726161);
+            ctx.fill();
+            ctx.restore();
+        }
+    });
+}
+
 function shadeColor(color, percent) {  // deprecated. See below.
     var num = parseInt(color.slice(1), 16), amt = Math.round(2.55 * percent), R = (num >> 16) + amt,
         G = (num >> 8 & 0x00FF) + amt, B = (num & 0x0000FF) + amt;
     return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-}
-
-function randomShuffle(ar, seed) {
-    let numbers = [];
-    for (let a = 0, max = ar.length; a < max; a++) {
-        numbers.push(a);
-    }
-    let shuffled = [];
-    for (let i = 0, len = ar.length; i < len; i++) {
-        let r = parseInt(seed[i] * (len - i));
-        shuffled.push(ar[numbers[r]]);
-        numbers.splice(r, 1);
-    }
-    return shuffled;
 }
 
 function stringTo32BitHash(str) {
@@ -1461,5 +1585,30 @@ function seededShuffleArray(str, arr) {
     return rArr;
 }
 
+function drawBadge(x, y, fill, stroke, strokeOpacity, nodeId, icon) {
+    const group = new Konva.Group({x, y, nodeId});
+    group.add(new Konva.Circle({
+        radius: 12,
+        fill,
+        opacity: 1,
+        stroke: fill,
+        strokeWidth: 2
+    }));
+    group.add(new Konva.Circle({
+        radius: 12,
+        opacity: strokeOpacity,
+        stroke,
+        strokeWidth: 2
+    }));
+    if (icon) group.add(icon);
+    return group;
+}
+
+function deleteBadge(badge) {
+    if (badge && badge.remove && badge.destroy) {
+        badge.remove();
+        badge.destroy();
+    }
+}
 
 export default Dashboard;

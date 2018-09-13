@@ -17,6 +17,7 @@ class ClusterBar extends Component {
     componentWillMount() {
         ClustersService.getClusters()
             .then(clusters => {
+                console.log(clusters)
                 let selectedClusterId = ClustersService.getSelectedClusterId();
                 if (!selectedClusterId) {
                     ClustersService.setSelectedClusterId(clusters[0].name);
@@ -36,10 +37,11 @@ class ClusterBar extends Component {
     }
 
     render() {
+        const clusters = this.state.clusters || [];
         return (
             <Menu label={'Cluster ' + this.state.selected} selected={this.state.selected} ref={this.clusterSelect}
                   onChange={this._changeCluster.bind(this)}>
-                {this.state.clusters.map(cluster => {
+                {clusters.map(cluster => {
                     return <Option
                         onChange={this.clusterSelect.current._selectOption.bind(this.clusterSelect.current)}
                         value={cluster.name}
