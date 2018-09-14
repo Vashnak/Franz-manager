@@ -33,7 +33,9 @@ $dashboard-colors: (
         zookeeper-color: #00b3ba,
         disabled-background: #efefef,
         disabled-border: #fff,
-        disabled-color: #aaa
+        disabled-color: #aaa,
+        dead-node: #333349,
+        dead-node-contrast: #231d33
 );
 
 /* FONT CONFIGURATION */

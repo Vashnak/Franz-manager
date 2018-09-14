@@ -11,6 +11,7 @@ import ThemesStore from "../../stores/ThemesStore";
 import Loader from "../../components/loader/Loader";
 import MetricsService from "../../services/MetricsService";
 
+const hexagonesHeight = 120;
 const hexagonesWidth = 108;
 const hexagonesMargin = 6;
 
@@ -57,7 +58,7 @@ class Dashboard extends React.Component {
                                 c.zookeepers = brokers[0].configurations['zookeeper.connect'].split('/')[0].split(',').map(z => {
                                     let splitted = z.split(':');
                                     return {
-                                        id: splitted[0].split('.')[3],
+                                        id: splitted[0] === 'localhost' ? "1" : splitted[0].split('.')[3],
                                         host: splitted[0],
                                         port: +splitted[1]
                                     }
@@ -578,37 +579,45 @@ class Dashboard extends React.Component {
 
         group.add(hexagone);
 
-        if (id) {
-            const textId = new Konva.Text({
-                y: 15,
-                text: id,
-                fontSize: 48,
-                fontFamily: 'Inconsolata',
-                fontStyle: 'bold',
-                fill: isActive ? this.state.selectedTheme['dashboard-colors']['kafka-contrast'] :
-                    disabled ? this.state.selectedTheme['dashboard-colors']['disabled-color'] : this.state.selectedTheme['dashboard-colors'][type + '-color']
-            });
-            textId.setAbsolutePosition({x: (hexagone.getWidth() - textId.getTextWidth()) / 2, y: 20});
-            group.add(textId);
-        }
-
-        if (type && type !== 'default' && type !== 'adjacent') {
-            let fontSize = 20;
-            const textType = new Konva.Text({
-                y: 15,
-                text: type.toUpperCase(),
-                fontSize: fontSize,
-                fontFamily: 'Roboto Condensed',
-                fontStyle: 'italic bold',
-                fill: isActive ? this.state.selectedTheme['dashboard-colors']['kafka-contrast'] :
-                    disabled ? this.state.selectedTheme['dashboard-colors']['disabled-color'] : this.state.selectedTheme['dashboard-colors'][type + '-color']
-            });
-            while (textType.getWidth() > hexagone.getWidth() - 24) {
-                fontSize--;
-                textType.setFontSize(fontSize)
+        if (id === '?') {
+            hexagone.fill(this.state.selectedTheme['dashboard-colors']['dead-node']);
+            hexagone.stroke(this.state.selectedTheme['dashboard-colors']['dead-node-contrast']);
+            let skullIcon = drawSkullIcon(this.state.selectedTheme['dashboard-colors']['dead-node-contrast']);
+            skullIcon.position({x: (hexagonesWidth - skullIcon.getWidth()) / 2, y: (hexagonesHeight - skullIcon.getHeight()) / 2});
+            group.add(skullIcon)
+        } else {
+            if (id) {
+                const textId = new Konva.Text({
+                    y: 15,
+                    text: id,
+                    fontSize: 48,
+                    fontFamily: 'Inconsolata',
+                    fontStyle: 'bold',
+                    fill: isActive ? this.state.selectedTheme['dashboard-colors']['kafka-contrast'] :
+                        disabled ? this.state.selectedTheme['dashboard-colors']['disabled-color'] : this.state.selectedTheme['dashboard-colors'][type + '-color']
+                });
+                textId.setAbsolutePosition({x: (hexagone.getWidth() - textId.getTextWidth()) / 2, y: 20});
+                group.add(textId);
             }
-            textType.setAbsolutePosition({x: (hexagone.getWidth() - textType.getTextWidth()) / 2, y: 72});
-            group.add(textType);
+
+            if (type && type !== 'default' && type !== 'adjacent') {
+                let fontSize = 20;
+                const textType = new Konva.Text({
+                    y: 15,
+                    text: type.toUpperCase(),
+                    fontSize: fontSize,
+                    fontFamily: 'Roboto Condensed',
+                    fontStyle: 'italic bold',
+                    fill: isActive ? this.state.selectedTheme['dashboard-colors']['kafka-contrast'] :
+                        disabled ? this.state.selectedTheme['dashboard-colors']['disabled-color'] : this.state.selectedTheme['dashboard-colors'][type + '-color']
+                });
+                while (textType.getWidth() > hexagone.getWidth() - 24) {
+                    fontSize--;
+                    textType.setFontSize(fontSize)
+                }
+                textType.setAbsolutePosition({x: (hexagone.getWidth() - textType.getTextWidth()) / 2, y: 72});
+                group.add(textType);
+            }
         }
 
         return group;
@@ -619,15 +628,6 @@ class Dashboard extends React.Component {
         let stats = this.state.brokersStats[node.id];
         if (stats && stats.find(s => s.label === 'isActiveController').value) {
             const icon = drawCrownIcon(this.state.selectedTheme['dashboard-colors'][node.type === 'kafka' ? 'kafka-color' : 'zookeeper-color'], 0.3);
-            let badge = drawBadge(x + hexagonesWidth / 2, y + 4,
-                this.state.selectedTheme['dashboard-colors']['background'],
-                this.state.selectedTheme['dashboard-colors'][node.type === 'kafka' ? 'kafka-color' : 'zookeeper-color'],
-                0.3,
-                node.id, icon);
-            badges.push(badge);
-        }
-        if (node.id === '?') {
-            const icon = drawSkullIcon(this.state.selectedTheme['dashboard-colors'][node.type === 'kafka' ? 'kafka-color' : 'zookeeper-color'], 0.3);
             let badge = drawBadge(x + hexagonesWidth / 2, y + 4,
                 this.state.selectedTheme['dashboard-colors']['background'],
                 this.state.selectedTheme['dashboard-colors'][node.type === 'kafka' ? 'kafka-color' : 'zookeeper-color'],
@@ -1473,76 +1473,80 @@ function drawCrownIcon(color = "black", opacity = 1) {
     });
 }
 
-function drawSkullIcon(color = "black", opacity = 1) {
+function drawSkullIcon(color = "black", x = 0, y = 0, opacity = 1) {
+    let scale = 1.5;
     return new Konva.Shape({
-        x: -6,
-        y: -7,
+        x,
+        y,
+        width: 40 * scale,
+        height: 46 * scale,
         sceneFunc: ctx => {
+            ctx.scale(scale, scale);
             ctx.save();
             ctx.beginPath();
             ctx.lineWidth = 0.261734;
             ctx.fillStyle = color;
-            ctx.moveTo(6.948964, 5.406939);
-            ctx.bezierCurveTo(6.948964, 4.530221, 7.655381, 3.818459, 8.525518, 3.818459);
-            ctx.bezierCurveTo(9.398686, 3.818459, 10.105104, 4.530221, 10.105104, 5.406939);
-            ctx.bezierCurveTo(10.105104, 6.286711, 10.029314, 6.998473, 9.159171, 6.998473);
-            ctx.bezierCurveTo(8.286003, 6.998473, 6.948964, 6.286711, 6.948964, 5.406939);
-            ctx.moveTo(6.836786, 8.907702);
-            ctx.lineTo(6.206165, 8.907702);
-            ctx.lineTo(6.427489, 7.636919);
-            ctx.lineTo(7.058110, 7.636919);
-            ctx.moveTo(5.572511, 7.636919);
-            ctx.lineTo(5.796866, 8.907702);
-            ctx.lineTo(5.163214, 8.907702);
-            ctx.lineTo(4.941890, 7.636919);
-            ctx.moveTo(5.054068, 5.406939);
-            ctx.bezierCurveTo(5.054068, 6.286711, 3.713997, 6.998473, 2.840829, 6.998473);
-            ctx.bezierCurveTo(1.970692, 6.998473, 1.894897, 6.286711, 1.894897, 5.406939);
-            ctx.bezierCurveTo(1.894897, 4.530221, 2.601314, 3.818459, 3.474482, 3.818459);
-            ctx.bezierCurveTo(4.344619, 3.818459, 5.054068, 4.530221, 5.054068, 5.406939);
-            ctx.moveTo(12.000000, 6.045385);
-            ctx.bezierCurveTo(12.000000, 5.935413, 12.000000, 5.834606, 11.993947, 5.727689);
-            ctx.bezierCurveTo(11.830218, 2.532403, 9.207681, 0.000000, 6.000000, 0.000000);
-            ctx.bezierCurveTo(2.792319, 0.000000, 0.169783, 2.532403, 0.006064, 5.727689);
-            ctx.bezierCurveTo(0.000000, 5.834606, 0.000000, 5.935413, 0.000000, 6.045385);
-            ctx.lineTo(0.385043, 7.560550);
-            ctx.bezierCurveTo(0.151592, 7.832425, 0.000000, 8.831334, 0.000000, 9.225398);
-            ctx.bezierCurveTo(0.000000, 10.105172, 0.706417, 10.816932, 1.579586, 10.816932);
-            ctx.bezierCurveTo(1.637191, 10.816932, 1.685701, 10.804702, 1.737241, 10.798602);
-            ctx.bezierCurveTo(1.788783, 10.810832, 1.837292, 10.816932, 1.894896, 10.816932);
-            ctx.lineTo(2.525518, 12.090771);
-            ctx.lineTo(4.420414, 12.090771);
-            ctx.lineTo(4.420414, 10.816932);
-            ctx.lineTo(5.054067, 10.816932);
-            ctx.lineTo(5.054067, 12.090771);
-            ctx.lineTo(6.948964, 12.090771);
-            ctx.lineTo(6.948964, 10.816932);
-            ctx.lineTo(7.579586, 10.816932);
-            ctx.lineTo(7.579586, 12.090771);
-            ctx.lineTo(9.474482, 12.090771);
-            ctx.lineTo(10.105104, 10.816932);
-            ctx.bezierCurveTo(10.162714, 10.816932, 10.214250, 10.810732, 10.262759, 10.798602);
-            ctx.bezierCurveTo(10.314299, 10.804802, 10.365841, 10.816932, 10.420414, 10.816932);
-            ctx.bezierCurveTo(11.293583, 10.816932, 12.000000, 10.105172, 12.000000, 9.225398);
-            ctx.bezierCurveTo(12.000000, 8.831334, 11.848409, 7.832425, 11.614957, 7.560550);
-            ctx.moveTo(0.006064, 5.727689);
-            ctx.bezierCurveTo(0.000000, 5.834606, 0.000000, 5.935413, 0.000000, 6.045385);
-            ctx.lineTo(0.000000, 5.727689);
-            ctx.moveTo(12.000000, 5.727689);
-            ctx.lineTo(12.000000, 6.045385);
-            ctx.bezierCurveTo(12.000000, 5.935408, 12.000000, 5.834606, 11.993908, 5.727689);
-            ctx.moveTo(4.420414, 14.000000);
-            ctx.lineTo(3.159171, 14.000000);
-            ctx.lineTo(2.525518, 12.726161);
-            ctx.lineTo(4.420414, 12.726161);
-            ctx.moveTo(6.948964, 14.000000);
-            ctx.lineTo(5.054068, 14.000000);
-            ctx.lineTo(5.054068, 12.726161);
-            ctx.lineTo(6.948964, 12.726161);
-            ctx.moveTo(8.843860, 14.000000);
-            ctx.lineTo(7.579586, 14.000000);
-            ctx.lineTo(7.579586, 12.726161);
-            ctx.lineTo(9.474482, 12.726161);
+            ctx.moveTo(23.163214, 17.765656);
+            ctx.bezierCurveTo(23.163214, 14.885010, 25.517938, 12.546367, 28.418393, 12.546367);
+            ctx.bezierCurveTo(31.328954, 12.546367, 33.683679, 14.885010, 33.683679, 17.765656);
+            ctx.bezierCurveTo(33.683679, 20.656339, 33.431026, 22.994981, 30.530571, 22.994981);
+            ctx.bezierCurveTo(27.620010, 22.994981, 23.163214, 20.656339, 23.163214, 17.765656);
+            ctx.moveTo(22.789288, 29.268165);
+            ctx.lineTo(20.687216, 29.268165);
+            ctx.lineTo(21.424962, 25.092734);
+            ctx.lineTo(23.527034, 25.092734);
+            ctx.moveTo(18.575038, 25.092734);
+            ctx.lineTo(19.322890, 29.268165);
+            ctx.lineTo(17.210712, 29.268165);
+            ctx.lineTo(16.472966, 25.092734);
+            ctx.moveTo(16.846892, 17.765656);
+            ctx.bezierCurveTo(16.846892, 20.656339, 12.379990, 22.994981, 9.469429, 22.994981);
+            ctx.bezierCurveTo(6.568974, 22.994981, 6.316321, 20.656339, 6.316321, 17.765656);
+            ctx.bezierCurveTo(6.316321, 14.885010, 8.671046, 12.546367, 11.581607, 12.546367);
+            ctx.bezierCurveTo(14.482062, 12.546367, 16.846892, 14.885010, 16.846892, 17.765656);
+            ctx.moveTo(40.000000, 19.863408);
+            ctx.bezierCurveTo(40.000000, 19.502073, 40.000000, 19.170849, 39.979790, 18.819551);
+            ctx.bezierCurveTo(39.434058, 8.320751, 30.692269, 0.000000, 20.000000, 0.000000);
+            ctx.bezierCurveTo(9.307731, 0.000000, 0.565942, 8.320751, 0.020212, 18.819551);
+            ctx.bezierCurveTo(0.000000, 19.170849, 0.000000, 19.502073, 0.000000, 19.863408);
+            ctx.lineTo(1.283476, 24.841807);
+            ctx.bezierCurveTo(0.505306, 25.735108, 0.000000, 29.017238, 0.000000, 30.312023);
+            ctx.bezierCurveTo(0.000000, 33.202706, 2.354725, 35.541348, 5.265286, 35.541348);
+            ctx.bezierCurveTo(5.457302, 35.541348, 5.619000, 35.501198, 5.790803, 35.481128);
+            ctx.bezierCurveTo(5.962607, 35.521278, 6.124305, 35.541348, 6.316321, 35.541348);
+            ctx.lineTo(8.418393, 39.726816);
+            ctx.lineTo(14.734715, 39.726816);
+            ctx.lineTo(14.734715, 35.541348);
+            ctx.lineTo(16.846892, 35.541348);
+            ctx.lineTo(16.846892, 39.726816);
+            ctx.lineTo(23.163214, 39.726816);
+            ctx.lineTo(23.163214, 35.541348);
+            ctx.lineTo(25.265285, 35.541348);
+            ctx.lineTo(25.265285, 39.726816);
+            ctx.lineTo(31.581607, 39.726816);
+            ctx.lineTo(33.683679, 35.541348);
+            ctx.bezierCurveTo(33.875695, 35.541348, 34.047499, 35.521278, 34.209197, 35.481128);
+            ctx.bezierCurveTo(34.381001, 35.501198, 34.552804, 35.541348, 34.734715, 35.541348);
+            ctx.bezierCurveTo(37.645275, 35.541348, 40.000000, 33.202706, 40.000000, 30.312023);
+            ctx.bezierCurveTo(40.000000, 29.017238, 39.494694, 25.735108, 38.716523, 24.841807);
+            ctx.moveTo(0.020212, 18.819551);
+            ctx.bezierCurveTo(0.000000, 19.170849, 0.000000, 19.502073, 0.000000, 19.863408);
+            ctx.lineTo(0.000000, 18.819551);
+            ctx.moveTo(40.000000, 18.819551);
+            ctx.lineTo(40.000000, 19.863408);
+            ctx.bezierCurveTo(40.000000, 19.502073, 40.000000, 19.170849, 39.979790, 18.819551);
+            ctx.moveTo(14.734715, 46.000000);
+            ctx.lineTo(10.530571, 46.000000);
+            ctx.lineTo(8.418393, 41.814532);
+            ctx.lineTo(14.734715, 41.814532);
+            ctx.moveTo(23.163214, 46.000000);
+            ctx.lineTo(16.846892, 46.000000);
+            ctx.lineTo(16.846892, 41.814532);
+            ctx.lineTo(23.163214, 41.814532);
+            ctx.moveTo(29.479535, 46.000000);
+            ctx.lineTo(25.265285, 46.000000);
+            ctx.lineTo(25.265285, 41.814532);
+            ctx.lineTo(31.581607, 41.814532);
             ctx.fill();
             ctx.restore();
         }
