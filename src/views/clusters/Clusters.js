@@ -188,8 +188,8 @@ class Clusters extends React.Component {
                                     <td className="text-left">{broker.id}</td>
                                     <td className="text-right">{broker.host}</td>
                                     <td className="text-right">{broker.port}</td>
-                                    <td className="text-right">{broker.bytesIn.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
-                                    <td className="text-right">{broker.bytesOut.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
+                                    <td className="text-right">{broker.bytesIn ? broker.bytesIn.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : ''}</td>
+                                    <td className="text-right">{broker.bytesOut ? broker.bytesOut.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : ''}</td>
                                 </tr>
                             )
                         })}
