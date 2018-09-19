@@ -51,7 +51,7 @@ export default {
 
     addTopic(topicName) {
         return new Promise((resolve, reject) => {
-            ApiService.requestFranzManagerApi('POST', '/topics', {id: topicName, replication: 3}, null)
+            ApiService.requestFranzManagerApi('POST', '/topics', {id: topicName, replication: 1}, null)
                 .then(res => {
                     return resolve(res);
                 })

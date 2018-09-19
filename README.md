@@ -2,40 +2,36 @@
 
 This application cannot work without the franz-manager-api --> [here](https://github.com/GreenCom-Networks/Franz-manager-api)
 
-This application is a smooth alternative to kafka-manager. It needs JMX to be enabled on your kafka server.
+This application is a smooth alternative to kafka-manager. **It needs JMX to be enabled on your kafka server.**
 
 Features : 
+ - Multiple clusters managing.
  - Inspect cluster state (topics, consumers, offsets, brokers, replicas, settings).
  - Topics listing.
  - Topics creation / deletion.
- - Detailed topic information (metrics, settings, partitions, consumers, last messages).
+ - Detailed topic information with edition (metrics, settings, partitions, consumers, last messages).
  - Consumers listing.
- - Live consumption (gif below).
- - Bulk topic deletion (gif below).
+ - Live consumption (disabled, should come back soon).
+ - Bulk topic deletion.
  - Detailed consumer information (partitions, topic offset, consumer offset, lag, commit timestamp).
-
-#### Gifs
-
-###### Live consumption
-
-![live_consumption](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/live_consuming.gif)
-
-###### Bulk topic deletion
-
-![topic_bulk_delete](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/topic_bulk_delete.gif)
-
-###### Add partitions
-
-![add_partition](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/add_partition.gif)
-
+ - Multiple themes.
+ 
 #### Screenshots
 
-###### Cluster view
-![cluster view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/cluster_view.png)
+###### Dashboard view
+![dashboard view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/dashboard_view.jpg)
+###### Cluster view (theme cashmachine)
+![cluster view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/cluster_view.jpg)
+###### Cluster view (theme terminal)
+![cluster view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/cluster_view_terminal.jpg)
+###### Cluster view (theme ratatouille)
+![cluster view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/cluster_view_ratatouille.jpg)
+###### Topics view
+![topics view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/topics_view.jpg)
 ###### Topic view
-![topic view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/topic_view.png)
-###### Consumers view
-![consumers view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/consumers_view.png)
+![topic view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/topic_view.jpg)
+###### Consumer view
+![consumer view](https://github.com/GreenCom-Networks/Franz-manager/blob/master/demo_assets/consumer_view.jpg)
 
 #### Development
 
@@ -44,6 +40,11 @@ First, install the dependencies by running `npm install` or `yarn install`.
 Then, run `npm start`, the command will execute a local server on port 8080.
 
 Finally just go on localhost:8080 and enjoy.
+
+#### Production
+
+Install the dependencies (`npm install` or `yarn install`) then run `npm run build`.
+It will produce a dist folder at the root of the project.
 
 #### Docker
 

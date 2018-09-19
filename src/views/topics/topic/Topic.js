@@ -298,9 +298,9 @@ class Topic extends Component {
                         return (
                             <tr key={metric.name}>
                                 <td className="text-left">{metric.label}</td>
-                                <td className="text-right">{metric.metrics.OneMinuteRate.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
-                                <td className="text-right">{metric.metrics.FiveMinuteRate.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
-                                <td className="text-right">{metric.metrics.FifteenMinuteRate.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
+                                <td className="text-right">{metric.metrics.OneMinuteRate ? metric.metrics.OneMinuteRate.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : ''}</td>
+                                <td className="text-right">{metric.metrics.FiveMinuteRate ? metric.metrics.FiveMinuteRate.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : ''}</td>
+                                <td className="text-right">{metric.metrics.FifteenMinuteRate ? metric.metrics.FifteenMinuteRate.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : ''}</td>
                             </tr>
                         )
                     })}

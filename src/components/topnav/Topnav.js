@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Link, withRouter} from 'react-router-dom';
 import ClusterBar from "../clusterBar/ClusterBar";
 import {Logo} from "../../services/SvgService";
-import Utils from "../../modules/Utils";
+import ClustersService from "../../services/ClustersService";
 
 const sidenavItems = [
     {
@@ -62,7 +62,7 @@ class Topnav extends Component {
                 <div className="breadcrumb flex-1">
                     <div>
                         <div className="flex margin-bottom-4px">
-                            <Link className="item" to="/franz-manager/dashboard">Cluster production</Link>
+                            <Link className="item" to="/franz-manager/dashboard">Cluster {ClustersService.getSelectedClusterId()}</Link>
                             {this.state.subLocation && <Link className="item" to={this.state.selectedSidenavItem.link}>{this.state.selectedSidenavItem.label}</Link>}
                         </div>
                         <h1>{this.state.subLocation || this.state.selectedSidenavItem.label}</h1>

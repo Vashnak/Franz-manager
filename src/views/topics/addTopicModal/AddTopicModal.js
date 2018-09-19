@@ -16,7 +16,13 @@ class AddTopicModal extends Component {
 
     _createTopic() {
         const topicName = this.refs['topic-name-input'].value;
+        const topicPartitions = +this.refs['topic-partitions-input'].value;
+        if (Number.isNaN(topicPartitions)) {
+            alert('Partition must be a number.');
+            return;
+        }
         if (!topicName) {
+            alert('Missing topic name.');
             return;
         }
         TopicsService.addTopic(topicName)
@@ -24,6 +30,13 @@ class AddTopicModal extends Component {
                 this.props.reloadTopics();
                 this.props.close();
             })
+            .catch(e => {
+                if (e.response.body.message.includes('InvalidReplicationFactorException')) {
+                    alert('Error: ' + e.response.body.message.split('InvalidReplicationFactorException: ')[1]);
+                } else {
+                    console.error(e)
+                }
+            });
     }
 
     render() {
@@ -33,6 +46,8 @@ class AddTopicModal extends Component {
                        close={this.props.close}>
                     <section>
                         <input type="text" placeholder="Topic name" ref="topic-name-input"/>
+                        <input type="text" placeholder="Partitions (default 1)" ref="topic-partitions-input"
+                               className="margin-top-16px"/>
                     </section>
                     <footer>
                         <div className="actions margin-left-24px flex justify-end">

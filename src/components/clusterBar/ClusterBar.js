@@ -17,7 +17,6 @@ class ClusterBar extends Component {
     componentWillMount() {
         ClustersService.getClusters()
             .then(clusters => {
-                console.log(clusters)
                 let selectedClusterId = ClustersService.getSelectedClusterId();
                 if (!selectedClusterId) {
                     ClustersService.setSelectedClusterId(clusters[0].name);

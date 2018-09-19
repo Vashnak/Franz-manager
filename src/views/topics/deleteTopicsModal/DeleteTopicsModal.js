@@ -34,7 +34,8 @@ class DeleteTopicsModal extends Component {
         return (
             <Modal className="delete-topics-modal">
                 <p className="warning"><b><WarningIcon width={32} height={32} fill={"red"}/></b> You are going to
-                    delete <b>{this.props.topicsToDelete.length}</b> topic{this.props.topicsToDelete.length > 1 ? "s" : ""}.</p><br/>
+                    delete <b>{this.props.topicsToDelete.length}</b> topic{this.props.topicsToDelete.length > 1 ? "s" : ""}.
+                </p><br/>
                 <div className="topics">
                     {this.props.topicsToDelete.map((t, index) => <div key={index}
                                                                       className="topic">{t.id}</div>)}
@@ -62,7 +63,10 @@ class DeleteTopicsModal extends Component {
                         <div style={{display: 'flex', marginTop: '10px'}}>
                             <input type="text"
                                    className="input-topics-number"
-                                   style={{borderColor: this.state.badInput ? "red" : "lightgrey"}}
+                                   style={{
+                                       borderColor: this.state.badInput ? "red" : "lightgrey",
+                                       backgroundColor: 'rgba(0,0,0,0.05);'
+                                   }}
                                    placeholder="How many ?"
                                    ref="input-topics-number"/>
                             <div style={{flex: "1 1"}}/>
