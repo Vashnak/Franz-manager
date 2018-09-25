@@ -47,7 +47,7 @@ class Topics extends React.Component {
     }
 
     _loadTopics() {
-        this.setState({loadingTopics: true});
+        this.setState({loadingTopics: true, topics: TopicsService.getStoredData("topics") || []});
         TopicsService.getTopics(true)
             .then(topics => {
                 this.setState({topics, loadingTopics: false});
@@ -347,15 +347,12 @@ class Topics extends React.Component {
             <div className="topics-view grid-wrapper">
                 {this._renderContextActions(topics)}
 
-                <div className="grid">
+                <div className="grid relative">
                     <div className="column">
                         <section className="flex-1">
-                            {this.state.loadingTopics && <Loader/>}
-                            {!this.state.loadingTopics && this.state.errorLoadingTopics &&
-                            <Error/>}
+                            {!this.state.loadingTopics && this.state.errorLoadingTopics && <Error/>}
 
-                            {!this.state.loadingTopics && !this.state.errorLoadingTopics && (
-                                [
+                            {(!this.state.loadingTopics || this.state.topics) && !this.state.errorLoadingTopics ? ([
                                     <header className="filter flex" key="header">
                                         <h3>{topics.length} topics</h3>
                                         <Filter onChange={this._updateFilterComponent.bind(this)}
@@ -400,15 +397,16 @@ class Topics extends React.Component {
                                         </button>
                                     </PerfectScrollbar>
                                 ]
-                            )}
+                            ) : <Loader/>}
                         </section>
                     </div>
+                    {this.state.loadingTopics && <div className="background-loading">Topics are reloading in background.</div>}
                 </div>
 
                 {this.state.bulkDeleteModal &&
                 <Modal title={`You are going to delete ${topics.length} topics`}
                        close={this._closeBulkDeleteModal.bind(this)}
-                className="deleteTopicsModal">
+                       className="deleteTopicsModal">
                     <section className="delete-topic-list">
                         <PerfectScrollbar>
                             {this.state.topicsToDelete.map(topic => <div key={topic.id}

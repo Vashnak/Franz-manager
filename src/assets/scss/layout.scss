@@ -103,6 +103,10 @@ a {
 }
 
 /* Some misc helpers */
+.relative {
+  position: relative;
+}
+
 .justify-end {
   justify-content: flex-end;
 }

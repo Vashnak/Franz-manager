@@ -1,10 +1,27 @@
 import ApiService from './ApiService';
 
 export default {
+    getStoredData(dataString) {
+        let cluster = localStorage.getItem("selectedClusterId");
+        if (cluster) {
+            try {
+                return JSON.parse(localStorage.getItem(cluster + '-' + dataString));
+            } catch (e) {
+            }
+        }
+        return null;
+    },
+
     getTopics(shortVersion) {
         return new Promise((resolve, reject) => {
             ApiService.requestFranzManagerApi('GET', '/topics', null, shortVersion ? {shortVersion: true} : {idOnly: true})
-                .then(resolve)
+                .then(topics => {
+                    let cluster = localStorage.getItem("selectedClusterId");
+                    if (cluster) {
+                        localStorage.setItem(cluster + "-topics", JSON.stringify(topics));
+                    }
+                    return resolve(topics);
+                })
                 .catch(reject);
         })
     },
@@ -12,7 +29,22 @@ export default {
     getTopicDetails(topicId) {
         return new Promise((resolve, reject) => {
             ApiService.requestFranzManagerApi('GET', '/topics/' + topicId, null)
-                .then(resolve)
+                .then(tDetails => {
+                    let cluster = localStorage.getItem("selectedClusterId");
+                    let topicsDetails = {};
+                    if (cluster) {
+                        try {
+                            topicsDetails = JSON.parse(localStorage.getItem(cluster + "-topicsDetails"));
+                        } catch (e) {
+                            topicsDetails = {};
+                        }
+                        localStorage.setItem(cluster + "-topicsDetails", JSON.stringify(tDetails));
+                    }
+                    topicsDetails[topicId] = tDetails;
+                    localStorage.setItem(cluster + "-topicsDetails", topicsDetails);
+
+                    return resolve(tDetails);
+                })
                 .catch(reject);
         });
     },
@@ -20,7 +52,21 @@ export default {
     getTopicPartitions(topicId) {
         return new Promise((resolve, reject) => {
             ApiService.requestFranzManagerApi('GET', '/topics/' + topicId + '/partitions', null)
-                .then(resolve)
+                .then(tPartitions => {
+                    let cluster = localStorage.getItem("selectedClusterId");
+                    let topicsPartitions = {};
+                    if (cluster) {
+                        try {
+                            topicsPartitions = JSON.parse(localStorage.getItem(cluster + "-topicsPartitions"));
+                        } catch (e) {
+                            topicsPartitions = {};
+                        }
+                        localStorage.setItem(cluster + "-topicsPartitions", JSON.stringify(tPartitions));
+                    }
+                    topicsPartitions[topicId] = tPartitions;
+                    localStorage.setItem(cluster + "-topicsPartitions", topicsPartitions);
+                    return resolve(tPartitions);
+                })
                 .catch(reject);
         });
     },
