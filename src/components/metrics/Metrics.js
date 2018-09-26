@@ -6,6 +6,11 @@ import PropTypes from 'prop-types';
 import './Metrics.scss';
 
 class Metrics extends React.Component {
+    static propTypes = {
+        metrics: PropTypes.array,
+        fields: PropTypes.object
+    };
+
     render() {
         const metrics = this.props.metrics;
         const fields = this.props.fields;
@@ -39,9 +44,5 @@ class Metrics extends React.Component {
     }
 }
 
-Metrics.propTypes = {
-    metrics: PropTypes.array,
-    fields: PropTypes.object
-};
 
 export default Metrics;

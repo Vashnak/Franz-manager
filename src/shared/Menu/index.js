@@ -11,6 +11,13 @@ const defaultToggleButton = (
 );
 
 class Menu extends React.Component {
+    static propTypes = {
+        toggleButton: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.element
+        ])
+    };
+
     constructor(props) {
         super(props);
         this.id = Math.random().toFixed(0);
@@ -47,7 +54,7 @@ class Menu extends React.Component {
 
     render() {
         let children = [];
-        if(this.props.children){
+        if (this.props.children) {
             children = Array.isArray(this.props.children) ? this.props.children : [this.props.children]
         }
         const state = this.state;
@@ -75,12 +82,5 @@ class Menu extends React.Component {
         );
     }
 }
-
-Menu.propTypes = {
-    toggleButton: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.element
-    ])
-};
 
 export default Menu;

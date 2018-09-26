@@ -1,0 +1,18 @@
+$loader-height: 3px;
+
+.loadbar-component {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: $loader-height;
+  background-color: map_get($layout-colors, 4);
+  z-index: 999;
+
+  .fill {
+    height: $loader-height;
+    background-color: map_get($theme-colors, 1);
+    width: 0;
+    transition: width 100ms linear;
+  }
+}

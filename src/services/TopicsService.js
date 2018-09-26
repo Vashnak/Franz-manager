@@ -7,12 +7,14 @@ export default {
             try {
                 return JSON.parse(localStorage.getItem(cluster + '-' + dataString));
             } catch (e) {
+                return localStorage.getItem(cluster + '-' + dataString)
             }
         }
         return null;
     },
 
     getTopics(shortVersion) {
+        const start = Date.now();
         return new Promise((resolve, reject) => {
             ApiService.requestFranzManagerApi('GET', '/topics', null, shortVersion ? {shortVersion: true} : {idOnly: true})
                 .then(topics => {
@@ -20,6 +22,7 @@ export default {
                     if (cluster) {
                         localStorage.setItem(cluster + "-topics", JSON.stringify(topics));
                     }
+                    localStorage.setItem(cluster + "-topics-time", JSON.stringify(Date.now() - start));
                     return resolve(topics);
                 })
                 .catch(reject);

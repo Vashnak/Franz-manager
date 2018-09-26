@@ -1,6 +1,7 @@
 import React from 'react';
 import {withRouter} from 'react-router-dom';
 import TopicsService from '../../services/TopicsService';
+import ClustersService from '../../services/ClustersService';
 import classnames from 'classnames';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import _ from 'lodash';
@@ -17,6 +18,7 @@ import Link from "react-router-dom/es/Link";
 import Filter from "../../components/filter/Filter";
 import Modal from "../../components/modal/Modal";
 import AddTopicModal from "./addTopicModal/AddTopicModal";
+import Loadbar from "../../components/loadbar/Loadbar";
 
 class Topics extends React.Component {
     constructor(props) {
@@ -342,9 +344,9 @@ class Topics extends React.Component {
     render() {
         const topics = this._filterTopics(this.state.topics);
         const filters = this.state.topicsFilters;
-
         return (
             <div className="topics-view grid-wrapper">
+                <Loadbar timer={TopicsService.getStoredData('topics-time')} finished={!this.state.loadingTopics}/>
                 {this._renderContextActions(topics)}
 
                 <div className="grid relative">
@@ -400,7 +402,6 @@ class Topics extends React.Component {
                             ) : <Loader/>}
                         </section>
                     </div>
-                    {this.state.loadingTopics && <div className="background-loading">Topics are reloading in background.</div>}
                 </div>
 
                 {this.state.bulkDeleteModal &&

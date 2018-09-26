@@ -3,6 +3,12 @@ import PropTypes from 'prop-types';
 import './styles.css';
 
 class Item extends React.Component {
+    static propTypes = {
+        label: PropTypes.string.isRequired,
+        selected: PropTypes.bool,
+        closeMenu: PropTypes.func
+    };
+
     render() {
         return (
             <span className="menu-item" onClick={() => {
@@ -26,11 +32,5 @@ class Item extends React.Component {
         );
     }
 }
-
-Item.propTypes = {
-    label: PropTypes.string.isRequired,
-    selected: PropTypes.bool,
-    closeMenu: PropTypes.func
-};
 
 export default Item;

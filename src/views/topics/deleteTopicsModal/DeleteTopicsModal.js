@@ -9,6 +9,12 @@ import {WarningIcon} from "../../../services/SvgService";
 import './DeleteTopicsModal.scss';
 
 class DeleteTopicsModal extends Component {
+    static propTypes = {
+        topicsToDelete: PropTypes.array.isRequired,
+        deleteTopics: PropTypes.func.isRequired,
+        closeModal: PropTypes.func.isRequired
+    };
+
     constructor(props) {
         super(props);
 
@@ -83,11 +89,4 @@ class DeleteTopicsModal extends Component {
         );
     }
 }
-
-DeleteTopicsModal.propTypes = {
-    topicsToDelete: PropTypes.array.isRequired,
-    deleteTopics: PropTypes.func.isRequired,
-    closeModal: PropTypes.func.isRequired
-};
-
 export default DeleteTopicsModal;

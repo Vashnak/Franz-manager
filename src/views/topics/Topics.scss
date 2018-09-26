@@ -20,20 +20,6 @@
     margin-right: 0;
   }
 
-  .background-loading {
-    position: absolute;
-    background-color: map_get($theme-colors, 1);
-    color: map_get($layout-colors, 8);
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    height: 32px;
-    line-height: 32px;
-    padding: 0 10px;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-  }
-
   .folder-icon, .subtree-icon {
     fill: map_get($layout-colors, 3);
   }
