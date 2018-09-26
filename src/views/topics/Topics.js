@@ -359,6 +359,7 @@ class Topics extends React.Component {
                                         <h3>{topics.length} topics</h3>
                                         <Filter onChange={this._updateFilterComponent.bind(this)}
                                                 value={this.state.topicsFilters.topicName}
+                                                filterByRegexp={this.state.topicsFilters.filterByRegexp}
                                                 className="margin-right-16px"/>
                                         <Switch className="margin-left-16px"
                                                 onChange={this._toggleSwitch.bind(this, 'caseSensitive')}

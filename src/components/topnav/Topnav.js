@@ -28,10 +28,12 @@ class Topnav extends Component {
         super(props);
         this.state = {
             selectedSidenavItem: '',
-            subLocation: ''
+            subLocation: '',
+            previousRoute: '',
+            currentRoute: this.props.location.pathname + this.props.location.search
         };
 
-        this.props.history.listen(location => {
+        this.props.history.listen((location, b, c) => {
             this._updateRoute(location);
         });
 
@@ -46,7 +48,9 @@ class Topnav extends Component {
         let selectedSidenavItem = sidenavItems.find(m => m.link.split('/')[2] === location.pathname.split('/')[2]);
         this.setState({
             selectedSidenavItem: selectedSidenavItem ? selectedSidenavItem : sidenavItems[0],
-            subLocation: splittedPath[3] || ''
+            subLocation: splittedPath[3] || '',
+            previousRoute: this.state.currentRoute,
+            currentRoute: location.pathname + location.search
         })
     }
 
@@ -62,8 +66,9 @@ class Topnav extends Component {
                 <div className="breadcrumb flex-1">
                     <div>
                         <div className="flex margin-bottom-4px">
-                            <Link className="item" to="/franz-manager/dashboard">Cluster {ClustersService.getSelectedClusterId()}</Link>
-                            {this.state.subLocation && <Link className="item" to={this.state.selectedSidenavItem.link}>{this.state.selectedSidenavItem.label}</Link>}
+                            <Link className="item"
+                                  to="/franz-manager/dashboard">Cluster {ClustersService.getSelectedClusterId()}</Link>
+                            {this.state.subLocation && <Link className="item" to={this.state.previousRoute || this.state.selectedSidenavItem.link}>{this.state.selectedSidenavItem.label}</Link>}
                         </div>
                         <h1>{this.state.subLocation || this.state.selectedSidenavItem.label}</h1>
                     </div>

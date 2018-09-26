@@ -8,7 +8,7 @@ class Filter extends Component {
 
         this.state = {
             filter: this.props.value || '',
-            filterByRegexp: false
+            filterByRegexp: this.props.filterByRegexp || false
         }
     }
 
