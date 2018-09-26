@@ -804,7 +804,7 @@ class Dashboard extends React.Component {
 
     render() {
         return (
-            <div className="dashboard-view flex flex-1" ref="view"
+            <div className="dashboard-view flex flex-1 relative" ref="view"
                  style={{background: this.state.selectedTheme['dashboard-colors']['background']}}>
                 <div id="konva" ref="konva" className="flex-1"/>
                 <div className="context-actions cluster-stats">
