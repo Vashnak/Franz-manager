@@ -206,7 +206,7 @@ class Dashboard extends React.Component {
                 TopicsService.getTopics(true)
                     .then(topics => {
                         stats.topics = topics.length;
-                        stats.partitions = topics.reduce((prev, next) => prev + next.partitions, 0);
+                        stats.partitions = topics.reduce((prev, next) => prev + next.partitions.length, 0);
                         this.setState({stats});
                         resolve();
                     });
