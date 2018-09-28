@@ -208,9 +208,13 @@ class Topics extends React.Component {
                     <tr key={topic.id} className="pointer">
                         <td className="text-left"><Link to={'/franz-manager/topics/' + topic.id}>{topic.id}</Link></td>
                         <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.messages.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link></td>
+                            <Link
+                                to={'/franz-manager/topics/' + topic.id}>{topic.messages.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
+                        </td>
                         <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link></td>
+                            <Link
+                                to={'/franz-manager/topics/' + topic.id}>{topic.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
+                        </td>
                         <td className="text-right">
                             <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions}</Link></td>
                         <td className="text-right">
@@ -238,11 +242,15 @@ class Topics extends React.Component {
                         folders.push({
                             id: substring,
                             topics: [topic],
+                            messages: topic.messages,
+                            messagesPerSec: topic.messagesPerSec,
                             partitions: topic.partitions,
                             replications: topic.replications,
                         });
                     } else {
                         folders[folderIndex].topics.push(topic);
+                        folders[folderIndex].messages += topic.messages;
+                        folders[folderIndex].messagesPerSec += topic.messagesPerSec;
                         folders[folderIndex].partitions += topic.partitions;
                         folders[folderIndex].replications += topic.replications;
                     }
@@ -281,6 +289,8 @@ class Topics extends React.Component {
                             <span
                                 className="folder-stat">{folder.topics.length} topic{folder.topics.length > 1 && 's'}</span>
                         </td>
+                        <td className="text-right">{folder.messages.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
+                        <td className="text-right">{folder.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
                         <td className="text-right">{folder.partitions}</td>
                         <td className="text-right">{folder.replications}</td>
                     </tr>
@@ -293,6 +303,14 @@ class Topics extends React.Component {
                             <SubTreeIcon width={20} className="subtree-icon"/>
                             <span className="margin-left-8px"><Link
                                 to={'/franz-manager/topics/' + topic.id}>{topic.id}</Link></span>
+                        </td>
+                        <td className="text-right">
+                            <Link
+                                to={'/franz-manager/topics/' + topic.id}>{topic.messages.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
+                        </td>
+                        <td className="text-right">
+                            <Link
+                                to={'/franz-manager/topics/' + topic.id}>{topic.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
                         </td>
                         <td className="text-right">
                             <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions}</Link></td>
