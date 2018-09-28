@@ -70,7 +70,6 @@ class Topics extends React.Component {
     }
 
     _mergeTopicsAndMetrics(topics, metrics) {
-        console.log(metrics)
         let result = topics.map(topic => {
             topic.messages = '-';
             topic.messagesPerSec = '-';
@@ -193,9 +192,18 @@ class Topics extends React.Component {
         this.setState({topicsFilters});
     }
 
+    _isPartitionsSynchronizing(partitions) {
+        let result = false;
+        partitions.forEach(partition => {
+            if (partition.replicas.length !== partition.inSyncReplicas.length) {
+                result = true;
+            }
+        });
+        return result;
+    }
+
     _renderTopics(topics) {
         let sorted = _.sortBy(topics, this.state.topicsFilters.sortBy);
-        let topicsMetrics = this.state.topicsMetrics;
         if ((this.state.topicsFilters.sortBy !== 'id' && !this.state.topicsFilters.reverseSort)
             || (this.state.topicsFilters.reverseSort && this.state.topicsFilters.sortBy === 'id')) {
             sorted = _.reverse(sorted);
@@ -204,8 +212,9 @@ class Topics extends React.Component {
         return (
             <tbody>
             {sorted.slice(0, this.state.maxShownTopics).map(topic => {
+                let partitionSynchronizing = this._isPartitionsSynchronizing(topic.partitions);
                 return (
-                    <tr key={topic.id} className="pointer">
+                    <tr key={topic.id} className={classnames({synchronizing: partitionSynchronizing}, "pointer")}>
                         <td className="text-left"><Link to={'/franz-manager/topics/' + topic.id}>{topic.id}</Link></td>
                         <td className="text-right">
                             <Link
@@ -216,9 +225,9 @@ class Topics extends React.Component {
                                 to={'/franz-manager/topics/' + topic.id}>{topic.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
                         </td>
                         <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions}</Link></td>
+                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions.length}</Link></td>
                         <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.replications}</Link>
+                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions[0].replicas.length}</Link>
                         </td>
                     </tr>
                 )
@@ -244,15 +253,15 @@ class Topics extends React.Component {
                             topics: [topic],
                             messages: topic.messages,
                             messagesPerSec: topic.messagesPerSec,
-                            partitions: topic.partitions,
-                            replications: topic.replications,
+                            partitions: topic.partitions.length,
+                            replications: topic.partitions[0].replicas.length,
                         });
                     } else {
                         folders[folderIndex].topics.push(topic);
                         folders[folderIndex].messages += topic.messages;
                         folders[folderIndex].messagesPerSec += topic.messagesPerSec;
-                        folders[folderIndex].partitions += topic.partitions;
-                        folders[folderIndex].replications += topic.replications;
+                        folders[folderIndex].partitions += topic.partitions.length;
+                        folders[folderIndex].replications += topic.partitions[0].replicas.length;
                     }
                 } else {
                     finalTopics.push(topic);
@@ -313,9 +322,10 @@ class Topics extends React.Component {
                                 to={'/franz-manager/topics/' + topic.id}>{topic.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
                         </td>
                         <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions}</Link></td>
+                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions.length}</Link></td>
                         <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.replications}</Link></td>
+                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions[0].replicas.length}</Link>
+                        </td>
                     </tr>
                 )
             })}

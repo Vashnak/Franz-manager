@@ -200,4 +200,9 @@
 
     }
   }
+
+  .synchronizing {
+    $danger: map_get($theme-colors, danger);
+    background-color: rgba($danger, 0.075);
+  }
 }

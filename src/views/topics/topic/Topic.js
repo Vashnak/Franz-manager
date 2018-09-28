@@ -337,10 +337,14 @@ class Topic extends Component {
                         </thead>
                         <tbody>
                         {this.state.partitions.sort((a, b) => a.partition - b.partition).map(partition => {
+                            const synchronizing = partition.replicas.length !== partition.inSyncReplicas.length;
                             const partitionColor = partitionColors[partition.partition % partitionColors.length];
                             return (
                                 <tr key={partition.partition}
-                                    className={classnames({selected: this.state.selectedPartition && this.state.selectedPartition.partition === partition.partition}, "pointer")}
+                                    className={classnames({
+                                        selected: this.state.selectedPartition && this.state.selectedPartition.partition === partition.partition,
+                                        synchronizing
+                                    }, "pointer")}
                                     onClick={this._selectPartition.bind(this, partition)}>
                                     <td className="text-left">
                                         <div className="flex align-center">
