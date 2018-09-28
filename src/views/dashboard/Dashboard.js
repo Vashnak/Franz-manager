@@ -583,7 +583,10 @@ class Dashboard extends React.Component {
             hexagone.fill(this.state.selectedTheme['dashboard-colors']['dead-node']);
             hexagone.stroke(this.state.selectedTheme['dashboard-colors']['dead-node-contrast']);
             let skullIcon = drawSkullIcon(this.state.selectedTheme['dashboard-colors']['dead-node-contrast']);
-            skullIcon.position({x: (hexagonesWidth - skullIcon.getWidth()) / 2, y: (hexagonesHeight - skullIcon.getHeight()) / 2});
+            skullIcon.position({
+                x: (hexagonesWidth - skullIcon.getWidth()) / 2,
+                y: (hexagonesHeight - skullIcon.getHeight()) / 2
+            });
             group.add(skullIcon)
         } else {
             if (id) {
@@ -694,7 +697,12 @@ class Dashboard extends React.Component {
             }
         }
 
-        this.mainLayer.on('mousemove', e => {
+        this.requestRedraw = false;
+        this.lastMouseMoveEvent = null;
+        window.addEventListener("redraw", () => {
+            this.requestRedraw = false;
+            let e = this.lastMouseMoveEvent;
+            if (!e) return;
             let oldNode = this.hoveredNode;
             let newNode = e.target;
             if (newNode.className === 'Text') {
@@ -725,6 +733,14 @@ class Dashboard extends React.Component {
                 }
             }
             this.mainLayer.batchDraw();
+        });
+
+        this.mainLayer.on('mousemove', e => {
+            this.lastMouseMoveEvent = e;
+            if (!this.requestRedraw) {
+                this.requestRedraw = true;
+                window.dispatchEvent(new Event("redraw"));
+            }
         });
 
         badges.forEach(badge => this.mainLayer.add(badge));

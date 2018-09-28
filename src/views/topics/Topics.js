@@ -28,6 +28,7 @@ class Topics extends React.Component {
 
         this.state = {
             topics: [],
+            topicsMetrics: {},
             maxShownTopics: 200,
             loadingTopics: false,
             errorLoadingTopics: false,
@@ -49,14 +50,41 @@ class Topics extends React.Component {
     }
 
     _loadTopics() {
-        this.setState({loadingTopics: true, topics: TopicsService.getStoredData("topics") || []});
+        let topicsMetrics = TopicsService.getStoredData("topics-metrics") || {};
+        let topics = TopicsService.getStoredData("topics") || [];
+        this.setState({
+            loadingTopics: true,
+            topics: this._mergeTopicsAndMetrics(topics, topicsMetrics)
+        });
         TopicsService.getTopics(true)
-            .then(topics => {
-                this.setState({topics, loadingTopics: false});
+            .then(t => {
+                topics = t;
+                return TopicsService.getGlobalTopicsMetrics();
             })
-            .catch(() => {
-                this.setState({loadingTopics: false, errorLoadingTopics: true})
+            .then(tm => {
+                this.setState({topics: this._mergeTopicsAndMetrics(topics, tm), loadingTopics: false});
+            })
+            .catch((e) => {
+                this.setState({loadingTopics: false, errorLoadingTopics: true});
             });
+    }
+
+    _mergeTopicsAndMetrics(topics, metrics) {
+        console.log(metrics)
+        let result = topics.map(topic => {
+            topic.messages = '-';
+            topic.messagesPerSec = '-';
+            if (metrics[topic.id]) {
+                topic.messages = 0;
+                topic.messagesPerSec = 0;
+                Object.values(metrics[topic.id]).forEach(brokerMetrics => {
+                    topic.messages += brokerMetrics.metrics.Count;
+                    topic.messagesPerSec += brokerMetrics.metrics.FifteenMinuteRate;
+                });
+            }
+            return topic;
+        });
+        return result;
     }
 
     _decodeQueryParams(params) {
@@ -167,7 +195,7 @@ class Topics extends React.Component {
 
     _renderTopics(topics) {
         let sorted = _.sortBy(topics, this.state.topicsFilters.sortBy);
-
+        let topicsMetrics = this.state.topicsMetrics;
         if ((this.state.topicsFilters.sortBy !== 'id' && !this.state.topicsFilters.reverseSort)
             || (this.state.topicsFilters.reverseSort && this.state.topicsFilters.sortBy === 'id')) {
             sorted = _.reverse(sorted);
@@ -179,6 +207,10 @@ class Topics extends React.Component {
                 return (
                     <tr key={topic.id} className="pointer">
                         <td className="text-left"><Link to={'/franz-manager/topics/' + topic.id}>{topic.id}</Link></td>
+                        <td className="text-right">
+                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.messages.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link></td>
+                        <td className="text-right">
+                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link></td>
                         <td className="text-right">
                             <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions}</Link></td>
                         <td className="text-right">
@@ -376,6 +408,19 @@ class Topics extends React.Component {
                                                 }, 'text-left', 'pointer')}
                                                     onClick={this._sortBy.bind(this, 'id')}>Topic
                                                     Name
+                                                </th>
+                                                <th className={classnames({
+                                                    filtered: filters.sortBy === 'messages',
+                                                    reverse: filters.reverseSort
+                                                }, 'text-right', 'pointer')}
+                                                    onClick={this._sortBy.bind(this, 'messages')}> Messages
+                                                </th>
+                                                <th className={classnames({
+                                                    filtered: filters.sortBy === 'messagesPerSec',
+                                                    reverse: filters.reverseSort
+                                                }, 'text-right', 'pointer')}
+                                                    onClick={this._sortBy.bind(this, 'messagesPerSec')}> Messages Per
+                                                    Sec
                                                 </th>
                                                 <th className={classnames({
                                                     filtered: filters.sortBy === 'partitions',

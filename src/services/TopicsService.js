@@ -29,6 +29,22 @@ export default {
         })
     },
 
+    getGlobalTopicsMetrics(){
+        const start = Date.now();
+        return new Promise((resolve, reject) => {
+            ApiService.requestFranzManagerApi('GET', '/metrics/topics')
+                .then(topicsMetrics => {
+                    let cluster = localStorage.getItem("selectedClusterId");
+                    if (cluster) {
+                        localStorage.setItem(cluster + "-topics-metrics", JSON.stringify(topicsMetrics));
+                    }
+                    localStorage.setItem(cluster + "-topics-metrics-time", JSON.stringify(Date.now() - start));
+                    return resolve(topicsMetrics);
+                })
+                .catch(reject);
+        })
+    },
+
     getTopicDetails(topicId) {
         return new Promise((resolve, reject) => {
             ApiService.requestFranzManagerApi('GET', '/topics/' + topicId, null)
