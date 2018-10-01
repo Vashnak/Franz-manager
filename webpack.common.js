@@ -23,13 +23,12 @@ module.exports = {
         new webpack.DefinePlugin({
             'NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
             'SERVER_URL': JSON.stringify(process.env.SERVER_URL),
-            'process.env.NODE_ENV': JSON.stringify('development')
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
         }),
         new webpack.optimize.AggressiveMergingPlugin(), //Merge chunks
         new CopyWebpackPlugin([{from: 'src/assets/images/favicon.png', to: 'favicon.png'}]),
         new CustomThemePlugin()
     ],
-    devtool: 'eval',
     entry: {
         'app': [
             'babel-polyfill',
@@ -42,7 +41,6 @@ module.exports = {
         path: path.resolve(__dirname, './dist'),
         filename: '[name].js'
     },
-    mode: "development",
     module: {
         rules: [
             {

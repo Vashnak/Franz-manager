@@ -9,12 +9,13 @@ COPY deploy.js /
 RUN apk update \
     && apk add --update nodejs \
     && cd /$APP \
-    && npm install \
+    && npm i -g npm \
+    && npm i \
     && npm rebuild node-sass --force \
-    && npm run build \
+    && NODE_ENV=production npm run build \
     && mkdir -p ${BASE_NGINX}/ \
     && mv -f dist ${BASE_NGINX}/$APP \
     && cp nginx.conf /etc/nginx/conf.d/default.conf \
     && chmod -R 755 ${BASE_NGINX}
 
-CMD node /deploy.js && nginx -g 'daemon off;'
+CMD NODE_ENV=production node /deploy.js && nginx -g 'daemon off;'
