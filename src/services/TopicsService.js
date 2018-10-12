@@ -20,7 +20,11 @@ export default {
                 .then(topics => {
                     let cluster = localStorage.getItem("selectedClusterId");
                     if (cluster) {
-                        localStorage.setItem(cluster + "-topics", JSON.stringify(topics));
+                        try {
+                            localStorage.setItem(cluster + "-topics", JSON.stringify(topics));
+                        } catch (e) {
+                            // looks like it's too big :(
+                        }
                     }
                     localStorage.setItem(cluster + "-topics-time", JSON.stringify(Date.now() - start));
                     return resolve(topics);
@@ -29,14 +33,18 @@ export default {
         })
     },
 
-    getGlobalTopicsMetrics(){
+    getGlobalTopicsMetrics() {
         const start = Date.now();
         return new Promise((resolve, reject) => {
             ApiService.requestFranzManagerApi('GET', '/metrics/topics')
                 .then(topicsMetrics => {
                     let cluster = localStorage.getItem("selectedClusterId");
                     if (cluster) {
-                        localStorage.setItem(cluster + "-topics-metrics", JSON.stringify(topicsMetrics));
+                        try {
+                            localStorage.setItem(cluster + "-topics-metrics", JSON.stringify(topicsMetrics));
+                        } catch (e) {
+                            // looks like it's too big :(
+                        }
                     }
                     localStorage.setItem(cluster + "-topics-metrics-time", JSON.stringify(Date.now() - start));
                     return resolve(topicsMetrics);
