@@ -1,9 +1,9 @@
 import ApiService from './ApiService';
 
 export default {
-    getBrokers(clusterId = null) {
+    getBrokers(clusterId = null, withConfiguration = false) {
         return new Promise((resolve, reject) => {
-            ApiService.requestFranzManagerApi('GET', '/brokers', null, null, clusterId)
+            ApiService.requestFranzManagerApi('GET', '/brokers', null, {withConfiguration}, clusterId)
                 .then(resolve)
                 .catch(reject);
         })

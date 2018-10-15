@@ -65,6 +65,7 @@ class Topics extends React.Component {
                 this.setState({topics: this._mergeTopicsAndMetrics(topics, tm), loadingTopics: false});
             })
             .catch((e) => {
+                console.log(e)
                 this.setState({loadingTopics: false, errorLoadingTopics: true});
             });
     }
@@ -73,7 +74,7 @@ class Topics extends React.Component {
         let result = topics.map(topic => {
             topic.messages = '-';
             topic.messagesPerSec = '-';
-            if (metrics[topic.id]) {
+            if (metrics && metrics[topic.id]) {
                 topic.messages = 0;
                 topic.messagesPerSec = 0;
                 Object.values(metrics[topic.id]).forEach(brokerMetrics => {
@@ -208,7 +209,6 @@ class Topics extends React.Component {
             || (this.state.topicsFilters.reverseSort && this.state.topicsFilters.sortBy === 'id')) {
             sorted = _.reverse(sorted);
         }
-
         return (
             <tbody>
             {sorted.slice(0, this.state.maxShownTopics).map(topic => {

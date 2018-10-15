@@ -5,7 +5,6 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import TopicsService from "../../../../services/TopicsService";
 import Modal from "../../../../components/modal/Modal";
 import Ink from 'react-ink';
-import Loader from "../../../../components/loader/Loader";
 
 class EditPartitionsModal extends Component {
     constructor(props) {
@@ -15,7 +14,6 @@ class EditPartitionsModal extends Component {
     }
 
     _updatePartitions() {
-        console.log(this.props)
         if (!this.refs['partition-input'].value || isNaN(this.refs['partition-input'].value)) {
             alert('Input must be an integer.');
         } else if (+this.refs['partition-input'].value <= this.props.currentPartitions) {

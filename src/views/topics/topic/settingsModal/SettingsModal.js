@@ -28,13 +28,12 @@ class SettingsModal extends Component {
     }
 
     componentWillMount() {
-        this._loadTopicDetails(this.props.topicId)
+        this._loadTopicDetails(this.props.topic)
     }
 
     _loadTopicDetails(topicId) {
         TopicsService.getTopicDetails(topicId)
             .then(td => {
-                console.log(td);
                 let configurations = td.configurations;
                 let topicConfiguration = this.state.topicConfiguration;
 
@@ -130,7 +129,6 @@ class SettingsModal extends Component {
     }
 
     render() {
-        console.log(this.state.updatedFields);
         return (
             <div className="settingsModal modal">
                 <Modal title="Settings"

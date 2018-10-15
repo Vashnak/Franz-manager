@@ -1,6 +1,11 @@
+.clusters-view {
+  .dead-broker {
+    background-color: #fff;
+    $danger: map_get($theme-colors, danger);
+    background-color: rgba($danger, 0.075);
+  }
 
-.clusters-view{
-  .column{
+  .column {
     width: 50%;
   }
   .scrollbar {

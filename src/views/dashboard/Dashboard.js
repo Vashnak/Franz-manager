@@ -52,7 +52,7 @@ class Dashboard extends React.Component {
             .then(clusters => {
                 return Promise.all(clusters.map(c => {
                     return new Promise((resolve, reject) => {
-                        BrokersService.getBrokers(c.name)
+                        BrokersService.getBrokers(c.name, true)
                             .then(brokers => {
                                 c.brokers = brokers;
                                 c.zookeepers = brokers[0].configurations['zookeeper.connect'].split('/')[0].split(',').map(z => {
@@ -286,7 +286,8 @@ class Dashboard extends React.Component {
                     return {
                         cluster: next.name,
                         type: 'kafka',
-                        id: b.id
+                        id: b.id,
+                        state: b.state
                     }
                 }));
                 prev.push(next.zookeepers.map(z => {
@@ -296,7 +297,6 @@ class Dashboard extends React.Component {
             }, []);
 
             let matrixCopy = JSON.parse(JSON.stringify(this.matrix));
-
             this.clusters.forEach(cluster => {
                 let clusterMatrix = generateClusterMatrix(cluster);
                 let freePosition = findMatrixFreePosition(matrixCopy, clusterMatrix.length);
@@ -336,7 +336,6 @@ class Dashboard extends React.Component {
                 }
             }
         }
-
 
         // add canvas element
         this._renderMatrix(this.matrix);
@@ -391,7 +390,7 @@ class Dashboard extends React.Component {
         let type = hexagone.attrs.type === 'kafka' ? 'brokers' : hexagone.attrs.type === 'zookeeper' ? 'zookeepers' : null;
         if (!type) return;
         let group = hexagone.parent || hexagone.attrs.parent;
-        this.drawnHoveredNode = this._generateHexagone(group.position().x, group.position().y, group.attrs.type, group.attrs.id, true, false, group.attrs.cluster, group.attrs.badges);
+        this.drawnHoveredNode = this._generateHexagone(group.position().x, group.position().y, group.attrs.type, group.attrs.id, true, false, group.attrs.cluster, group.attrs.badges, false);
         let hoveredNode = this.state.clusters
             .find(c => c.name === this.state.selectedCluster)[type]
             .find(b => b.id === this.drawnHoveredNode.attrs.id);
@@ -510,7 +509,7 @@ class Dashboard extends React.Component {
         this.mainLayer.draw();
     }
 
-    _generateHexagone(x, y, type = "default", id = null, isActive, disabled = false, cluster = null, badges = []) {
+    _generateHexagone(x, y, type = "default", id = null, isActive, disabled = false, cluster = null, badges = [], state = "OK") {
         const group = new Konva.Group({
             x: x,
             y: y,
@@ -518,7 +517,8 @@ class Dashboard extends React.Component {
             id,
             disabled,
             cluster,
-            badges
+            badges,
+            deadNode: state !== 'OK'
         });
 
         let mutableX = 0;
@@ -543,7 +543,8 @@ class Dashboard extends React.Component {
             parent: group,
             disabled,
             cluster,
-            badges
+            badges,
+            deadNode: state !== 'OK'
         };
 
         if (isActive) {
@@ -579,7 +580,7 @@ class Dashboard extends React.Component {
 
         group.add(hexagone);
 
-        if (id === '?') {
+        if (id === '?' || hexagone.attrs.deadNode) {
             hexagone.fill(this.state.selectedTheme['dashboard-colors']['dead-node']);
             hexagone.stroke(this.state.selectedTheme['dashboard-colors']['dead-node-contrast']);
             let skullIcon = drawSkullIcon(this.state.selectedTheme['dashboard-colors']['dead-node-contrast']);
@@ -673,7 +674,7 @@ class Dashboard extends React.Component {
                 } else if (matrix[i][j] !== -2) {
                     let elem = matrix[i][j];
                     elem.badges = this._findBadges(elem, x, y);
-                    let hexagone = this._generateHexagone(x, y, elem.type, elem.id, false, this.state.selectedCluster !== elem.cluster, elem.cluster, elem.badges);
+                    let hexagone = this._generateHexagone(x, y, elem.type, elem.id, false, this.state.selectedCluster !== elem.cluster, elem.cluster, elem.badges, elem.state);
                     if (this.state.selectedCluster === elem.cluster && elem.type === 'kafka') {
                         elem.badges.forEach(badge => badges.push(badge));
                         hexagone.on('mouseenter', () => {

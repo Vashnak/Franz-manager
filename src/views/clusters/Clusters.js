@@ -47,12 +47,27 @@ class Clusters extends React.Component {
 
     _loadBrokers() {
         this.setState({loadingBrokers: true});
-        BrokersService.getBrokers()
+        BrokersService.getBrokers(null, true)
             .then(brokers => {
                 this.setState({brokers, loadingBrokers: false});
                 this._formatBrokersSettings(brokers);
+                const tasks = [MetricsService.getMetrics('kafka.server', 'BrokerTopicMetrics', 'BytesInPerSec'),
+                    MetricsService.getMetrics('kafka.server', 'BrokerTopicMetrics', 'BytesOutPerSec')];
+                return Promise.all(tasks);
             })
-            .catch(() => {
+            .then(metrics => {
+                const brokers = this.state.brokers;
+                metrics.forEach(brokersMetric => {
+                    brokersMetric.map(brokerMetric => {
+                        const broker = brokers.find(b => b.id === brokerMetric.brokerId.toString());
+                        broker[brokerMetric.name] = brokerMetric.metrics.FiveMinuteRate;
+                    });
+                });
+                console.log(brokers)
+                this.setState({brokers});
+            })
+            .catch((e) => {
+                console.error(e);
                 this.setState({loadingBrokers: false, errorLoadingBrokers: true});
             });
     }
@@ -184,12 +199,12 @@ class Clusters extends React.Component {
                         <tbody>
                         {this.state.brokers.map(broker => {
                             return (
-                                <tr key={broker.id}>
+                                <tr key={broker.id} className={broker.state !== 'OK' ? 'dead-broker' : ''}>
                                     <td className="text-left">{broker.id}</td>
                                     <td className="text-right">{broker.host}</td>
                                     <td className="text-right">{broker.port}</td>
-                                    <td className="text-right">{broker.bytesIn ? broker.bytesIn.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : ''}</td>
-                                    <td className="text-right">{broker.bytesOut ? broker.bytesOut.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : ''}</td>
+                                    <td className="text-right">{broker.BytesInPerSec !== undefined ? broker.BytesInPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : '-'}</td>
+                                    <td className="text-right">{broker.BytesOutPerSec !== undefined ? broker.BytesOutPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : '-'}</td>
                                 </tr>
                             )
                         })}
@@ -252,7 +267,6 @@ class Clusters extends React.Component {
     }
 
     _renderMetrics() {
-        console.log(this.state.metrics)
         return <section className="flex-1">
             {this.state.loadingMetrics && <Loader width="32"/>}
             {this.state.errorLoadingMetrics && !this.state.loadingMetrics && <Error noRiddle={true}/>}

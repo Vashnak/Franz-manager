@@ -39,7 +39,6 @@ class TopicSettingsModal extends Component {
     _loadTopicDetails(topicId) {
         TopicsService.getTopicDetails(topicId)
             .then(td => {
-                console.log(td);
                 let configurations = td.configurations;
                 let topicConfiguration = this.state.topicConfiguration;
 
