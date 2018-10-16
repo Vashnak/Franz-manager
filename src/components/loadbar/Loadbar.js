@@ -25,7 +25,9 @@ class Loadbar extends Component {
         if (props.finished) {
             this.setState({currentTime: props.timer});
             setTimeout(() => {
-                this.refs["loadbar-component"].style.display = "none";
+                if (this.refs["loadbar-component"]) {
+                    this.refs["loadbar-component"].style.display = "none";
+                }
             }, 300);
         }
     }
