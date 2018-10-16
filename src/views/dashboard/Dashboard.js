@@ -390,7 +390,7 @@ class Dashboard extends React.Component {
         let type = hexagone.attrs.type === 'kafka' ? 'brokers' : hexagone.attrs.type === 'zookeeper' ? 'zookeepers' : null;
         if (!type) return;
         let group = hexagone.parent || hexagone.attrs.parent;
-        this.drawnHoveredNode = this._generateHexagone(group.position().x, group.position().y, group.attrs.type, group.attrs.id, true, false, group.attrs.cluster, group.attrs.badges, false);
+        this.drawnHoveredNode = this._generateHexagone(group.position().x, group.position().y, group.attrs.type, group.attrs.id, true, false, group.attrs.cluster, group.attrs.badges, group.attrs.state);
         let hoveredNode = this.state.clusters
             .find(c => c.name === this.state.selectedCluster)[type]
             .find(b => b.id === this.drawnHoveredNode.attrs.id);
