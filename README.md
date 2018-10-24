@@ -5,7 +5,7 @@ This application cannot work without the franz-manager-api --> [here](https://gi
 This application is a smooth alternative to kafka-manager. **It needs JMX to be enabled on your kafka server.**
 
 Features : 
- - Multiple clusters managing.
+ - Multiple clusters management.
  - Inspect cluster state (topics, consumers, offsets, brokers, replicas, settings).
  - Topics listing.
  - Topics creation / deletion.
