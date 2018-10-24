@@ -82,6 +82,24 @@ a {
   }
 }
 
+/* Easy paddings */
+@for $i from 1 through 16 {
+  $padding: $i * 4;
+
+  .padding-right-#{$padding}px {
+    padding-right: #{$padding}px;
+  }
+  .padding-left-#{$padding}px {
+    padding-left: #{$padding}px;
+  }
+  .padding-top-#{$padding}px {
+    padding-top: #{$padding}px;
+  }
+  .padding-bottom-#{$padding}px {
+    padding-bottom: #{$padding}px;
+  }
+}
+
 /* Ellipses */
 .ellipse {
   border-radius: 50%;

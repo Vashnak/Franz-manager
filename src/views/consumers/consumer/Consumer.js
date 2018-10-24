@@ -133,7 +133,8 @@ class Consumer extends Component {
                                                             this.state.topics[topic].sort((a, b) => a.partition - b.partition).map(partition => {
                                                                 const partitionColor = partitionColors[partition.partition % partitionColors.length];
                                                                 return (
-                                                                    <tr className="topic-consumed-partition">
+                                                                    <tr className="topic-consumed-partition"
+                                                                        key={"partitions-" + partition.partition}>
                                                                         <td className="text-left flex align-center">
                                                                             <i className="ellipse margin-right-8px ellipse-8px"
                                                                                style={{backgroundColor: partitionColor}}/>

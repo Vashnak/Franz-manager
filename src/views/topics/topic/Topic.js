@@ -296,7 +296,7 @@ class Topic extends Component {
                     <tbody>
                     {this.state.metrics.map(metric => {
                         return (
-                            <tr key={metric.name}>
+                            <tr key={"metris-" + metric.label}>
                                 <td className="text-left">{metric.label}</td>
                                 <td className="text-right">{metric.metrics.OneMinuteRate ? metric.metrics.OneMinuteRate.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : ''}</td>
                                 <td className="text-right">{metric.metrics.FiveMinuteRate ? metric.metrics.FiveMinuteRate.toLocaleString('fr-FR', {maximumFractionDigits: 0}) : ''}</td>
@@ -340,7 +340,7 @@ class Topic extends Component {
                             const synchronizing = partition.replicas.length !== partition.inSyncReplicas.length;
                             const partitionColor = partitionColors[partition.partition % partitionColors.length];
                             return (
-                                <tr key={partition.partition}
+                                <tr key={"partition-" + partition.partition}
                                     className={classnames({
                                         selected: this.state.selectedPartition && this.state.selectedPartition.partition === partition.partition,
                                         synchronizing
@@ -377,13 +377,15 @@ class Topic extends Component {
             </header>
             {this.state.loadingConsumers && <Loader width="32"/>}
             {this.state.errorLoadingConsumers && !this.state.loadingConsumers && <Error noRiddle={true}/>}
-            {!this.state.loadingConsumers && !this.state.errorLoadingConsumers && (
-                <div className="consumer-list">
-                    {this.state.consumers.map(consumer => <Link to={`/franz-manager/consumers/${consumer}`}>
+            {!this.state.loadingConsumers && !this.state.errorLoadingConsumers &&
+            this.state.consumers.length === 0 ? <div className="no-consumers padding-left-8px">There are no consumers.</div>
+                : <div className="consumer-list">
+                    {this.state.consumers.map(consumer => <Link key={`consumer-${consumer}`}
+                                                                to={`/franz-manager/consumers/${consumer}`}>
                         <button key={consumer}>{consumer} <Ink/></button>
                     </Link>)}
                 </div>
-            )}
+            }
         </div>;
     }
 
@@ -400,37 +402,37 @@ class Topic extends Component {
                 {this.state.loadingMessages && <Loader width="32"/>}
                 {!this.state.loadingMessages && this.state.errorLoadingMessages && <Error noRiddle={true}/>}
                 {!this.state.loadingMessages && !this.state.errorLoadingMessages &&
-
-                messages.map((message, index) => {
-                    const partitionColor = partitionColors[message.partition % partitionColors.length];
-                    return <section key={index}>
-                        <div className="timestamp-wrapper">
-                            {this._renderFormatDateMessage(message.timestamp)}
-                        </div>
-                        <header className="flex">
-                            <div className="flex-1">
-                                <span className="key-message"> {(message.key) ? message.key : 'null'}</span>
+                messages.length === 0 ? <div className="no-messages">There are no messages.</div>
+                    : messages.map((message, index) => {
+                        const partitionColor = partitionColors[message.partition % partitionColors.length];
+                        return <section key={"message-" + index}>
+                            <div className="timestamp-wrapper">
+                                {this._renderFormatDateMessage(message.timestamp)}
                             </div>
-                            <div className="partition" style={{backgroundColor: partitionColor}}>
-                                Partition {message.partition}
-                            </div>
-                            <Tooltip content="Copy message">
-                                <div className="copy-icon" onClick={this._copyJSON.bind(this, message.message)}>
-                                    <CopyIcon/>
-                                    <Ink/>
+                            <header className="flex">
+                                <div className="flex-1">
+                                    <span className="key-message"> {(message.key) ? message.key : 'null'}</span>
                                 </div>
-                            </Tooltip>
-                        </header>
-                        {(() => {
-                            try {
-                                JSON.parse(message.message);
-                                return <JSONPretty json={message.message}/>
-                            } catch (e) {
-                                return <div className="simple-message">{message.message}</div>
-                            }
-                        })()}
-                    </section>
-                })
+                                <div className="partition" style={{backgroundColor: partitionColor}}>
+                                    Partition {message.partition}
+                                </div>
+                                <Tooltip content="Copy message">
+                                    <div className="copy-icon" onClick={this._copyJSON.bind(this, message.message)}>
+                                        <CopyIcon/>
+                                        <Ink/>
+                                    </div>
+                                </Tooltip>
+                            </header>
+                            {(() => {
+                                try {
+                                    JSON.parse(message.message);
+                                    return <JSONPretty json={message.message}/>
+                                } catch (e) {
+                                    return <div className="simple-message">{message.message}</div>
+                                }
+                            })()}
+                        </section>
+                    })
                 }
             </PerfectScrollbar>
 
@@ -449,7 +451,7 @@ class Topic extends Component {
                             onChange={this._changeMessageType.bind(this)}
                             value={type}
                             ref={type}
-                            key={type}
+                            key={"option-" + type}
                             selected={this.state.messageTypeSelected}>
                             {type}
                         </Option>;
