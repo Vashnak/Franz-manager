@@ -1,44 +1,43 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AppContainer} from 'react-hot-loader'
+import { AppContainer } from 'react-hot-loader';
 import Router from './Router';
 
 import 'mdi/css/materialdesignicons.css';
-import 'react-perfect-scrollbar/dist/css/styles.min.css'
+import 'react-perfect-scrollbar/dist/css/styles.min.css';
 import './core.scss';
 
-import ThemesStore from "./stores/ThemesStore";
+import ThemesStore from './stores/ThemesStore';
 
 (function (elmProto) {
-        if ('scrollTopMax' in elmProto) {
-            return;
-        }
-        Object.defineProperties(elmProto, {
-            'scrollTopMax': {
-                get: function scrollTopMax() {
-                    return this.scrollHeight - this.clientTop;
-                }
-            },
-            'scrollLeftMax': {
-                get: function scrollLeftMax() {
-                    return this.scrollWidth - this.clientLeft;
-                }
-            }
-        });
-    }
-)(Element.prototype);
+  if ('scrollTopMax' in elmProto) {
+    return;
+  }
+  Object.defineProperties(elmProto, {
+    scrollTopMax: {
+      get: function scrollTopMax() {
+        return this.scrollHeight - this.clientTop;
+      },
+    },
+    scrollLeftMax: {
+      get: function scrollLeftMax() {
+        return this.scrollWidth - this.clientLeft;
+      },
+    },
+  });
+}(Element.prototype));
 
 if (!global._babelPolyfill) {
-    require('babel-polyfill');
+  require('babel-polyfill');
 }
 
-const render = Component => {
-    ReactDOM.render(
-        <AppContainer>
-            <Component/>
-        </AppContainer>,
-        document.getElementById('root')
-    )
+const render = (Component) => {
+  ReactDOM.render(
+    <AppContainer>
+      <Component />
+    </AppContainer>,
+    document.getElementById('root'),
+  );
 };
 
 render(Router);
@@ -46,15 +45,8 @@ render(Router);
 ThemesStore.initTheme();
 
 if (module.hot) {
-    module.hot.accept('./Router', () => {
-        const router = require('./Router').default;
-        render(router)
-    })
-}
-
-let t = {
-    "id": "2178a602-6e20-471c-9c43-bdf7f7318c50",
-    "label": "Big-beta-test",
-    "price": 0,
-    "validationsPerDay": 10000
+  module.hot.accept('./Router', () => {
+    const router = Router.default;
+    render(router);
+  });
 }

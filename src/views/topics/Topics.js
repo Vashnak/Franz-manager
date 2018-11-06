@@ -1,558 +1,652 @@
 import React from 'react';
-import {withRouter} from 'react-router-dom';
-import TopicsService from '../../services/TopicsService';
-import ClustersService from '../../services/ClustersService';
+import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import _ from 'lodash';
 import Ink from 'react-ink';
 import FolderIcon from 'mdi-react/FolderIcon';
-import {ToastStore, ToastContainer} from 'react-toasts';
+import { ToastStore, ToastContainer } from 'react-toasts';
+import PropTypes from 'prop-types';
 
-import Loader from "../../components/loader/Loader";
-import Switch from "../../components/switch/Switch";
-import Error from "../../components/error/Error";
-import querystring from "querystring";
-import {SubTreeIcon} from "../../services/SvgService";
-import Link from "react-router-dom/es/Link";
-import Filter from "../../components/filter/Filter";
-import Modal from "../../components/modal/Modal";
-import AddTopicModal from "./addTopicModal/AddTopicModal";
-import Loadbar from "../../components/loadbar/Loadbar";
+import querystring from 'querystring';
+import Link from 'react-router-dom/es/Link';
+import Loader from '../../components/loader/Loader';
+import Switch from '../../components/switch/Switch';
+import Error from '../../components/error/Error';
+import { SubTreeIcon } from '../../services/SvgService';
+import TopicsService from '../../services/TopicsService';
+import Filter from '../../components/filter/Filter';
+import Modal from '../../components/modal/Modal';
+import AddTopicModal from './addTopicModal/AddTopicModal';
+import Loadbar from '../../components/loadbar/Loadbar';
+
+let mergeTopicsAndMetrics;
+let getSubstringIndex;
+let isPartitionsSynchronizing;
+let decodeQueryParams;
 
 class Topics extends React.Component {
-    constructor(props) {
-        super(props);
+  static propTypes = {
+    location: PropTypes.shape({
+      search: PropTypes.string.isRequired,
+    }).isRequired,
+    history: PropTypes.shape([]).isRequired,
+  };
 
-        const queryParams = this._decodeQueryParams(this.props.location.search.substring(1));
+  constructor(props) {
+    super(props);
 
-        this.state = {
-            topics: [],
-            topicsMetrics: {},
-            maxShownTopics: 200,
-            loadingTopics: false,
-            errorLoadingTopics: false,
-            topicsFilters: queryParams,
-            reverseSort: false,
-            bulkDeleteModal: false
+    this.inputTopicsNumber = React.createRef();
+
+    const queryParams = decodeQueryParams(this.props.location.search.substring(1));
+
+    this.state = {
+      topics: [],
+      maxShownTopics: 200,
+      loadingTopics: false,
+      errorLoadingTopics: false,
+      topicsFilters: queryParams,
+      reverseSort: false,
+      bulkDeleteModal: false,
+    };
+  }
+
+  componentWillMount() {
+    this._loadTopics();
+  }
+
+  componentWillReceiveProps(props) {
+    if (props.location.search !== this.props.location.search) {
+      const queryParams = decodeQueryParams(props.location.search.substring(1));
+      this.setState({ topicsFilters: queryParams });
+    }
+  }
+
+  _loadTopics() {
+    const topicsMetrics = TopicsService.getStoredData('topics-metrics') || {};
+    let topics = TopicsService.getStoredData('topics') || [];
+    this.setState({
+      loadingTopics: true,
+      topics: mergeTopicsAndMetrics(topics, topicsMetrics),
+    });
+    TopicsService.getTopics(true)
+      .then((t) => {
+        topics = t;
+        return TopicsService.getGlobalTopicsMetrics();
+      })
+      .then((tm) => {
+        this.setState({ topics: mergeTopicsAndMetrics(topics, tm), loadingTopics: false });
+      })
+      .catch(() => {
+        this.setState({ loadingTopics: false, errorLoadingTopics: true });
+      });
+  }
+
+  _filterTopics(topics) {
+    const filters = this.state.topicsFilters;
+    let regexp;
+
+    if (filters.filterByRegexp) {
+      try {
+        regexp = new RegExp(filters.topicName || '.*');
+        if (!this.state.isRegexpWellFormatted) {
+          this.setState({ isRegexpWellFormatted: true });
         }
-    }
-
-    componentWillMount() {
-        this._loadTopics();
-    }
-
-    componentWillReceiveProps(props) {
-        if (props.location.search !== this.props.location.search) {
-            const queryParams = this._decodeQueryParams(props.location.search.substring(1));
-            this.setState({topicsFilters: queryParams});
+      } catch (e) {
+        if (this.state.isRegexpWellFormatted) {
+          this.setState({ isRegexpWellFormatted: false });
         }
+        return [];
+      }
     }
 
-    _loadTopics() {
-        let topicsMetrics = TopicsService.getStoredData("topics-metrics") || {};
-        let topics = TopicsService.getStoredData("topics") || [];
-        this.setState({
-            loadingTopics: true,
-            topics: this._mergeTopicsAndMetrics(topics, topicsMetrics)
-        });
-        TopicsService.getTopics(true)
-            .then(t => {
-                topics = t;
-                return TopicsService.getGlobalTopicsMetrics();
-            })
-            .then(tm => {
-                this.setState({topics: this._mergeTopicsAndMetrics(topics, tm), loadingTopics: false});
-            })
-            .catch((e) => {
-                console.log(e)
-                this.setState({loadingTopics: false, errorLoadingTopics: true});
+    const filteredTopics = topics.filter((topic) => {
+      let topicNameFilter = true;
+
+      if (filters.filterByRegexp) topicNameFilter = regexp.test(topic.id);
+      else if (filters.caseSensitive) topicNameFilter = topic.id.indexOf(filters.topicName) >= 0;
+      else topicNameFilter = topic.id.toLowerCase().indexOf(filters.topicName.toLowerCase()) >= 0;
+
+      const showLogs = filters.hideLogsTopics ? topic.id.substr(topic.id.length - 4, 4) !== '.log' : true;
+      return topicNameFilter && showLogs;
+    });
+
+    return this.state.reverseSort ? filteredTopics.reverse() : filteredTopics;
+  }
+
+  _onTopicScroll(e) {
+    if (!this.throttleScroll && this.state.maxShownTopics < this.state.topics.length && e.scrollTop !== 0) {
+      const { maxShownTopics } = this.state;
+      this.setState({ maxShownTopics: maxShownTopics + 20 });
+      setTimeout(() => {
+        this.throttleScroll = false;
+      }, 100);
+    }
+  }
+
+  _updateFilterComponent(e) {
+    const { topicsFilters } = this.state;
+    const currentTopicsFilters = { ...topicsFilters };
+    currentTopicsFilters.filterByRegexp = e.filterByRegexp;
+    currentTopicsFilters.topicName = e.filter;
+    this.props.history.push(`?${querystring.encode(currentTopicsFilters)}`);
+    this.setState({ topicsFilters: currentTopicsFilters });
+  }
+
+  _toggleSwitch(label) {
+    const { topicsFilters } = this.state;
+    topicsFilters[label] = !topicsFilters[label];
+    this.props.history.push(`?${querystring.encode(topicsFilters)}`);
+    this.setState({ topicsFilters });
+  }
+
+  _sortBy(by) {
+    const { topicsFilters } = this.state;
+    const currentTopicsFilters = { ...topicsFilters };
+
+    if (currentTopicsFilters.sortBy === by) {
+      currentTopicsFilters.reverseSort = !currentTopicsFilters.reverseSort;
+    } else {
+      currentTopicsFilters.reverseSort = false;
+      currentTopicsFilters.sortBy = by;
+    }
+
+    this.props.history.push(`?${querystring.encode(currentTopicsFilters)}`);
+    this.setState({ topicsFilters: currentTopicsFilters });
+  }
+
+  _navigateToFolder(folder) {
+    const { topicsFilters } = this.state;
+    topicsFilters.folder = folder.id || folder;
+    this.props.history.push(`?${querystring.encode(topicsFilters)}`);
+    this.setState({ topicsFilters });
+  }
+
+  _renderTopics(topics) {
+    let sorted = _.sortBy(topics, this.state.topicsFilters.sortBy);
+    if ((this.state.topicsFilters.sortBy !== 'id' && !this.state.topicsFilters.reverseSort)
+      || (this.state.topicsFilters.reverseSort && this.state.topicsFilters.sortBy === 'id')) {
+      sorted = _.reverse(sorted);
+    }
+    return (
+      <tbody>
+        {sorted.slice(0, this.state.maxShownTopics).map((topic) => {
+          const partitionSynchronizing = isPartitionsSynchronizing(topic.partitions);
+          return (
+            <tr key={topic.id} className={classnames({ synchronizing: partitionSynchronizing }, 'pointer')}>
+              <td className="text-left"><Link to={`/franz-manager/topics/${topic.id}`}>{topic.id}</Link></td>
+              <td className="text-right">
+                <Link
+                  to={`/franz-manager/topics/${topic.id}`}
+                >
+                  {topic.messages.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+                </Link>
+              </td>
+              <td className="text-right">
+                <Link
+                  to={`/franz-manager/topics/${topic.id}`}
+                >
+                  {topic.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+                </Link>
+              </td>
+              <td className="text-right">
+                <Link to={`/franz-manager/topics/${topic.id}`}>{topic.partitions.length}</Link>
+              </td>
+              <td className="text-right">
+                <Link to={`/franz-manager/topics/${topic.id}`}>{topic.partitions[0].replicas.length}</Link>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    );
+  }
+
+  _renderTreeView(topics) {
+    let folders = [];
+    let finalTopics = [];
+    const folderFilter = this.state.topicsFilters.folder || '';
+    const folderIndex = folderFilter ? folderFilter.split('.').length + 1 : 1;
+    topics.filter(topic => topic.id.indexOf(folderFilter) === 0)
+      .forEach((topic) => {
+        const substringIndex = getSubstringIndex(topic.id, '.', folderIndex);
+        const substring = topic.id.substring(0, substringIndex === -1 ? topic.id.length : substringIndex);
+        if (substring.length < topic.id.length) {
+          const folderIndex2 = folders.findIndex(f => f.id === substring);
+          if (folderIndex2 === -1) {
+            folders.push({
+              id: substring,
+              topics: [topic],
+              messages: topic.messages,
+              messagesPerSec: topic.messagesPerSec,
+              partitions: topic.partitions.length,
+              replications: topic.partitions[0].replicas.length,
             });
-    }
-
-    _mergeTopicsAndMetrics(topics, metrics) {
-        let result = topics.map(topic => {
-            topic.messages = '-';
-            topic.messagesPerSec = '-';
-            if (metrics && metrics[topic.id]) {
-                topic.messages = 0;
-                topic.messagesPerSec = 0;
-                Object.values(metrics[topic.id]).forEach(brokerMetrics => {
-                    topic.messages += brokerMetrics.metrics.Count;
-                    topic.messagesPerSec += brokerMetrics.metrics.FifteenMinuteRate;
-                });
-            }
-            return topic;
-        });
-        return result;
-    }
-
-    _decodeQueryParams(params) {
-        let queryParams = querystring.decode(params);
-
-        queryParams.topicName = queryParams.topicName || '';
-        queryParams.folder = queryParams.folder || '';
-        queryParams.filterByRegexp = queryParams.filterByRegexp === 'true';
-        queryParams.treeView = queryParams.treeView === 'true';
-        queryParams.hideLogsTopics = queryParams.hideLogsTopics === 'true';
-        queryParams.caseSensitive = queryParams.caseSensitive === 'true';
-        queryParams.sortBy = queryParams.sortBy || 'id';
-        queryParams.reverseSort = queryParams.reverseSort === 'true';
-
-        return queryParams;
-    }
-
-    _filterTopics(topics) {
-        const filters = this.state.topicsFilters;
-        let regexp;
-
-        if (filters.filterByRegexp) {
-            try {
-                regexp = new RegExp(filters.topicName || ".*");
-                if (!this.state.isRegexpWellFormatted) {
-                    this.setState({isRegexpWellFormatted: true});
-                }
-            } catch (e) {
-                if (this.state.isRegexpWellFormatted) {
-                    this.setState({isRegexpWellFormatted: false});
-                }
-                return [];
-            }
-        }
-
-        let filteredTopics = topics.filter(topic => {
-            let topicNameFilter = true;
-
-            if (filters.filterByRegexp) topicNameFilter = regexp.test(topic.id);
-            else if (filters.caseSensitive) topicNameFilter = topic.id.indexOf(filters.topicName) >= 0;
-            else topicNameFilter = topic.id.toLowerCase().indexOf(filters.topicName.toLowerCase()) >= 0;
-
-            const showLogs = filters.hideLogsTopics ? topic.id.substr(topic.id.length - 4, 4) !== '.log' : true;
-            return topicNameFilter && showLogs;
-        });
-
-        return this.state.reverseSort ? filteredTopics.reverse() : filteredTopics;
-    }
-
-    _onTopicScroll(e) {
-        if (!this.throttleScroll && this.state.maxShownTopics < this.state.topics.length && e.scrollTop !== 0) {
-            this.setState({maxShownTopics: this.state.maxShownTopics + 20});
-            setTimeout(() => {
-                this.throttleScroll = false;
-            }, 100)
-        }
-    }
-
-    _updateFilter(inputType, filterKey, e) {
-        let currentTopicsFilters = _.clone(this.state.topicsFilters);
-        switch (inputType) {
-            case 'checkbox':
-                currentTopicsFilters[filterKey] = !currentTopicsFilters[filterKey];
-                break;
-            case 'text':
-                currentTopicsFilters[filterKey] = e.target.value;
-                break;
-        }
-        this.props.history.push("?" + querystring.encode(currentTopicsFilters));
-        this.setState({topicsFilters: currentTopicsFilters})
-    }
-
-    _updateFilterComponent(e) {
-        let currentTopicsFilters = _.clone(this.state.topicsFilters);
-        currentTopicsFilters.filterByRegexp = e.filterByRegexp;
-        currentTopicsFilters.topicName = e.filter;
-        this.props.history.push("?" + querystring.encode(currentTopicsFilters));
-        this.setState({topicsFilters: currentTopicsFilters})
-    }
-
-    _toggleSwitch(label) {
-        let topicsFilters = this.state.topicsFilters;
-        topicsFilters[label] = !topicsFilters[label];
-        this.props.history.push("?" + querystring.encode(topicsFilters));
-        this.setState({topicsFilters});
-    }
-
-    _sortBy(by) {
-        let currentTopicsFilters = _.clone(this.state.topicsFilters);
-
-        if (currentTopicsFilters.sortBy === by) {
-            currentTopicsFilters.reverseSort = !currentTopicsFilters.reverseSort;
+          } else {
+            folders[folderIndex2].topics.push(topic);
+            folders[folderIndex2].messages += topic.messages;
+            folders[folderIndex2].messagesPerSec += topic.messagesPerSec;
+            folders[folderIndex2].partitions += topic.partitions.length;
+            folders[folderIndex2].replications += topic.partitions[0].replicas.length;
+          }
         } else {
-            currentTopicsFilters.reverseSort = false;
-            currentTopicsFilters.sortBy = by;
+          finalTopics.push(topic);
         }
+      });
 
-        this.props.history.push("?" + querystring.encode(currentTopicsFilters));
-        this.setState({topicsFilters: currentTopicsFilters})
+    folders = _.sortBy(folders, this.state.topicsFilters.sortBy);
+    finalTopics = _.sortBy(finalTopics, this.state.topicsFilters.sortBy);
+
+    if ((this.state.topicsFilters.sortBy !== 'id' && !this.state.topicsFilters.reverseSort)
+      || (this.state.topicsFilters.reverseSort && this.state.topicsFilters.sortBy === 'id')) {
+      folders = _.reverse(folders);
+      finalTopics = _.reverse(finalTopics);
     }
 
-    _navigateToFolder(folder) {
-        let topicsFilters = this.state.topicsFilters;
-        topicsFilters.folder = folder.id || folder;
-        this.props.history.push("?" + querystring.encode(topicsFilters));
-        this.setState({topicsFilters});
+    return (
+      <tbody>
+        {folderIndex > 1
+      && (
+        <tr
+          className="pointer"
+          onClick={this._navigateToFolder.bind(this, folderFilter.substring(0, folderFilter.lastIndexOf('.')))}
+        >
+          <td className="text-left">
+            <FolderIcon width={20} className="folder-icon" />
+            <span className="margin-left-8px">..</span>
+          </td>
+          <td className="text-right" />
+          <td className="text-right" />
+        </tr>
+      )}
+        {folders.map(folder => (
+          <tr className="pointer" onClick={this._navigateToFolder.bind(this, folder)}>
+            <td className="text-left flex align-center">
+              <FolderIcon width={20} className="folder-icon" />
+              <span className="margin-left-8px">{folder.id}</span>
+              <span
+                className="folder-stat"
+              >
+                {folder.topics.length}
+                {' '}
+              topic
+                {folder.topics.length > 1 && 's'}
+              </span>
+            </td>
+            <td className="text-right">{folder.messages.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}</td>
+            <td className="text-right">{folder.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}</td>
+            <td className="text-right">{folder.partitions}</td>
+            <td className="text-right">{folder.replications}</td>
+          </tr>
+        ))}
+        {finalTopics.map(topic => (
+          <tr className="pointer">
+            <td className="text-left flex align-center">
+              <SubTreeIcon width={20} className="subtree-icon" />
+              <span className="margin-left-8px">
+                <Link
+                  to={`/franz-manager/topics/${topic.id}`}
+                >
+                  {topic.id}
+                </Link>
+              </span>
+            </td>
+            <td className="text-right">
+              <Link
+                to={`/franz-manager/topics/${topic.id}`}
+              >
+                {topic.messages.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+              </Link>
+            </td>
+            <td className="text-right">
+              <Link
+                to={`/franz-manager/topics/${topic.id}`}
+              >
+                {topic.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+              </Link>
+            </td>
+            <td className="text-right">
+              <Link to={`/franz-manager/topics/${topic.id}`}>{topic.partitions.length}</Link>
+            </td>
+            <td className="text-right">
+              <Link to={`/franz-manager/topics/${topic.id}`}>{topic.partitions[0].replicas.length}</Link>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    );
+  }
+
+  async _deleteTopics(topics) {
+    if (!this.inputTopicsNumber || Number(this.inputTopicsNumber.value) !== topics.length) {
+      return;
     }
+    this.setState({ badInput: null });
 
-    _isPartitionsSynchronizing(partitions) {
-        let result = false;
-        partitions.forEach(partition => {
-            if (partition.replicas.length !== partition.inSyncReplicas.length) {
-                result = true;
-            }
-        });
-        return result;
+    const { length } = topics;
+    const topicsCopy = JSON.parse(JSON.stringify(topics));
+    for (const topic of topics) {
+      try {
+        await TopicsService.deleteTopic(topic.id);
+      } catch (e) {
+        ToastStore.error(`could not delete topic ${topic.id}`);
+      }
+      topicsCopy.splice(topicsCopy.findIndex(t => t.id === topic.id), 1);
+      this.setState({ topicsToDelete: topicsCopy });
     }
+    this.setState({
+      bulkDeleteModal: false,
+      askBulkDeleteConfirmation: false,
+      topicsToDelete: [],
+    });
+    ToastStore.success(`Successfully deleted ${length} topic${length > 1 ? 's' : ''} !`, 5000);
+    this._loadTopics();
+  }
 
-    _renderTopics(topics) {
-        let sorted = _.sortBy(topics, this.state.topicsFilters.sortBy);
-        if ((this.state.topicsFilters.sortBy !== 'id' && !this.state.topicsFilters.reverseSort)
-            || (this.state.topicsFilters.reverseSort && this.state.topicsFilters.sortBy === 'id')) {
-            sorted = _.reverse(sorted);
-        }
-        return (
-            <tbody>
-            {sorted.slice(0, this.state.maxShownTopics).map(topic => {
-                let partitionSynchronizing = this._isPartitionsSynchronizing(topic.partitions);
-                return (
-                    <tr key={topic.id} className={classnames({synchronizing: partitionSynchronizing}, "pointer")}>
-                        <td className="text-left"><Link to={'/franz-manager/topics/' + topic.id}>{topic.id}</Link></td>
-                        <td className="text-right">
-                            <Link
-                                to={'/franz-manager/topics/' + topic.id}>{topic.messages.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
-                        </td>
-                        <td className="text-right">
-                            <Link
-                                to={'/franz-manager/topics/' + topic.id}>{topic.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
-                        </td>
-                        <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions.length}</Link></td>
-                        <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions[0].replicas.length}</Link>
-                        </td>
-                    </tr>
-                )
-            })}
-            </tbody>
-        )
-    }
+  _openBulkDeleteModal(topics) {
+    this.setState({ bulkDeleteModal: true, topicsToDelete: topics });
+  }
 
-    _renderTreeView(topics) {
-        let folders = [];
-        let finalTopics = [];
-        const folderFilter = this.state.topicsFilters.folder || "";
-        const folderIndex = folderFilter ? folderFilter.split('.').length + 1 : 1;
-        topics.filter(topic => topic.id.indexOf(folderFilter) === 0)
-            .forEach(topic => {
-                let substringIndex = getSubstringIndex(topic.id, '.', folderIndex);
-                let substring = topic.id.substring(0, substringIndex === -1 ? topic.id.length : substringIndex);
-                if (substring.length < topic.id.length) {
-                    const folderIndex = folders.findIndex(f => f.id === substring);
-                    if (folderIndex === -1) {
-                        folders.push({
-                            id: substring,
-                            topics: [topic],
-                            messages: topic.messages,
-                            messagesPerSec: topic.messagesPerSec,
-                            partitions: topic.partitions.length,
-                            replications: topic.partitions[0].replicas.length,
-                        });
-                    } else {
-                        folders[folderIndex].topics.push(topic);
-                        folders[folderIndex].messages += topic.messages;
-                        folders[folderIndex].messagesPerSec += topic.messagesPerSec;
-                        folders[folderIndex].partitions += topic.partitions.length;
-                        folders[folderIndex].replications += topic.partitions[0].replicas.length;
-                    }
-                } else {
-                    finalTopics.push(topic);
-                }
-            });
+  _closeBulkDeleteModal() {
+    this.setState({
+      bulkDeleteModal: false, askBulkDeleteConfirmation: false, badInput: null, topicsToDelete: null,
+    });
+  }
 
-        folders = _.sortBy(folders, this.state.topicsFilters.sortBy);
-        finalTopics = _.sortBy(finalTopics, this.state.topicsFilters.sortBy);
+  _openAddTopicModal() {
+    this.setState({
+      addTopicModal: true,
+    });
+  }
 
-        if ((this.state.topicsFilters.sortBy !== 'id' && !this.state.topicsFilters.reverseSort)
-            || (this.state.topicsFilters.reverseSort && this.state.topicsFilters.sortBy === 'id')) {
-            folders = _.reverse(folders);
-            finalTopics = _.reverse(finalTopics);
-        }
+  _closeAddTopicModal() {
+    this.setState({
+      addTopicModal: false,
+    });
+  }
 
-        return (
-            <tbody>
-            {folderIndex > 1 &&
-            <tr className="pointer"
-                onClick={this._navigateToFolder.bind(this, folderFilter.substring(0, folderFilter.lastIndexOf('.')))}>
-                <td className="text-left">
-                    <FolderIcon width={20} className='folder-icon'/>
-                    <span className="margin-left-8px">..</span>
-                </td>
-                <td className="text-right"/>
-                <td className="text-right"/>
-            </tr>}
-            {folders.map(folder => {
-                return (
-                    <tr className="pointer" onClick={this._navigateToFolder.bind(this, folder)}>
-                        <td className="text-left flex align-center">
-                            <FolderIcon width={20} className='folder-icon'/>
-                            <span className="margin-left-8px">{folder.id}</span>
-                            <span
-                                className="folder-stat">{folder.topics.length} topic{folder.topics.length > 1 && 's'}</span>
-                        </td>
-                        <td className="text-right">{folder.messages.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
-                        <td className="text-right">{folder.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</td>
-                        <td className="text-right">{folder.partitions}</td>
-                        <td className="text-right">{folder.replications}</td>
-                    </tr>
-                )
-            })}
-            {finalTopics.map(topic => {
-                return (
-                    <tr className="pointer">
-                        <td className="text-left flex align-center">
-                            <SubTreeIcon width={20} className="subtree-icon"/>
-                            <span className="margin-left-8px"><Link
-                                to={'/franz-manager/topics/' + topic.id}>{topic.id}</Link></span>
-                        </td>
-                        <td className="text-right">
-                            <Link
-                                to={'/franz-manager/topics/' + topic.id}>{topic.messages.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
-                        </td>
-                        <td className="text-right">
-                            <Link
-                                to={'/franz-manager/topics/' + topic.id}>{topic.messagesPerSec.toLocaleString('fr-FR', {maximumFractionDigits: 0})}</Link>
-                        </td>
-                        <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions.length}</Link></td>
-                        <td className="text-right">
-                            <Link to={'/franz-manager/topics/' + topic.id}>{topic.partitions[0].replicas.length}</Link>
-                        </td>
-                    </tr>
-                )
-            })}
-            </tbody>
-        )
-    }
+  _renderContextActions(topics) {
+    return (
+      <div className="context-actions topics-context-actions">
+        <button
+          type="button"
+          className={classnames({ active: this.state.topicsFilters.treeView }, 'toggle')}
+          onClick={this._toggleSwitch.bind(this, 'treeView')}
+        >
+          Enable tree view
+          <Ink />
+        </button>
+        <button
+          type="button"
+          className={classnames({ active: this.state.topicsFilters.hideLogsTopics }, 'toggle')}
+          onClick={this._toggleSwitch.bind(this, 'hideLogsTopics')}
+        >
+          Hide logs topics
+          <Ink />
+        </button>
+        {this.state.topicsFilters.topicName && topics.length > 0 && (
+          <button type="button" className="toggle danger" onClick={this._openBulkDeleteModal.bind(this, topics)}>
+            Delete all
+            <Ink />
+          </button>
+        )}
+      </div>
+    );
+  }
 
-    async _deleteTopics(topics) {
-        if (!this.refs['input-topics-number'] || +this.refs['input-topics-number'].value !== topics.length) {
-            return;
-        }
-        this.setState({badInput: null, deleting: true});
+  render() {
+    const topics = this._filterTopics(this.state.topics);
+    const filters = this.state.topicsFilters;
+    return (
+      <div className="topics-view grid-wrapper">
+        <Loadbar timer={TopicsService.getStoredData('topics-time')} finished={!this.state.loadingTopics} />
+        {this._renderContextActions(topics)}
 
-        let length = topics.length;
-        let topicsCopy = JSON.parse(JSON.stringify(topics));
-        for (const topic of topics) {
-            try {
-                await TopicsService.deleteTopic(topic.id);
-            } catch (e) {
-                ToastStore.error("could not delete topic " + topic.id);
-            }
-            topicsCopy.splice(topicsCopy.findIndex(t => t.id = topic.id), 1);
-            this.setState({topicsToDelete: topicsCopy});
-        }
-        this.setState({
-            deleting: false,
-            bulkDeleteModal: false,
-            askBulkDeleteConfirmation: false,
-            topicsToDelete: []
-        });
-        ToastStore.success(`Successfully deleted ${length} topic${length > 1 ? 's' : ''} !`, 5000);
-        this._loadTopics();
-    }
+        <div className="grid relative">
+          <div className="column">
+            <section className="flex-1">
+              {!this.state.loadingTopics && this.state.errorLoadingTopics && <Error />}
 
-    _openBulkDeleteModal(topics) {
-        this.setState({bulkDeleteModal: true, topicsToDelete: topics});
-    }
+              {(!this.state.loadingTopics || this.state.topics) && !this.state.errorLoadingTopics ? [
+                <header className="filter flex" key="header">
+                  <h3>
+                    {topics.length}
+                    {' '}
+                      topics
+                  </h3>
+                  <Filter
+                    onChange={this._updateFilterComponent.bind(this)}
+                    value={this.state.topicsFilters.topicName}
+                    filterByRegexp={this.state.topicsFilters.filterByRegexp}
+                    className="margin-right-16px"
+                  />
+                  <Switch
+                    className="margin-left-16px"
+                    onChange={this._toggleSwitch.bind(this, 'caseSensitive')}
+                    value={this.state.topicsFilters.caseSensitive}
+                    label="Case sensitive"
+                  />
+                </header>,
+                <PerfectScrollbar
+                  className="topic-datatable"
+                  key="scrollbar"
+                  onYReachEnd={this._onTopicScroll.bind(this)}
+                >
+                  <table>
+                    <thead>
+                      <tr>
+                        <th
+                          className={classnames({
+                            filtered: filters.sortBy === 'id',
+                            reverse: filters.reverseSort,
+                          }, 'text-left', 'pointer')}
+                          onClick={this._sortBy.bind(this, 'id')}
+                        >
+                          Topic
+                          Name
+                        </th>
+                        <th
+                          className={classnames({
+                            filtered: filters.sortBy === 'messages',
+                            reverse: filters.reverseSort,
+                          }, 'text-right', 'pointer')}
+                          onClick={this._sortBy.bind(this, 'messages')}
+                        >
+                          {' '}
+                          Messages
+                        </th>
+                        <th
+                          className={classnames({
+                            filtered: filters.sortBy === 'messagesPerSec',
+                            reverse: filters.reverseSort,
+                          }, 'text-right', 'pointer')}
+                          onClick={this._sortBy.bind(this, 'messagesPerSec')}
+                        >
+                          {' '}
+                          Messages Per
+                          Sec
+                        </th>
+                        <th
+                          className={classnames({
+                            filtered: filters.sortBy === 'partitions',
+                            reverse: filters.reverseSort,
+                          }, 'text-right', 'pointer')}
+                          onClick={this._sortBy.bind(this, 'partitions')}
+                        >
+                          {' '}
+                          Partitions
+                        </th>
+                        <th
+                          className={classnames({
+                            filtered: filters.sortBy === 'replications',
+                            reverse: filters.reverseSort,
+                          }, 'text-right', 'pointer')}
+                          onClick={this._sortBy.bind(this, 'replications')}
+                        >
+                          {' '}
+                          Replica
+                        </th>
+                      </tr>
+                    </thead>
+                    {this.state.topicsFilters.treeView ? this._renderTreeView(topics) : this._renderTopics(topics)}
+                  </table>
 
-    _closeBulkDeleteModal() {
-        this.setState({bulkDeleteModal: false, askBulkDeleteConfirmation: false, badInput: null, topicsToDelete: null});
-    }
+                  <button
+                    type="button"
+                    className="add-topic ellipse ellipse-56px"
+                    onClick={this._openAddTopicModal.bind(this)}
+                  >
+                    <i className="mdi mdi-plus mdi-24px" />
+                    <Ink />
+                  </button>
+                </PerfectScrollbar>,
+              ]
+                : <Loader />}
+            </section>
+          </div>
+        </div>
 
-    _openAddTopicModal() {
-        this.setState({
-            addTopicModal: true
-        });
-    }
-
-    _closeAddTopicModal() {
-        this.setState({
-            addTopicModal: false
-        });
-    }
-
-    _renderContextActions(topics) {
-        return <div className="context-actions topics-context-actions">
-            <button className={classnames({active: this.state.topicsFilters.treeView}, "toggle")}
-                    onClick={this._toggleSwitch.bind(this, 'treeView')}>
-                Enable tree view
-                <Ink/>
-            </button>
-            <button className={classnames({active: this.state.topicsFilters.hideLogsTopics}, "toggle")}
-                    onClick={this._toggleSwitch.bind(this, 'hideLogsTopics')}>
-                Hide logs topics
-                <Ink/>
-            </button>
-            {this.state.topicsFilters.topicName && topics.length > 0 && (
-                <button className="toggle danger" onClick={this._openBulkDeleteModal.bind(this, topics)}>
-                    Delete all
-                    <Ink/>
-                </button>
-            )}
-        </div>;
-    }
-
-    render() {
-        const topics = this._filterTopics(this.state.topics);
-        const filters = this.state.topicsFilters;
-        return (
-            <div className="topics-view grid-wrapper">
-                <Loadbar timer={TopicsService.getStoredData('topics-time')} finished={!this.state.loadingTopics}/>
-                {this._renderContextActions(topics)}
-
-                <div className="grid relative">
-                    <div className="column">
-                        <section className="flex-1">
-                            {!this.state.loadingTopics && this.state.errorLoadingTopics && <Error/>}
-
-                            {(!this.state.loadingTopics || this.state.topics) && !this.state.errorLoadingTopics ? ([
-                                    <header className="filter flex" key="header">
-                                        <h3>{topics.length} topics</h3>
-                                        <Filter onChange={this._updateFilterComponent.bind(this)}
-                                                value={this.state.topicsFilters.topicName}
-                                                filterByRegexp={this.state.topicsFilters.filterByRegexp}
-                                                className="margin-right-16px"/>
-                                        <Switch className="margin-left-16px"
-                                                onChange={this._toggleSwitch.bind(this, 'caseSensitive')}
-                                                value={this.state.topicsFilters.caseSensitive} label="Case sensitive"/>
-                                    </header>,
-                                    <PerfectScrollbar className="topic-datatable" key="scrollbar"
-                                                      onYReachEnd={this._onTopicScroll.bind(this)}>
-                                        <table>
-                                            <thead>
-                                            <tr>
-                                                <th className={classnames({
-                                                    filtered: filters.sortBy === 'id',
-                                                    reverse: filters.reverseSort
-                                                }, 'text-left', 'pointer')}
-                                                    onClick={this._sortBy.bind(this, 'id')}>Topic
-                                                    Name
-                                                </th>
-                                                <th className={classnames({
-                                                    filtered: filters.sortBy === 'messages',
-                                                    reverse: filters.reverseSort
-                                                }, 'text-right', 'pointer')}
-                                                    onClick={this._sortBy.bind(this, 'messages')}> Messages
-                                                </th>
-                                                <th className={classnames({
-                                                    filtered: filters.sortBy === 'messagesPerSec',
-                                                    reverse: filters.reverseSort
-                                                }, 'text-right', 'pointer')}
-                                                    onClick={this._sortBy.bind(this, 'messagesPerSec')}> Messages Per
-                                                    Sec
-                                                </th>
-                                                <th className={classnames({
-                                                    filtered: filters.sortBy === 'partitions',
-                                                    reverse: filters.reverseSort
-                                                }, 'text-right', 'pointer')}
-                                                    onClick={this._sortBy.bind(this, 'partitions')}> Partitions
-                                                </th>
-                                                <th className={classnames({
-                                                    filtered: filters.sortBy === 'replications',
-                                                    reverse: filters.reverseSort
-                                                }, 'text-right', 'pointer')}
-                                                    onClick={this._sortBy.bind(this, 'replications')}> Replica
-                                                </th>
-                                            </tr>
-                                            </thead>
-                                            {this.state.topicsFilters.treeView ? this._renderTreeView(topics) : this._renderTopics(topics)}
-                                        </table>
-
-                                        <button className="add-topic ellipse ellipse-56px"
-                                                onClick={this._openAddTopicModal.bind(this)}>
-                                            <i className="mdi mdi-plus mdi-24px"/><Ink/>
-                                        </button>
-                                    </PerfectScrollbar>
-                                ]
-                            ) : <Loader/>}
-                        </section>
+        {this.state.bulkDeleteModal
+        && (
+          <Modal
+            title={`You are going to delete ${topics.length} topics`}
+            close={this._closeBulkDeleteModal.bind(this)}
+            className="deleteTopicsModal"
+          >
+            <section className="delete-topic-list">
+              <PerfectScrollbar>
+                {this.state.topicsToDelete.map(topic => (
+                  <div
+                    key={topic.id}
+                    className="item"
+                  >
+                    {topic.id}
+                  </div>
+                ))}
+              </PerfectScrollbar>
+            </section>
+            <footer>
+              {this.state.askBulkDeleteConfirmation ? (
+                <div className="bulk-delete-confirmation">
+                  <div>
+                    Please confirm by typing the number of topics you are
+                    <br />
+                    going to delete (you will be fired if you screw up)
+                  </div>
+                  <div className="flex align-center margin-top-8px">
+                    <input
+                      type="text"
+                      className={classnames('input-topics-number', {
+                        'bad-input': this.state.badInput,
+                        'good-input': this.state.badInput === false,
+                      })}
+                      onChange={e => this.setState({ badInput: Number(e.target.value) !== topics.length })}
+                      placeholder="How many ?"
+                      ref={this.inputTopicsNumber}
+                    />
+                    <div className="actions margin-left-24px">
+                      <button
+                        type="button"
+                        className="danger"
+                        onClick={this._deleteTopics.bind(this, topics)}
+                      >
+                        Confirm
+                        <Ink />
+                      </button>
+                      <button type="button" className="regular margin-left-8px">
+                        I keep my job
+                        <Ink />
+                      </button>
                     </div>
+                  </div>
                 </div>
+              ) : (
+                <div className="flex align-center">
+                  <div className="flex-1 text-right">Are you sure you want to do this ?</div>
+                  <div className="actions margin-left-24px">
+                    <button
+                      type="button"
+                      className="danger"
+                      onClick={() => this.setState({ askBulkDeleteConfirmation: true })}
+                    >
+                      Yes
+                      <Ink />
+                    </button>
+                    <button
+                      type="button"
+                      className="regular margin-left-8px"
+                      onClick={this._closeBulkDeleteModal.bind(this)}
+                    >
+                      {'I\'m not that crazy'}
+                      <Ink />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </footer>
+          </Modal>
+        )
+        }
 
-                {this.state.bulkDeleteModal &&
-                <Modal title={`You are going to delete ${topics.length} topics`}
-                       close={this._closeBulkDeleteModal.bind(this)}
-                       className="deleteTopicsModal">
-                    <section className="delete-topic-list">
-                        <PerfectScrollbar>
-                            {this.state.topicsToDelete.map(topic => <div key={topic.id}
-                                                                         className="item">{topic.id}</div>)}
-                        </PerfectScrollbar>
-                    </section>
-                    <footer>
-                        {this.state.askBulkDeleteConfirmation ? <div className="bulk-delete-confirmation">
-                            <div>Please confirm by typing the number of topics you are <br/>
-                                going to delete (you will be fired if you screw up)
-                            </div>
-                            <div className="flex align-center margin-top-8px">
-                                <input type="text"
-                                       className={classnames("input-topics-number", {
-                                           "bad-input": this.state.badInput,
-                                           "good-input": this.state.badInput === false
-                                       })}
-                                       onChange={e => this.setState({badInput: +e.target.value !== topics.length})}
-                                       placeholder="How many ?"
-                                       ref="input-topics-number"/>
-                                <div className="actions margin-left-24px">
-                                    <button className="danger"
-                                            onClick={this._deleteTopics.bind(this, topics)}>
-                                        Confirm
-                                        <Ink/>
-                                    </button>
-                                    <button className="regular margin-left-8px">
-                                        I keep my job
-                                        <Ink/>
-                                    </button>
-                                </div>
-                            </div>
-                        </div> : <div className="flex align-center">
-                            <div className="flex-1 text-right">Are you sure you want to do this ?</div>
-                            <div className="actions margin-left-24px">
-                                <button className="danger"
-                                        onClick={() => this.setState({askBulkDeleteConfirmation: true})}>
-                                    Yes
-                                    <Ink/>
-                                </button>
-                                <button className="regular margin-left-8px"
-                                        onClick={this._closeBulkDeleteModal.bind(this)}>
-                                    I'm not that crazy
-                                    <Ink/>
-                                </button>
-                            </div>
-                        </div>}
-                    </footer>
-                </Modal>
-                }
+        {this.state.addTopicModal
+        && <AddTopicModal reloadTopics={this._loadTopics.bind(this)} close={this._closeAddTopicModal.bind(this)} />
+        }
 
-                {this.state.addTopicModal &&
-                <AddTopicModal reloadTopics={this._loadTopics.bind(this)} close={this._closeAddTopicModal.bind(this)}/>
-                }
-
-                <ToastContainer store={ToastStore}/>
-            </div>
-        );
-    }
+        <ToastContainer store={ToastStore} />
+      </div>
+    );
+  }
 }
 
-function getSubstringIndex(str, substring, n) {
-    let times = 0;
-    let index = null;
-
-    while (times < n && index !== -1) {
-        index = str.indexOf(substring, index + 1);
-        times++;
+isPartitionsSynchronizing = (partitions) => {
+  let result = false;
+  partitions.forEach((partition) => {
+    if (partition.replicas.length !== partition.inSyncReplicas.length) {
+      result = true;
     }
+  });
+  return result;
+};
 
-    return index;
-}
+mergeTopicsAndMetrics = (topics, metrics) => topics.map((topic) => {
+  const topicBis = topic;
+  topicBis.messages = '-';
+  topicBis.messagesPerSec = '-';
+  if (metrics && metrics[topicBis.id]) {
+    topicBis.messages = 0;
+    topicBis.messagesPerSec = 0;
+    Object.values(metrics[topicBis.id]).forEach((brokerMetrics) => {
+      topicBis.messages += brokerMetrics.metrics.Count;
+      topicBis.messagesPerSec += brokerMetrics.metrics.FifteenMinuteRate;
+    });
+  }
+  return topicBis;
+});
+
+getSubstringIndex = (str, substring, n) => {
+  let times = 0;
+  let index = null;
+
+  while (times < n && index !== -1) {
+    index = str.indexOf(substring, index + 1);
+    times += 1;
+  }
+
+  return index;
+};
+
+decodeQueryParams = (params) => {
+  const queryParams = querystring.decode(params);
+  queryParams.topicName = queryParams.topicName || '';
+  queryParams.folder = queryParams.folder || '';
+  queryParams.filterByRegexp = queryParams.filterByRegexp === 'true';
+  queryParams.treeView = queryParams.treeView === 'true';
+  queryParams.hideLogsTopics = queryParams.hideLogsTopics === 'true';
+  queryParams.caseSensitive = queryParams.caseSensitive === 'true';
+  queryParams.sortBy = queryParams.sortBy || 'id';
+  queryParams.reverseSort = queryParams.reverseSort === 'true';
+
+  return queryParams;
+};
 
 export default withRouter(Topics);

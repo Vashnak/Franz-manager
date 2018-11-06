@@ -1,0 +1,72 @@
+{
+  "parser": "babel-eslint",
+  "extends": "airbnb",
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "rules": {
+    "react/jsx-filename-extension": false,
+    "react/jsx-no-bind": false,
+    "react/destructuring-assignment": false,
+    "react/forbid-prop-types": false,
+    "jsx-a11y/click-events-have-key-events": false,
+    "jsx-a11y/no-static-element-interactions": false,
+    "no-underscore-dangle": "off",
+    "no-bitwise": "off",
+    "max-len": 0,
+    "no-restricted-syntax": "off",
+    "no-await-in-loop": "off",
+    "no-unused-vars": "error",
+    "no-shadow": "error",
+    "curly": "error",
+    "no-implicit-coercion": "error",
+    "no-mixed-operators": "error",
+    "no-plusplus": "error",
+    "no-extra-parens": "error",
+    "complexity": "off",
+    "no-catch-shadow": "error",
+    "class-methods-use-this": "error",
+    "no-console": "error",
+    "no-empty-function": "error",
+    "no-undefined": "error",
+    "no-useless-escape": "error",
+    "no-cond-assign": "error",
+    "no-empty": "error",
+    "no-unused-expressions": "error",
+    "no-undef": "error",
+    "no-return-assign": "error",
+    "no-multi-assign": "error",
+    "radix": "error",
+    "func-name-matching": "error",
+    "default-case": "error",
+    "global-require": "error",
+    "no-floating-decimal": "error",
+    "array-callback-return": "error",
+    "no-self-compare": "error",
+    "no-self-assign": "error",
+    "wrap-regex": "error",
+    "no-useless-constructor": "error",
+    "strict": "error",
+    "no-control-regex": "error",
+    "no-lonely-if": "error",
+    "no-loop-func": "error",
+    "no-dupe-keys": "error",
+    "no-useless-call": "error",
+    "guard-for-in": "off"
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

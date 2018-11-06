@@ -1,36 +1,50 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 
-import classnames from "classnames";
+import classnames from 'classnames';
 import Ink from 'react-ink';
+import PropTypes from 'prop-types';
 
 class Switch extends Component {
-    constructor(props) {
-        super(props);
+  static propTypes = {
+    value: PropTypes.bool,
+    className: PropTypes.string,
+    label: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired,
+  };
 
-        this.state = {
-            value: typeof this.props.value === 'boolean' ? this.props.value : false
-        }
-    }
+  static defaultProps = {
+    value: false,
+    className: '',
+  };
 
-    _toggle() {
-        if (this.props.onChange) {
-            this.props.onChange(!this.state.value);
-        }
-        this.setState({value: !this.state.value});
-    }
+  constructor(props) {
+    super(props);
 
-    render() {
-        return (
-            <div className={"switch-wrapper " + this.props.className}>
-                <div className="switch-label">{this.props.label}</div>
-                <div className={classnames({on: this.state.value}, "switch")} onClick={this._toggle.bind(this)}>
-                    <span className="switch-value">{this.state.value ? 'ON' : 'OFF'}</span>
-                    <div className="switch-handle ellipse"></div>
-                    <Ink/>
-                </div>
-            </div>
-        );
+    this.state = {
+      value: typeof this.props.value === 'boolean' ? this.props.value : false,
+    };
+  }
+
+  _toggle() {
+    const { value } = this.state;
+    if (this.props.onChange) {
+      this.props.onChange(!value);
     }
+    this.setState({ value: !value });
+  }
+
+  render() {
+    return (
+      <div className={`switch-wrapper ${this.props.className}`}>
+        <div className="switch-label">{this.props.label}</div>
+        <div className={classnames({ on: this.state.value }, 'switch')} onClick={this._toggle.bind(this)}>
+          <span className="switch-value">{this.state.value ? 'ON' : 'OFF'}</span>
+          <div className="switch-handle ellipse" />
+          <Ink />
+        </div>
+      </div>
+    );
+  }
 }
 
 export default Switch;
