@@ -82,7 +82,7 @@ class Consumers extends React.Component {
                 <PerfectScrollbar className="consumers-list" key="scrollbarConsumer">
                   <div>
                     {consumers.map(consumer => (
-                      <Link key={consumer.id} to={`/franz-manager/consumers/${consumer.id}`}>
+                      <Link key={consumer.id} to={`/consumers/${consumer.id}`}>
                         <div className="consumer-item flex align-center pointer">
                           <span
                             className="list-item-stat"

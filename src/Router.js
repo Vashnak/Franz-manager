@@ -16,35 +16,32 @@ import ConsumersView from './views/consumers/Consumers';
 import ConsumerView from './views/consumers/consumer/Consumer';
 import Topnav from './components/topnav/Topnav';
 
-const routes = () => (
-  <BrowserRouter>
+
+const routes = () => {
+  const baseUrl = document.querySelectorAll('base')[0].attributes['href'].value;
+  return <BrowserRouter basename={baseUrl}>
     <div className="document-wrapper">
-      <Topnav />
+      <Topnav/>
       <div className="page-wrapper">
-        <Sidenav />
+        <Sidenav/>
         <div className="content-wrapper">
           <Switch>
             <Route
               exact
-              path="/"
-              render={() => <Redirect to="/franz-manager/dashboard" />}
+              path={baseUrl}
+              render={() => <Redirect to="/dashboard"/>}
             />
-            <Route
-              exact
-              path="/franz-manager"
-              render={() => <Redirect to="/franz-manager/dashboard" />}
-            />
-            <Route exact path="/franz-manager/dashboard" component={DashboardView} />
-            <Route exact path="/franz-manager/cluster" component={ClusterView} />
-            <Route exact path="/franz-manager/topics" component={TopicsView} />
-            <Route exact path="/franz-manager/topics/:topicId" component={TopicView} />
-            <Route exact path="/franz-manager/consumers" component={ConsumersView} />
-            <Route exact path="/franz-manager/consumers/:consumerId" component={ConsumerView} />
+            <Route exact path="/dashboard" component={DashboardView}/>
+            <Route exact path="/cluster" component={ClusterView}/>
+            <Route exact path="/topics" component={TopicsView}/>
+            <Route exact path="/topics/:topicId" component={TopicView}/>
+            <Route exact path="/consumers" component={ConsumersView}/>
+            <Route exact path="/consumers/:consumerId" component={ConsumerView}/>
           </Switch>
         </div>
       </div>
     </div>
-  </BrowserRouter>
-);
+  </BrowserRouter>;
+};
 
 export default routes;

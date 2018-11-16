@@ -404,7 +404,7 @@ partitions
               {this.state.consumers.map(consumer => (
                 <Link
                   key={`consumer-${consumer}`}
-                  to={`/franz-manager/consumers/${consumer}`}
+                  to={`/consumers/${consumer}`}
                 >
                   <button type="button" key={consumer}>
                     {consumer}

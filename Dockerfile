@@ -7,7 +7,7 @@ COPY ./ /$APP/
 COPY deploy.js /
 
 RUN apk update \
-    && apk add --update nodejs \
+    && apk add --update nodejs npm \
     && cd /$APP \
     && npm i -g npm \
     && npm i \

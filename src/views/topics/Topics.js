@@ -174,26 +174,26 @@ class Topics extends React.Component {
           const partitionSynchronizing = isPartitionsSynchronizing(topic.partitions);
           return (
             <tr key={topic.id} className={classnames({ synchronizing: partitionSynchronizing }, 'pointer')}>
-              <td className="text-left"><Link to={`/franz-manager/topics/${topic.id}`}>{topic.id}</Link></td>
+              <td className="text-left"><Link to={`/topics/${topic.id}`}>{topic.id}</Link></td>
               <td className="text-right">
                 <Link
-                  to={`/franz-manager/topics/${topic.id}`}
+                  to={`/topics/${topic.id}`}
                 >
                   {topic.messages.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
                 </Link>
               </td>
               <td className="text-right">
                 <Link
-                  to={`/franz-manager/topics/${topic.id}`}
+                  to={`/topics/${topic.id}`}
                 >
                   {topic.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
                 </Link>
               </td>
               <td className="text-right">
-                <Link to={`/franz-manager/topics/${topic.id}`}>{topic.partitions.length}</Link>
+                <Link to={`/topics/${topic.id}`}>{topic.partitions.length}</Link>
               </td>
               <td className="text-right">
-                <Link to={`/franz-manager/topics/${topic.id}`}>{topic.partitions[0].replicas.length}</Link>
+                <Link to={`/topics/${topic.id}`}>{topic.partitions[0].replicas.length}</Link>
               </td>
             </tr>
           );
@@ -285,7 +285,7 @@ class Topics extends React.Component {
               <SubTreeIcon width={20} className="subtree-icon" />
               <span className="margin-left-8px">
                 <Link
-                  to={`/franz-manager/topics/${topic.id}`}
+                  to={`/topics/${topic.id}`}
                 >
                   {topic.id}
                 </Link>
@@ -293,23 +293,23 @@ class Topics extends React.Component {
             </td>
             <td className="text-right">
               <Link
-                to={`/franz-manager/topics/${topic.id}`}
+                to={`/topics/${topic.id}`}
               >
                 {topic.messages.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
               </Link>
             </td>
             <td className="text-right">
               <Link
-                to={`/franz-manager/topics/${topic.id}`}
+                to={`/topics/${topic.id}`}
               >
                 {topic.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
               </Link>
             </td>
             <td className="text-right">
-              <Link to={`/franz-manager/topics/${topic.id}`}>{topic.partitions.length}</Link>
+              <Link to={`/topics/${topic.id}`}>{topic.partitions.length}</Link>
             </td>
             <td className="text-right">
-              <Link to={`/franz-manager/topics/${topic.id}`}>{topic.partitions[0].replicas.length}</Link>
+              <Link to={`/topics/${topic.id}`}>{topic.partitions[0].replicas.length}</Link>
             </td>
           </tr>
         ))}

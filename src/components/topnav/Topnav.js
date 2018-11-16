@@ -7,19 +7,19 @@ import ClustersService from '../../services/ClustersService';
 const sidenavItems = [
   {
     label: 'Dashboard',
-    link: '/franz-manager/dashboard',
+    link: '/dashboard',
   },
   {
     label: 'Cluster',
-    link: '/franz-manager/cluster',
+    link: '/cluster',
   },
   {
     label: 'Topics',
-    link: '/franz-manager/topics',
+    link: '/topics',
   },
   {
     label: 'Consumers',
-    link: '/franz-manager/consumers',
+    link: '/consumers',
   },
 ];
 
@@ -56,7 +56,7 @@ class Topnav extends Component {
   render() {
     return (
       <header className="top-header flex">
-        <Link to="/franz-manager">
+        <Link to="">
           <div className="logo pointer">
             <Logo />
           </div>
@@ -67,7 +67,7 @@ class Topnav extends Component {
             <div className="flex margin-bottom-4px">
               <Link
                 className="item"
-                to="/franz-manager/dashboard"
+                to="/dashboard"
               >
 Cluster
                 {' '}

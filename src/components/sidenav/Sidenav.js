@@ -15,20 +15,20 @@ import Option from '../menu/option/Option';
 const sidenavItems = [
   {
     label: 'Dashboard',
-    link: '/franz-manager/dashboard',
-    icon: <DashboardIcon />,
+    link: '/dashboard',
+    icon: <DashboardIcon/>,
   }, {
     label: 'Cluster',
-    link: '/franz-manager/cluster',
-    icon: <ClusterIcon />,
+    link: '/cluster',
+    icon: <ClusterIcon/>,
   }, {
     label: 'Topics',
-    link: '/franz-manager/topics',
-    icon: <TopicsIcon />,
+    link: '/topics',
+    icon: <TopicsIcon/>,
   }, {
     label: 'Consumers',
-    link: '/franz-manager/consumers',
-    icon: <ConsumerIcon />,
+    link: '/consumers',
+    icon: <ConsumerIcon/>,
   },
 ];
 
@@ -43,9 +43,9 @@ class Sidenav extends Component {
     this.themeRef = React.createRef();
 
     const currentRoute = this.context.router.route.location.pathname;
-    let currentSelectedSidenavItem = sidenavItems.find(m => m.link.split('/')[2] === currentRoute.split('/')[2]);
+    let currentSelectedSidenavItem = sidenavItems.find(m => m.link === currentRoute);
 
-    if (currentRoute === '/franz-manager' || currentRoute === '/franz-manager/') { // it means we just got redirected from root
+    if (currentRoute === '' || currentRoute === '/') { // it means we just got redirected from root
       currentSelectedSidenavItem = {
         label: sidenavItems[0].label,
       };
@@ -65,7 +65,7 @@ class Sidenav extends Component {
 
   _updateRoute(location) {
     this.setState({
-      selectedSidenavItem: sidenavItems.find(m => m.link.split('/')[2] === location.pathname.split('/')[2]).label,
+      selectedSidenavItem: sidenavItems.find(m => m.link === location.pathname).label,
     });
   }
 
@@ -83,31 +83,33 @@ class Sidenav extends Component {
       <div className="sidebar">
         <div className="sidenav-items">
           {
-          sidenavItems.map(sidenavItem => (
-            <Link
-              to={sidenavItem.link}
-              onClick={this._selectSidenavItem.bind(this, sidenavItem)}
-              key={sidenavItem.link}
-              className={classnames('sidenav-item', {
-                selected: sidenavItem.label === this.state.selectedSidenavItem,
-              })}
-            >
-              {sidenavItem.icon}
-              <span className="label">{sidenavItem.label}</span>
-              <Ink />
-            </Link>
-          ))
-        }
+            sidenavItems.map(sidenavItem => (
+              <Link
+                to={sidenavItem.link}
+                onClick={this._selectSidenavItem.bind(this, sidenavItem)}
+                key={sidenavItem.link}
+                className={classnames('sidenav-item', {
+                  selected: sidenavItem.label === this.state.selectedSidenavItem,
+                })}
+              >
+                {sidenavItem.icon}
+                <span className="label">{sidenavItem.label}</span>
+                <Ink/>
+              </Link>
+            ))
+          }
         </div>
 
-        <Menu className="theme-menu" label="Theme" selected={this.state.selectedTheme} ref={this.themeRef} onChange={this._switchTheme.bind(this)}>
+        <Menu className="theme-menu" label="Theme" selected={this.state.selectedTheme} ref={this.themeRef}
+              onChange={this._switchTheme.bind(this)}>
           {
-          themes.map(theme => (
-            <Option onChange={this._switchTheme.bind(this)} value={theme} ref={theme.file} key={theme.file} selected={this.state.selectedTheme.replace('theme-', '') === theme.file.replace('theme-', '')}>
-              {theme.file.replace('theme-', '')}
-            </Option>
-          ))
-        }
+            themes.map(theme => (
+              <Option onChange={this._switchTheme.bind(this)} value={theme} ref={theme.file} key={theme.file}
+                      selected={this.state.selectedTheme.replace('theme-', '') === theme.file.replace('theme-', '')}>
+                {theme.file.replace('theme-', '')}
+              </Option>
+            ))
+          }
 
         </Menu>
       </div>

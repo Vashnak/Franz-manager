@@ -126,7 +126,7 @@ class Consumer extends Component {
                   {topics.map(topic => (
                     <section className="topic-consumed" key={topic.id}>
                       <header className="title flex space-between">
-                        <Link to={`/franz-manager/topics/${topic}`}>
+                        <Link to={`/topics/${topic}`}>
                           <h4 className="flex-1">
                             {topic}
                             {' '}
