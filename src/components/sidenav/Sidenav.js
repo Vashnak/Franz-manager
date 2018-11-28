@@ -55,10 +55,11 @@ class Sidenav extends Component {
 
   _updateRoute(location) {
     const baseUrl = document.querySelectorAll('base')[0].attributes['href'].value;
-    const splittedPath = location.pathname.replace(baseUrl, '').split('/');
+    const splittedPath = location.pathname.replace(baseUrl, '')
+      .split('/');
     const selectedSidenavItem = sidenavItems.find(m => m.link.split('/')[1] === splittedPath[1]);
     this.setState({
-      selectedSidenavItem: selectedSidenavItem.label || sidenavItems[0].label,
+      selectedSidenavItem: selectedSidenavItem ? selectedSidenavItem.label : sidenavItems[0].label,
       subLocation: splittedPath[2] || '',
       previousRoute: this.state.currentRoute,
       currentRoute: location.pathname + location.search,
