@@ -33,7 +33,7 @@ class Topnav extends Component {
       currentRoute: this.props.location.pathname + this.props.location.search,
     };
 
-    this.props.history.listen((location, b, c) => {
+    this.props.history.listen(location => {
       this._updateRoute(location);
     });
   }
@@ -43,11 +43,12 @@ class Topnav extends Component {
   }
 
   _updateRoute(location) {
-    const splittedPath = location.pathname.split('/');
-    const selectedSidenavItem = sidenavItems.find(m => m.link.split('/')[2] === location.pathname.split('/')[2]);
+    const baseUrl = document.querySelectorAll('base')[0].attributes['href'].value;
+    const splittedPath = location.pathname.replace(baseUrl, '').split('/');
+    const selectedSidenavItem = sidenavItems.find(m => m.link.split('/')[1] === splittedPath[1]);
     this.setState({
       selectedSidenavItem: selectedSidenavItem || sidenavItems[0],
-      subLocation: splittedPath[3] || '',
+      subLocation: splittedPath[2] || '',
       previousRoute: this.state.currentRoute,
       currentRoute: location.pathname + location.search,
     });
@@ -58,7 +59,7 @@ class Topnav extends Component {
       <header className="top-header flex">
         <Link to="">
           <div className="logo pointer">
-            <Logo />
+            <Logo/>
           </div>
         </Link>
 
@@ -69,18 +70,19 @@ class Topnav extends Component {
                 className="item"
                 to="/dashboard"
               >
-Cluster
+                Cluster
                 {' '}
                 {ClustersService.getSelectedClusterId()}
               </Link>
-              {this.state.subLocation && <Link className="item" to={this.state.previousRoute || this.state.selectedSidenavItem.link}>{this.state.selectedSidenavItem.label}</Link>}
+              {this.state.subLocation && <Link className="item"
+                                               to={this.state.previousRoute || this.state.selectedSidenavItem.link}>{this.state.selectedSidenavItem.label}</Link>}
             </div>
             <h1>{this.state.subLocation || this.state.selectedSidenavItem.label}</h1>
           </div>
         </div>
 
         {/* {this.state.selectedSidenavItem !== 'Dashboard' && <ClusterBar/>} */}
-        <ClusterBar />
+        <ClusterBar/>
       </header>
     );
   }

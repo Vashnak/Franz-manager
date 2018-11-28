@@ -7,8 +7,24 @@
   .column.darker {
     background: map_get($layout-colors, 7);
     margin: #{-$theme-content-padding}  #{-$theme-content-padding} #{-$theme-content-padding} 0;
-    padding: 0 $theme-content-padding/2;
     position: relative;
+
+    .filter-section {
+      padding: 8px;
+      height: 64px;
+      border-radius: 0;
+      background-color: initial;
+      margin: 0;
+
+      .filter {
+        padding: 0;
+        margin: 8px 0;
+
+        input {
+          margin-left: 16px;
+        }
+      }
+    }
 
     @if ($theme-message-shadow) {
       &:after {
@@ -85,10 +101,22 @@
     }
 
     .messages-list {
-      padding-top: $theme-content-padding;
+      top: 64px !important;
+      padding-top: 0;
       padding-bottom: calc(80px + #{$theme-content-padding} * 2);
       padding-left: $theme-content-padding;
       @include fit-content();
+
+      button.filters {
+        color: map_get($theme-colors, 1);
+        background: map_get($layout-colors, 7);
+        padding: 0;
+        @include scale(48px);
+
+        .mdi {
+          color: map_get($theme-colors, 1);
+        }
+      }
 
       section {
         padding: 0;
@@ -107,8 +135,14 @@
           @include center();
           padding: 0 0 0 24px;
 
-          .key-message {
-            font: map_get($fonts, key-message);
+          .key {
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            .key-message {
+              min-width: 114px !important;
+              font: map_get($fonts, key-message);
+            }
           }
 
           .partition {

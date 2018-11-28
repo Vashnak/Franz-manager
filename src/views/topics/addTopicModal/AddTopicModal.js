@@ -20,8 +20,8 @@ class AddTopicModal extends Component {
   }
 
   _createTopic() {
-    const topicName = this.topicNameInputRef.value;
-    const topicPartitions = Number(this.topicPartitionsInputRef.value);
+    const topicName = this.topicPartitionsInputRef.current.value;
+    const topicPartitions = Number(this.topicPartitionsInputRef.current.value);
     if (Number.isNaN(topicPartitions)) {
       alert('Partition must be a number.');
       return;

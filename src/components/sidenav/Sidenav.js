@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 
 import Ink from 'react-ink';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import {
   DashboardIcon, ClusterIcon, TopicsIcon, ConsumerIcon,
 } from '../../services/SvgService';
@@ -33,39 +33,35 @@ const sidenavItems = [
 ];
 
 class Sidenav extends Component {
-  static contextTypes = {
-    router: PropTypes.object.isRequired,
-  };
 
-  constructor(props, context) {
-    super(props, context);
-
+  constructor(props) {
+    super(props);
     this.themeRef = React.createRef();
 
-    const currentRoute = this.context.router.route.location.pathname;
-    let currentSelectedSidenavItem = sidenavItems.find(m => m.link === currentRoute);
-
-    if (currentRoute === '' || currentRoute === '/') { // it means we just got redirected from root
-      currentSelectedSidenavItem = {
-        label: sidenavItems[0].label,
-      };
-    }
-
     this.state = {
-      selectedSidenavItem: currentSelectedSidenavItem
-        ? currentSelectedSidenavItem.label
-        : 'unknown',
+      selectedSidenavItem: '',
       selectedTheme: ThemesStore.getTheme().file,
+      currentRoute: this.props.location.pathname + this.props.location.search,
     };
 
-    this.context.router.history.listen((location) => {
+    this.props.history.listen(location => {
       this._updateRoute(location);
     });
   }
 
+  componentDidMount() {
+    this._updateRoute(this.props.location);
+  }
+
   _updateRoute(location) {
+    const baseUrl = document.querySelectorAll('base')[0].attributes['href'].value;
+    const splittedPath = location.pathname.replace(baseUrl, '').split('/');
+    const selectedSidenavItem = sidenavItems.find(m => m.link.split('/')[1] === splittedPath[1]);
     this.setState({
-      selectedSidenavItem: sidenavItems.find(m => m.link === location.pathname).label,
+      selectedSidenavItem: selectedSidenavItem.label || sidenavItems[0].label,
+      subLocation: splittedPath[2] || '',
+      previousRoute: this.state.currentRoute,
+      currentRoute: location.pathname + location.search,
     });
   }
 
@@ -117,4 +113,4 @@ class Sidenav extends Component {
   }
 }
 
-export default Sidenav;
+export default withRouter(Sidenav);

@@ -21,6 +21,10 @@ import MetricsService from '../../../services/MetricsService';
 import EditPartitionsModal from './editPartitionsModal/EditPartitionsModal';
 import { CopyIcon } from '../../../services/SvgService';
 import Tooltip from '../../../components/tooltip/Tooltip';
+import ConstantsService from '../../../services/ConstantsService';
+import ClustersService from '../../../services/ClustersService';
+import Filter from '../../../components/filter/Filter';
+import Switch from '../../../components/switch/Switch';
 
 let copyJSON;
 let renderFormatDateMessage;
@@ -45,7 +49,7 @@ const messageTypes = [
   'Last 5 minutes',
   'Last hour',
   'Today',
-  // 'Live message'
+  'Live message'
 ];
 
 class Topic extends Component {
@@ -67,6 +71,8 @@ class Topic extends Component {
       partitions: [],
       consumers: [],
       messages: [],
+      liveMessages: false,
+      liveMessagesPaused: false,
       maxShownMessages: 20,
       loadingMessages: true,
       loadingConsumers: true,
@@ -77,6 +83,8 @@ class Topic extends Component {
       errorLoadingPartitions: false,
       errorLoadingMessages: false,
       messageTypeSelected: '10 last messages',
+      filter: '',
+      filterByRegexp: false
     };
   }
 
@@ -87,35 +95,106 @@ class Topic extends Component {
     this._loadTopicMetrics();
   }
 
+  _updateFilter(e) {
+    this.setState({
+      filter: e.filter,
+      filterByRegexp: e.filterByRegexp
+    });
+  }
+
   _changeMessageType(type) {
     this.setState({ messageTypeSelected: type });
+    let liveMode = false;
     let topicToLoad;
     let timestamp;
+    let maxShownMessages;
     switch (type) {
       case '10 last messages':
         topicToLoad = 10;
+        maxShownMessages = 10;
         break;
       case '30 last messages':
         topicToLoad = 30;
+        maxShownMessages = 10;
         break;
       case '100 last messages':
         topicToLoad = 100;
+        maxShownMessages = 10;
         break;
       case 'Last 5 minutes':
-        timestamp = moment().subtract(5, 'm').format('x');
+        timestamp = moment()
+          .subtract(5, 'm')
+          .format('x');
+        maxShownMessages = 30;
         break;
       case 'Last hour':
-        timestamp = moment().subtract(1, 'h').format('x');
+        timestamp = moment()
+          .subtract(1, 'h')
+          .format('x');
+        maxShownMessages = 30;
         break;
       case 'Last 24 hours':
-        timestamp = moment().hour(0).minute(0).second(0)
+        timestamp = moment()
+          .hour(0)
+          .minute(0)
+          .second(0)
           .millisecond(0)
           .format('x');
+        maxShownMessages = 30;
+        break;
+      case 'Live message':
+        liveMode = true;
         break;
       default:
         break;
     }
-    this._loadTopicMessages(topicToLoad, timestamp);
+    this.setState({ maxShownMessages });
+    if (liveMode) {
+      this._startLiveMessages(this.state.topicId);
+    } else {
+      this._loadTopicMessages(topicToLoad, timestamp);
+    }
+  }
+
+  _startLiveMessages(topicId, clear = true) {
+    this.setState({
+      loadingMessage: true,
+      liveMessages: true,
+      liveMessagesPaused: false,
+      messages: clear ? [] : this.state.messages
+    });
+    this.socketSubscription = new WebSocket(ConstantsService.apis.franzManagerApi.webSocketUrl);
+
+    this.socketSubscription.onopen = () => {
+      this.socketSubscription.send('subscribe:' + topicId + ':' + ClustersService.getSelectedClusterId());
+    };
+
+    this.socketSubscription.onmessage = e => {
+      let currentMessages = this.state.messages;
+      currentMessages = JSON.parse(e.data)
+        .concat(currentMessages);
+      this.setState({
+        loadingMessage: false,
+        messages: currentMessages
+      });
+    };
+
+    this.socketSubscription.onclose = this.socketSubscription.onerror = () => {
+      this.socketSubscription.close();
+      this.socketSubscription = null;
+      this.setState({
+        loadingMessage: false,
+        liveMessages: false
+      });
+    };
+  }
+
+  _stopLiveMessage() {
+    this.setState({
+      liveMessages: true,
+      liveMessagesPaused: true
+    });
+    this.socketSubscription.close();
   }
 
   _onMessagesScroll(e) {
@@ -130,9 +209,18 @@ class Topic extends Component {
 
   _loadTopicMetrics() {
     const wantedMetrics = [
-      { id: 'MessagesInPerSec', label: 'Messages in' },
-      { id: 'BytesInPerSec', label: 'Bytes in' },
-      { id: 'BytesOutPerSec', label: 'Bytes out' },
+      {
+        id: 'MessagesInPerSec',
+        label: 'Messages in'
+      },
+      {
+        id: 'BytesInPerSec',
+        label: 'Bytes in'
+      },
+      {
+        id: 'BytesOutPerSec',
+        label: 'Bytes out'
+      },
     ];
     Promise.all(wantedMetrics.map(metric => MetricsService.getMetrics('kafka.server', 'BrokerTopicMetrics', metric.id, `topic=${this.state.topicId}`)))
       .then((brokersMetrics) => {
@@ -153,17 +241,26 @@ class Topic extends Component {
         });
       })
       .catch(() => {
-        this.setState({ loadingMetrics: false, errorLoadingMetrics: true });
+        this.setState({
+          loadingMetrics: false,
+          errorLoadingMetrics: true
+        });
       });
   }
 
   _loadTopicPartitions() {
     TopicsService.getTopicPartitions(this.state.topicId)
       .then((partitions) => {
-        this.setState({ partitions, loadingPartitions: false });
+        this.setState({
+          partitions,
+          loadingPartitions: false
+        });
       })
       .catch(() => {
-        this.setState({ loadingPartitions: false, errorLoadingPartitions: true });
+        this.setState({
+          loadingPartitions: false,
+          errorLoadingPartitions: true
+        });
       });
   }
 
@@ -172,11 +269,15 @@ class Topic extends Component {
       .then((consumers) => {
         this.setState({
           loadingConsumers: false,
-          consumers: consumers.map(c => c.group).filter((v, i, a) => a.indexOf(v) === i),
+          consumers: consumers.map(c => c.group)
+            .filter((v, i, a) => a.indexOf(v) === i),
         });
       })
       .catch(() => {
-        this.setState({ loadingConsumers: false, errorLoadingConsumers: true });
+        this.setState({
+          loadingConsumers: false,
+          errorLoadingConsumers: true
+        });
       });
   }
 
@@ -243,30 +344,30 @@ class Topic extends Component {
     return (
       <div className="context-actions topic-context-actions">
         <button type="button" onClick={this._openSettings.bind(this)} className="toggle">
-                Settings
-          <Ink />
+          Settings
+          <Ink/>
         </button>
         <button type="button" onClick={this._openEditPartitionModal.bind(this)} className="toggle">
-                Add Partitions
-          <Ink />
+          Add Partitions
+          <Ink/>
         </button>
         {this.state.confirmDelete ? [
-          <button type="button" onClick={this._deleteTopic.bind(this)} className="toggle danger">
-                        Confirm
-            <Ink />
-          </button>,
-          <button type="button" onClick={() => this.setState({ confirmDelete: false })} className="regular">
-                        Cancel
-            <Ink />
-          </button>,
-        ]
+            <button type="button" onClick={this._deleteTopic.bind(this)} className="toggle danger">
+              Confirm
+              <Ink/>
+            </button>,
+            <button type="button" onClick={() => this.setState({ confirmDelete: false })} className="regular">
+              Cancel
+              <Ink/>
+            </button>,
+          ]
           : (
             <button type="button" onClick={() => this.setState({ confirmDelete: true })} className="toggle">
-                    Delete Topic
-              <Ink />
+              Delete Topic
+              <Ink/>
             </button>
           )
-            }
+        }
       </div>
     );
   }
@@ -277,29 +378,32 @@ class Topic extends Component {
         <header>
           <h3>Metrics</h3>
         </header>
-        {this.state.loadingMetrics && <Loader width="32" />}
-        {this.state.errorLoadingMetrics && !this.state.loadingMetrics && <Error noRiddle />}
+        {this.state.loadingMetrics && <Loader width="32"/>}
+        {this.state.errorLoadingMetrics && !this.state.loadingMetrics && <Error noRiddle/>}
         {!this.state.loadingMetrics && !this.state.errorLoadingMetrics && (
-        <table>
-          <thead>
+          <table>
+            <thead>
             <tr>
               <th className="text-left">Name (per sec)</th>
               <th className="text-right">Last minute</th>
               <th className="text-right">last 5 minutes</th>
               <th className="text-right">last 15 minutes</th>
             </tr>
-          </thead>
-          <tbody>
+            </thead>
+            <tbody>
             {this.state.metrics.map(metric => (
               <tr key={`metris-${metric.label}`}>
                 <td className="text-left">{metric.label}</td>
-                <td className="text-right">{metric.metrics.OneMinuteRate ? metric.metrics.OneMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''}</td>
-                <td className="text-right">{metric.metrics.FiveMinuteRate ? metric.metrics.FiveMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''}</td>
-                <td className="text-right">{metric.metrics.FifteenMinuteRate ? metric.metrics.FifteenMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''}</td>
+                <td
+                  className="text-right">{metric.metrics.OneMinuteRate ? metric.metrics.OneMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''}</td>
+                <td
+                  className="text-right">{metric.metrics.FiveMinuteRate ? metric.metrics.FiveMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''}</td>
+                <td
+                  className="text-right">{metric.metrics.FifteenMinuteRate ? metric.metrics.FifteenMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : ''}</td>
               </tr>
             ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
         )}
       </div>
     );
@@ -316,15 +420,15 @@ class Topic extends Component {
         <header>
           <h3>Partitions</h3>
         </header>
-        {this.state.loadingPartitions && <Loader width="32" />}
-        {this.state.errorLoadingPartitions && !this.state.loadingPartitions && <Error noRiddle />}
+        {this.state.loadingPartitions && <Loader width="32"/>}
+        {this.state.errorLoadingPartitions && !this.state.loadingPartitions && <Error noRiddle/>}
         {!this.state.loadingPartitions && !this.state.errorLoadingPartitions && (
-        <PerfectScrollbar className="partition-datatable">
-          <table>
-            <thead>
+          <PerfectScrollbar className="partition-datatable">
+            <table>
+              <thead>
               <tr>
                 <th className="text-left">
-partitions
+                  partitions
                   <span className="">(Messages)</span>
                 </th>
                 <th className="text-right">beginning offset</th>
@@ -333,56 +437,51 @@ partitions
                 <th className="text-right">in sync</th>
                 <th className="text-right">leader</th>
               </tr>
-            </thead>
-            <tbody>
-              {this.state.partitions.sort((a, b) => a.partition - b.partition).map((partition) => {
-                const synchronizing = partition.replicas.length !== partition.inSyncReplicas.length;
-                const partitionColor = partitionColors[partition.partition % partitionColors.length];
-                return (
-                  <tr
-                    key={`partition-${partition.partition}`}
-                    className={classnames({
-                      selected: this.state.selectedPartition && this.state.selectedPartition.partition === partition.partition,
-                      synchronizing,
-                    }, 'pointer')}
-                    onClick={this._selectPartition.bind(this, partition)}
-                  >
-                    <td className="text-left">
-                      <div className="flex align-center">
-                        <i
-                          className="ellipse margin-right-8px ellipse-8px"
-                          style={{ backgroundColor: partitionColor }}
-                        />
-                        {partition.partition}
-                        {' '}
-                        <span
-                          className="margin-left-12px"
-                        >
-(
-                          {messagesPerPartition[partition.partition]}
-)
+              </thead>
+              <tbody>
+              {this.state.partitions.sort((a, b) => a.partition - b.partition)
+                .map((partition) => {
+                  const synchronizing = partition.replicas.length !== partition.inSyncReplicas.length;
+                  const partitionColor = partitionColors[partition.partition % partitionColors.length];
+                  return (
+                    <tr
+                      key={`partition-${partition.partition}`}
+                      className={classnames({
+                        selected: this.state.selectedPartition && this.state.selectedPartition.partition === partition.partition,
+                        synchronizing,
+                      }, 'pointer')}
+                      onClick={this._selectPartition.bind(this, partition)}
+                    >
+                      <td className="text-left">
+                        <div className="flex align-center">
+                          <i
+                            className="ellipse margin-right-8px ellipse-8px"
+                            style={{ backgroundColor: partitionColor }}
+                          />
+                          {partition.partition}
+                          {' '}
+                          <span
+                            className="margin-left-12px"
+                          >
+                            {messagesPerPartition[partition.partition]}
                         </span>
-                      </div>
-                    </td>
-                    <td className="text-right">{partition.beginningOffset}</td>
-                    <td className="text-right">{partition.endOffset}</td>
-                    <td className="text-right">
-(
-                      {partition.replicas.join(', ')}
-)
-                    </td>
-                    <td className="text-right">
-(
-                      {partition.inSyncReplicas.join(', ')}
-)
-                    </td>
-                    <td className="text-right">{partition.leader}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </PerfectScrollbar>
+                        </div>
+                      </td>
+                      <td className="text-right">{partition.beginningOffset}</td>
+                      <td className="text-right">{partition.endOffset}</td>
+                      <td className="text-right">
+                        {partition.replicas.join(', ')}
+                      </td>
+                      <td className="text-right">
+                        {partition.inSyncReplicas.join(', ')}
+                      </td>
+                      <td className="text-right">{partition.leader}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </PerfectScrollbar>
         )}
       </div>
     );
@@ -395,10 +494,11 @@ partitions
         <header>
           <h3>Consumers</h3>
         </header>
-        {this.state.loadingConsumers && <Loader width="32" />}
-        {this.state.errorLoadingConsumers && !this.state.loadingConsumers && <Error noRiddle />}
+        {this.state.loadingConsumers && <Loader width="32"/>}
+        {this.state.errorLoadingConsumers && !this.state.loadingConsumers && <Error noRiddle/>}
         {!this.state.loadingConsumers && !this.state.errorLoadingConsumers
-            && this.state.consumers.length === 0 ? <div className="no-consumers padding-left-8px">There are no consumers.</div>
+        && this.state.consumers.length === 0 ?
+          <div className="no-consumers padding-left-8px">There are no consumers.</div>
           : (
             <div className="consumer-list">
               {this.state.consumers.map(consumer => (
@@ -409,32 +509,50 @@ partitions
                   <button type="button" key={consumer}>
                     {consumer}
                     {' '}
-                    <Ink />
+                    <Ink/>
                   </button>
                 </Link>
               ))}
             </div>
           )
-            }
+        }
       </div>
     );
   }
 
   _renderMessages() {
-    let messages;
+    let messages = this.state.messages;
     if (this.state.selectedPartition) {
-      messages = this.state.messages.filter(m => m.partition === this.state.selectedPartition.partition).slice(0, this.state.maxShownMessages);
-    } else {
-      messages = this.state.messages.slice(0, this.state.maxShownMessages);
+      messages = messages.filter(m => m.partition === this.state.selectedPartition.partition);
     }
+    if (this.state.filter) {
+      messages = messages.filter(m => this.state.filterByRegexp ? m.message.match(new RegExp(this.state.filter)) : m.message.includes(this.state.filter));
+    }
+    const totalMessages = messages.length;
+    messages = messages.slice(0, this.state.maxShownMessages);
 
     return (
       <div className="flex flex-1">
+        <section className="filter-section flex-1">
+          <header className="filter flex" key="header">
+            <h3>
+              {totalMessages}
+              {' '}
+              messages
+            </h3>
+            <Filter
+              onChange={this._updateFilter.bind(this)}
+              value={this.state.filter}
+              filterByRegexp={this.state.filterByRegexp}
+              className="filter"
+            />
+          </header>
+        </section>
         <PerfectScrollbar className="messages-list" onYReachEnd={this._onMessagesScroll.bind(this)}>
-          {this.state.loadingMessages && <Loader width="32" />}
-          {!this.state.loadingMessages && this.state.errorLoadingMessages && <Error noRiddle />}
+          {this.state.loadingMessages && <Loader width="32"/>}
+          {!this.state.loadingMessages && this.state.errorLoadingMessages && <Error noRiddle/>}
           {!this.state.loadingMessages && !this.state.errorLoadingMessages
-                && messages.length === 0 ? <div className="no-messages">There are no messages.</div>
+          && messages.length === 0 ? <div className="no-messages">There are no messages.</div>
             : messages.map((message) => {
               const partitionColor = partitionColors[message.partition % partitionColors.length];
               return (
@@ -443,28 +561,28 @@ partitions
                     {renderFormatDateMessage(message.timestamp)}
                   </div>
                   <header className="flex">
-                    <div className="flex-1">
+                    <div className="flex-1 key">
                       <span className="key-message">
                         {' '}
                         {message.key ? message.key : 'null'}
                       </span>
                     </div>
                     <div className="partition" style={{ backgroundColor: partitionColor }}>
-                                    Partition
+                      Partition
                       {' '}
                       {message.partition}
                     </div>
                     <Tooltip content="Copy message">
                       <div className="copy-icon" onClick={copyJSON.bind(this, message.message)}>
-                        <CopyIcon />
-                        <Ink />
+                        <CopyIcon/>
+                        <Ink/>
                       </div>
                     </Tooltip>
                   </header>
                   {(() => {
                     try {
                       JSON.parse(message.message);
-                      return <JSONPretty json={message.message} />;
+                      return <JSONPretty json={message.message}/>;
                     } catch (e) {
                       return <div className="simple-message">{message.message}</div>;
                     }
@@ -472,25 +590,31 @@ partitions
                 </section>
               );
             })
-                }
+          }
         </PerfectScrollbar>
 
         <div className="message-fetch-type-wrapper">
-          {this.state.messageTypeSelected === 'Live message' ? (
-            <button type="button" className="message-live-toggle">
-              <i className="mdi mdi-pause mdi-24px" />
-              <Ink />
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="message-live-toggle"
-              onClick={this._loadTopicMessages.bind(this, this.state.messages.length)}
-            >
-              <i className="mdi mdi-refresh mdi-24px" />
-              <Ink />
-            </button>
-          )}
+          {this.state.messageTypeSelected === 'Live message' ?
+            this.state.liveMessagesPaused ? (
+              <button type="button" className="message-live-toggle"
+                      onClick={this._startLiveMessages.bind(this, this.state.topicId, false)}>
+                <i className="mdi mdi-play mdi-24px"/>
+                <Ink/>
+              </button>) : (
+              <button type="button" className="message-live-toggle" onClick={this._stopLiveMessage.bind(this)}>
+                <i className="mdi mdi-pause mdi-24px"/>
+                <Ink/>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="message-live-toggle"
+                onClick={this._loadTopicMessages.bind(this, this.state.messages.length)}
+              >
+                <i className="mdi mdi-refresh mdi-24px"/>
+                <Ink/>
+              </button>
+            )}
           <Menu label={this.state.messageTypeSelected}>
             {messageTypes.map(type => (
               <Option
@@ -524,18 +648,18 @@ partitions
           </div>
         </div>
         {this.state.settingsModal
-                && <SettingsModal topic={this.state.topicId} close={this._closeSettings.bind(this)} />}
+        && <SettingsModal topic={this.state.topicId} close={this._closeSettings.bind(this)}/>}
         {this.state.editPartitionModal
-                && (
-                <EditPartitionsModal
-                  refreshPartitions={this._loadTopicPartitions.bind(this)}
-                  topic={this.state.topicId}
-                  currentPartitions={this.state.partitions.length}
-                  close={this._closeEditPartitionModal.bind(this)}
-                />
-                )}
-        <ToastContainer store={ToastStore} />
-        <ReactTooltip />
+        && (
+          <EditPartitionsModal
+            refreshPartitions={this._loadTopicPartitions.bind(this)}
+            topic={this.state.topicId}
+            currentPartitions={this.state.partitions.length}
+            close={this._closeEditPartitionModal.bind(this)}
+          />
+        )}
+        <ToastContainer store={ToastStore}/>
+        <ReactTooltip/>
       </div>
     );
   }
