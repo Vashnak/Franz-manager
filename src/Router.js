@@ -28,7 +28,7 @@ const routes = () => {
           <Switch>
             <Route
               exact
-              path={baseUrl}
+              path="/"
               render={() => <Redirect to="/dashboard"/>}
             />
             <Route exact path="/dashboard" component={DashboardView}/>
