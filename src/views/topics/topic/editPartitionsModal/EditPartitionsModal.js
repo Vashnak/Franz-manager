@@ -21,12 +21,12 @@ class EditPartitionsModal extends Component {
   }
 
   _updatePartitions() {
-    if (!this.partitionInputRef.value || Number.isNaN(this.partitionInputRef.value)) {
+    if (!this.partitionInputRef.current.value || Number.isNaN(this.partitionInputRef.current.value)) {
       alert('Input must be an integer.');
-    } else if (Number(this.partitionInputRef.value) <= this.props.currentPartitions) {
+    } else if (Number(this.partitionInputRef.current.value) <= this.props.currentPartitions) {
       alert(`Input has to be greater than ${this.props.currentPartitions}.`);
     }
-    TopicsService.addTopicPartitions(this.props.topic, Number(this.partitionInputRef.value) - this.props.currentPartitions)
+    TopicsService.addTopicPartitions(this.props.topic, Number(this.partitionInputRef.current.value) - this.props.currentPartitions)
       .then(() => {
         this.props.close();
       });
