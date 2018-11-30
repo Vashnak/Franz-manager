@@ -222,6 +222,20 @@
 
   .partition-datatable, .messages-list {
     @include scroll();
+
+    .displayed-messages {
+      font-size: 12px;
+
+      &:before {
+        content: '(';
+        white-space: pre;
+      }
+
+      &:after {
+        content: ')';
+        white-space: pre;
+      }
+    }
   }
 
   .consumer-list {

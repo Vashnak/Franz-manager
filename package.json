@@ -70,7 +70,7 @@
     "eslint-plugin-react": "^7.11.1",
     "file-loader": "^2.0.0",
     "fs": "^0.0.1-security",
-    "node-sass": "^4.5.3",
+    "node-sass": "^4.10.0",
     "react-build-dist": "0.0.8",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.22.1",

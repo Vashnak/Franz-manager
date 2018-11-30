@@ -429,7 +429,7 @@ class Topic extends Component {
               <tr>
                 <th className="text-left">
                   partitions
-                  <span className="">(Messages)</span>
+                  <span className="">(Displayed messages)</span>
                 </th>
                 <th className="text-right">beginning offset</th>
                 <th className="text-right">end offset</th>
@@ -461,7 +461,7 @@ class Topic extends Component {
                           {partition.partition}
                           {' '}
                           <span
-                            className="margin-left-12px"
+                            className="margin-left-12px displayed-messages"
                           >
                             {messagesPerPartition[partition.partition]}
                         </span>
