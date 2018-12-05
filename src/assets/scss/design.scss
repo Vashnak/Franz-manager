@@ -207,11 +207,13 @@ button {
     @include transition();
     font: map_get($fonts, button-outline);
     color: map_get($theme-colors, 1);
+    fill: map_get($theme-colors, 1);
     box-shadow: inset 0 0 0 2px map_get($theme-colors, 1);
 
     &.active {
       box-shadow: inset 0 0 0 100px map_get($theme-colors, 1);
       color: map_get($layout-colors, 6);
+      fill: map_get($layout-colors, 6);
     }
   }
   &.danger {

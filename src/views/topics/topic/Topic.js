@@ -19,7 +19,7 @@ import Error from '../../../components/error/Error';
 import SettingsModal from './settingsModal/SettingsModal';
 import MetricsService from '../../../services/MetricsService';
 import EditPartitionsModal from './editPartitionsModal/EditPartitionsModal';
-import { CopyIcon } from '../../../services/SvgService';
+import { CopyIcon, HeaderIcon } from '../../../services/SvgService';
 import Tooltip from '../../../components/tooltip/Tooltip';
 import ConstantsService from '../../../services/ConstantsService';
 import ClustersService from '../../../services/ClustersService';
@@ -74,6 +74,7 @@ class Topic extends Component {
       liveMessages: false,
       liveMessagesPaused: false,
       maxShownMessages: 20,
+      showMessagesHeaders: false,
       loadingMessages: true,
       loadingConsumers: true,
       loadingMetrics: true,
@@ -340,6 +341,12 @@ class Topic extends Component {
     return null;
   }
 
+  _toggleSwitch(event) {
+    const state = this.state;
+    state[event] = !state[event];
+    this.setState(state);
+  }
+
   _renderContextActions() {
     return (
       <div className="context-actions topic-context-actions">
@@ -546,6 +553,13 @@ class Topic extends Component {
               filterByRegexp={this.state.filterByRegexp}
               className="filter"
             />
+            <Tooltip content={this.state.showMessagesHeaders ? 'Show messages content' : 'Show messages headers'}>
+              <button type="button"
+                      className={classnames({ active: this.state.showMessagesHeaders }, 'show-headers', 'toggle')}
+                      onClick={this._toggleSwitch.bind(this, 'showMessagesHeaders')}><HeaderIcon width={24}
+                                                                                                 height={24}/>
+              </button>
+            </Tooltip>
           </header>
         </section>
         <PerfectScrollbar className="messages-list" onYReachEnd={this._onMessagesScroll.bind(this)}>
@@ -580,11 +594,17 @@ class Topic extends Component {
                     </Tooltip>
                   </header>
                   {(() => {
-                    try {
-                      JSON.parse(message.message);
-                      return <JSONPretty json={message.message}/>;
-                    } catch (e) {
-                      return <div className="simple-message">{message.message}</div>;
+                    if (this.state.showMessagesHeaders) {
+                      return Object.keys(message.headers).length > 0 ?
+                        <JSONPretty json={JSON.stringify(message.headers)}/> :
+                        <div className="no-headers">no headers.</div>;
+                    } else {
+                      try {
+                        JSON.parse(message.message);
+                        return <JSONPretty json={message.message}/>;
+                      } catch (e) {
+                        return <div className="simple-message">{message.message}</div>;
+                      }
                     }
                   })()}
                 </section>

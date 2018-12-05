@@ -22,7 +22,7 @@ class Tooltip extends Component {
 
   _showTooltip(x, y) {
     let newX = x;
-    const tooltip = this.elemRef;
+    const tooltip = this.elemRef.current;
     tooltip.style.opacity = 1;
     tooltip.classList.add('animate');
     const tooltipWidth = tooltip.getBoundingClientRect().width;
