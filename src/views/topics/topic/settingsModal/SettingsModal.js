@@ -169,7 +169,7 @@ class SettingsModal extends Component {
                                   </span>
                                   {this.state.mode === 'reading' ? (
                                     <span
-                                      className={classnames(`settings-line-${this._getValueType(this.state.topicConfiguration[configurationGroupKey][configurationKey])}`)}
+                                      className={classnames(`settings-line-${getValueType(this.state.topicConfiguration[configurationGroupKey][configurationKey])}`)}
                                     >
                                       {this.state.topicConfiguration[configurationGroupKey][configurationKey] || 'null'}
                                     </span>

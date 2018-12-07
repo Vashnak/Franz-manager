@@ -19,6 +19,7 @@ import Filter from '../../components/filter/Filter';
 import Modal from '../../components/modal/Modal';
 import AddTopicModal from './addTopicModal/AddTopicModal';
 import Loadbar from '../../components/loadbar/Loadbar';
+import Tooltip from '../../components/tooltip/Tooltip';
 
 let mergeTopicsAndMetrics;
 let getSubstringIndex;
@@ -69,16 +70,26 @@ class Topics extends React.Component {
       loadingTopics: true,
       topics: mergeTopicsAndMetrics(topics, topicsMetrics),
     });
-    TopicsService.getTopics(true)
+    TopicsService.getTopics(false)
       .then((t) => {
-        topics = t;
+        topics = t.map(topic => {
+          topic.totalMessages = topic.partitions.reduce((prev, next) => prev + next.endOffset, 0);
+          topic.retainedMessages = topic.partitions.reduce((prev, next) => prev + next.endOffset - next.beginningOffset, 0);
+          return topic;
+        });
         return TopicsService.getGlobalTopicsMetrics();
       })
       .then((tm) => {
-        this.setState({ topics: mergeTopicsAndMetrics(topics, tm), loadingTopics: false });
+        this.setState({
+          topics: mergeTopicsAndMetrics(topics, tm),
+          loadingTopics: false
+        });
       })
       .catch(() => {
-        this.setState({ loadingTopics: false, errorLoadingTopics: true });
+        this.setState({
+          loadingTopics: false,
+          errorLoadingTopics: true
+        });
       });
   }
 
@@ -103,9 +114,14 @@ class Topics extends React.Component {
     const filteredTopics = topics.filter((topic) => {
       let topicNameFilter = true;
 
-      if (filters.filterByRegexp) topicNameFilter = regexp.test(topic.id);
-      else if (filters.caseSensitive) topicNameFilter = topic.id.indexOf(filters.topicName) >= 0;
-      else topicNameFilter = topic.id.toLowerCase().indexOf(filters.topicName.toLowerCase()) >= 0;
+      if (filters.filterByRegexp) {
+        topicNameFilter = regexp.test(topic.id);
+      } else if (filters.caseSensitive) {
+        topicNameFilter = topic.id.indexOf(filters.topicName) >= 0;
+      } else {
+        topicNameFilter = topic.id.toLowerCase()
+          .indexOf(filters.topicName.toLowerCase()) >= 0;
+      }
 
       const showLogs = filters.hideLogsTopics ? topic.id.substr(topic.id.length - 4, 4) !== '.log' : true;
       return topicNameFilter && showLogs;
@@ -170,22 +186,27 @@ class Topics extends React.Component {
     }
     return (
       <tbody>
-        {sorted.slice(0, this.state.maxShownTopics).map((topic) => {
+      {sorted.slice(0, this.state.maxShownTopics)
+        .map((topic) => {
           const partitionSynchronizing = isPartitionsSynchronizing(topic.partitions);
           return (
             <tr key={topic.id} className={classnames({ synchronizing: partitionSynchronizing }, 'pointer')}>
               <td className="text-left"><Link to={`/topics/${topic.id}`}>{topic.id}</Link></td>
               <td className="text-right">
-                <Link
-                  to={`/topics/${topic.id}`}
-                >
-                  {topic.messages.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+                <Link to={`/topics/${topic.id}`}>
+                  {Number.isInteger(topic.totalMessages) ? topic.totalMessages.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}
                 </Link>
               </td>
               <td className="text-right">
-                <Link
-                  to={`/topics/${topic.id}`}
-                >
+                <Link to={`/topics/${topic.id}`}>
+                  {topic.configurations['cleanup.policy'] === 'compact' ?
+                    <Tooltip content="This metric cannot be retrieved for compacted topics"
+                             className='compacted-topic'>Compacted</Tooltip> :
+                    Number.isInteger(topic.retainedMessages) ? topic.retainedMessages.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}
+                </Link>
+              </td>
+              <td className="text-right">
+                <Link to={`/topics/${topic.id}`}>
                   {topic.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
                 </Link>
               </td>
@@ -217,14 +238,16 @@ class Topics extends React.Component {
             folders.push({
               id: substring,
               topics: [topic],
-              messages: topic.messages,
+              totalMessages: topic.totalMessages,
+              retainedMessages: topic.retainedMessages,
               messagesPerSec: topic.messagesPerSec,
               partitions: topic.partitions.length,
               replications: topic.partitions[0].replicas.length,
             });
           } else {
             folders[folderIndex2].topics.push(topic);
-            folders[folderIndex2].messages += topic.messages;
+            folders[folderIndex2].totalMessages += topic.totalMessages;
+            folders[folderIndex2].retainedMessages += topic.retainedMessages;
             folders[folderIndex2].messagesPerSec += topic.messagesPerSec;
             folders[folderIndex2].partitions += topic.partitions.length;
             folders[folderIndex2].replications += topic.partitions[0].replicas.length;
@@ -245,74 +268,74 @@ class Topics extends React.Component {
 
     return (
       <tbody>
-        {folderIndex > 1
+      {folderIndex > 1
       && (
         <tr
           className="pointer"
           onClick={this._navigateToFolder.bind(this, folderFilter.substring(0, folderFilter.lastIndexOf('.')))}
         >
           <td className="text-left">
-            <FolderIcon width={20} className="folder-icon" />
+            <FolderIcon width={20} className="folder-icon"/>
             <span className="margin-left-8px">..</span>
           </td>
-          <td className="text-right" />
-          <td className="text-right" />
+          <td className="text-right"/>
+          <td className="text-right"/>
         </tr>
       )}
-        {folders.map(folder => (
-          <tr className="pointer" onClick={this._navigateToFolder.bind(this, folder)}>
-            <td className="text-left flex align-center">
-              <FolderIcon width={20} className="folder-icon" />
-              <span className="margin-left-8px">{folder.id}</span>
-              <span
-                className="folder-stat"
-              >
+      {folders.map(folder => (
+        <tr className="pointer" onClick={this._navigateToFolder.bind(this, folder)}>
+          <td className="text-left flex align-center">
+            <FolderIcon width={20} className="folder-icon"/>
+            <span className="margin-left-8px">{folder.id}</span>
+            <span className="folder-stat">
                 {folder.topics.length}
-                {' '}
+              {' '}
               topic
-                {folder.topics.length > 1 && 's'}
+              {folder.topics.length > 1 && 's'}
               </span>
-            </td>
-            <td className="text-right">{folder.messages.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}</td>
-            <td className="text-right">{folder.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}</td>
-            <td className="text-right">{folder.partitions}</td>
-            <td className="text-right">{folder.replications}</td>
-          </tr>
-        ))}
-        {finalTopics.map(topic => (
-          <tr className="pointer">
-            <td className="text-left flex align-center">
-              <SubTreeIcon width={20} className="subtree-icon" />
-              <span className="margin-left-8px">
-                <Link
-                  to={`/topics/${topic.id}`}
-                >
+          </td>
+          <td
+            className="text-right">{Number.isInteger(folder.totalMessages) ? folder.totalMessages.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}</td>
+          <td
+            className="text-right">{Number.isInteger(folder.retainedMessages) ? folder.retainedMessages.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}</td>
+          <td className="text-right">{folder.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}</td>
+          <td className="text-right">{folder.partitions}</td>
+          <td className="text-right">{folder.replications}</td>
+        </tr>
+      ))}
+      {finalTopics.map(topic => (
+        <tr className="pointer">
+          <td className="text-left flex align-center">
+            <SubTreeIcon width={20} className="subtree-icon"/>
+            <span className="margin-left-8px">
+                <Link to={`/topics/${topic.id}`}>
                   {topic.id}
                 </Link>
               </span>
-            </td>
-            <td className="text-right">
-              <Link
-                to={`/topics/${topic.id}`}
-              >
-                {topic.messages.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
-              </Link>
-            </td>
-            <td className="text-right">
-              <Link
-                to={`/topics/${topic.id}`}
-              >
-                {topic.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
-              </Link>
-            </td>
-            <td className="text-right">
-              <Link to={`/topics/${topic.id}`}>{topic.partitions.length}</Link>
-            </td>
-            <td className="text-right">
-              <Link to={`/topics/${topic.id}`}>{topic.partitions[0].replicas.length}</Link>
-            </td>
-          </tr>
-        ))}
+          </td>
+          <td className="text-right">
+            <Link to={`/topics/${topic.id}`}>
+              {Number.isInteger(topic.totalMessages) ? topic.totalMessages.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}
+            </Link>
+          </td>
+          <td className="text-right">
+            <Link to={`/topics/${topic.id}`}>
+              {Number.isInteger(topic.retainedMessages) ? topic.retainedMessages.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}
+            </Link>
+          </td>
+          <td className="text-right">
+            <Link to={`/topics/${topic.id}`}>
+              {topic.messagesPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+            </Link>
+          </td>
+          <td className="text-right">
+            <Link to={`/topics/${topic.id}`}>{topic.partitions.length}</Link>
+          </td>
+          <td className="text-right">
+            <Link to={`/topics/${topic.id}`}>{topic.partitions[0].replicas.length}</Link>
+          </td>
+        </tr>
+      ))}
       </tbody>
     );
   }
@@ -344,12 +367,18 @@ class Topics extends React.Component {
   }
 
   _openBulkDeleteModal(topics) {
-    this.setState({ bulkDeleteModal: true, topicsToDelete: topics });
+    this.setState({
+      bulkDeleteModal: true,
+      topicsToDelete: topics
+    });
   }
 
   _closeBulkDeleteModal() {
     this.setState({
-      bulkDeleteModal: false, askBulkDeleteConfirmation: false, badInput: null, topicsToDelete: null,
+      bulkDeleteModal: false,
+      askBulkDeleteConfirmation: false,
+      badInput: null,
+      topicsToDelete: null,
     });
   }
 
@@ -374,7 +403,7 @@ class Topics extends React.Component {
           onClick={this._toggleSwitch.bind(this, 'treeView')}
         >
           Enable tree view
-          <Ink />
+          <Ink/>
         </button>
         <button
           type="button"
@@ -382,12 +411,12 @@ class Topics extends React.Component {
           onClick={this._toggleSwitch.bind(this, 'hideLogsTopics')}
         >
           Hide logs topics
-          <Ink />
+          <Ink/>
         </button>
         {this.state.topicsFilters.topicName && topics.length > 0 && (
           <button type="button" className="toggle danger" onClick={this._openBulkDeleteModal.bind(this, topics)}>
             Delete all
-            <Ink />
+            <Ink/>
           </button>
         )}
       </div>
@@ -399,81 +428,80 @@ class Topics extends React.Component {
     const filters = this.state.topicsFilters;
     return (
       <div className="topics-view grid-wrapper">
-        <Loadbar timer={TopicsService.getStoredData('topics-time')} finished={!this.state.loadingTopics} />
+        <Loadbar timer={TopicsService.getStoredData('topics-time')} finished={!this.state.loadingTopics}/>
         {this._renderContextActions(topics)}
 
         <div className="grid relative">
           <div className="column">
             <section className="flex-1">
-              {!this.state.loadingTopics && this.state.errorLoadingTopics && <Error />}
+              {!this.state.loadingTopics && this.state.errorLoadingTopics && <Error/>}
 
               {(!this.state.loadingTopics || this.state.topics) && !this.state.errorLoadingTopics ? [
-                <header className="filter flex" key="header">
-                  <h3>
-                    {topics.length}
-                    {' '}
+                  <header className="filter flex" key="header">
+                    <h3>
+                      {topics.length}
+                      {' '}
                       topics
-                  </h3>
-                  <Filter
-                    onChange={this._updateFilterComponent.bind(this)}
-                    value={this.state.topicsFilters.topicName}
-                    filterByRegexp={this.state.topicsFilters.filterByRegexp}
-                    className="margin-right-16px"
-                  />
-                  <Switch
-                    className="margin-left-16px"
-                    onChange={this._toggleSwitch.bind(this, 'caseSensitive')}
-                    value={this.state.topicsFilters.caseSensitive}
-                    label="Case sensitive"
-                  />
-                </header>,
-                <PerfectScrollbar
-                  className="topic-datatable"
-                  key="scrollbar"
-                  onYReachEnd={this._onTopicScroll.bind(this)}
-                >
-                  <table>
-                    <thead>
+                    </h3>
+                    <Filter
+                      onChange={this._updateFilterComponent.bind(this)}
+                      value={this.state.topicsFilters.topicName}
+                      filterByRegexp={this.state.topicsFilters.filterByRegexp}
+                      className="margin-right-16px"
+                    />
+                    <Switch
+                      className="margin-left-16px"
+                      onChange={this._toggleSwitch.bind(this, 'caseSensitive')}
+                      value={this.state.topicsFilters.caseSensitive}
+                      label="Case sensitive"
+                    />
+                  </header>,
+                  <PerfectScrollbar
+                    className="topic-datatable"
+                    key="scrollbar"
+                    onYReachEnd={this._onTopicScroll.bind(this)}
+                  >
+                    <table>
+                      <thead>
                       <tr>
                         <th
                           className={classnames({
                             filtered: filters.sortBy === 'id',
                             reverse: filters.reverseSort,
                           }, 'text-left', 'pointer')}
-                          onClick={this._sortBy.bind(this, 'id')}
-                        >
-                          Topic
-                          Name
+                          onClick={this._sortBy.bind(this, 'id')}>
+                          Topic Name
                         </th>
                         <th
                           className={classnames({
-                            filtered: filters.sortBy === 'messages',
+                            filtered: filters.sortBy === 'totalMessages',
                             reverse: filters.reverseSort,
                           }, 'text-right', 'pointer')}
-                          onClick={this._sortBy.bind(this, 'messages')}
-                        >
-                          {' '}
-                          Messages
+                          onClick={this._sortBy.bind(this, 'totalMessages')}>
+                          Total Messages
+                        </th>
+                        <th
+                          className={classnames({
+                            filtered: filters.sortBy === 'retainedMessages',
+                            reverse: filters.reverseSort,
+                          }, 'text-right', 'pointer')}
+                          onClick={this._sortBy.bind(this, 'retainedMessages')}>
+                          Retained messages
                         </th>
                         <th
                           className={classnames({
                             filtered: filters.sortBy === 'messagesPerSec',
                             reverse: filters.reverseSort,
                           }, 'text-right', 'pointer')}
-                          onClick={this._sortBy.bind(this, 'messagesPerSec')}
-                        >
-                          {' '}
-                          Messages Per
-                          Sec
+                          onClick={this._sortBy.bind(this, 'messagesPerSec')}>
+                          Messages Per Sec
                         </th>
                         <th
                           className={classnames({
                             filtered: filters.sortBy === 'partitions',
                             reverse: filters.reverseSort,
                           }, 'text-right', 'pointer')}
-                          onClick={this._sortBy.bind(this, 'partitions')}
-                        >
-                          {' '}
+                          onClick={this._sortBy.bind(this, 'partitions')}>
                           Partitions
                         </th>
                         <th
@@ -487,21 +515,21 @@ class Topics extends React.Component {
                           Replica
                         </th>
                       </tr>
-                    </thead>
-                    {this.state.topicsFilters.treeView ? this._renderTreeView(topics) : this._renderTopics(topics)}
-                  </table>
+                      </thead>
+                      {this.state.topicsFilters.treeView ? this._renderTreeView(topics) : this._renderTopics(topics)}
+                    </table>
 
-                  <button
-                    type="button"
-                    className="add-topic ellipse ellipse-56px"
-                    onClick={this._openAddTopicModal.bind(this)}
-                  >
-                    <i className="mdi mdi-plus mdi-24px" />
-                    <Ink />
-                  </button>
-                </PerfectScrollbar>,
-              ]
-                : <Loader />}
+                    <button
+                      type="button"
+                      className="add-topic ellipse ellipse-56px"
+                      onClick={this._openAddTopicModal.bind(this)}
+                    >
+                      <i className="mdi mdi-plus mdi-24px"/>
+                      <Ink/>
+                    </button>
+                  </PerfectScrollbar>,
+                ]
+                : <Loader/>}
             </section>
           </div>
         </div>
@@ -530,7 +558,7 @@ class Topics extends React.Component {
                 <div className="bulk-delete-confirmation">
                   <div>
                     Please confirm by typing the number of topics you are
-                    <br />
+                    <br/>
                     going to delete (you will be fired if you screw up)
                   </div>
                   <div className="flex align-center margin-top-8px">
@@ -551,11 +579,11 @@ class Topics extends React.Component {
                         onClick={this._deleteTopics.bind(this, topics)}
                       >
                         Confirm
-                        <Ink />
+                        <Ink/>
                       </button>
                       <button type="button" className="regular margin-left-8px">
                         I keep my job
-                        <Ink />
+                        <Ink/>
                       </button>
                     </div>
                   </div>
@@ -570,7 +598,7 @@ class Topics extends React.Component {
                       onClick={() => this.setState({ askBulkDeleteConfirmation: true })}
                     >
                       Yes
-                      <Ink />
+                      <Ink/>
                     </button>
                     <button
                       type="button"
@@ -578,7 +606,7 @@ class Topics extends React.Component {
                       onClick={this._closeBulkDeleteModal.bind(this)}
                     >
                       {'I\'m not that crazy'}
-                      <Ink />
+                      <Ink/>
                     </button>
                   </div>
                 </div>
@@ -589,10 +617,10 @@ class Topics extends React.Component {
         }
 
         {this.state.addTopicModal
-        && <AddTopicModal reloadTopics={this._loadTopics.bind(this)} close={this._closeAddTopicModal.bind(this)} />
+        && <AddTopicModal reloadTopics={this._loadTopics.bind(this)} close={this._closeAddTopicModal.bind(this)}/>
         }
 
-        <ToastContainer store={ToastStore} />
+        <ToastContainer store={ToastStore}/>
       </div>
     );
   }
@@ -615,10 +643,11 @@ mergeTopicsAndMetrics = (topics, metrics) => topics.map((topic) => {
   if (metrics && metrics[topicBis.id]) {
     topicBis.messages = 0;
     topicBis.messagesPerSec = 0;
-    Object.values(metrics[topicBis.id]).forEach((brokerMetrics) => {
-      topicBis.messages += brokerMetrics.metrics.Count;
-      topicBis.messagesPerSec += brokerMetrics.metrics.FifteenMinuteRate;
-    });
+    Object.values(metrics[topicBis.id])
+      .forEach((brokerMetrics) => {
+        topicBis.messages += brokerMetrics.metrics.Count;
+        topicBis.messagesPerSec += brokerMetrics.metrics.FifteenMinuteRate;
+      });
   }
   return topicBis;
 });

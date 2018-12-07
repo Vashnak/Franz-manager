@@ -1,7 +1,10 @@
 .filter.component {
   position: relative;
+  margin-left: 16px;
 
-
+  input[type="text"] {
+    margin-left: 0 !important;
+  }
 
   input[type="button"] {
     border: none;
@@ -19,13 +22,13 @@
     }
   }
 
-  .reg{
+  .reg {
     position: absolute;
     right: 16px;
     top: 50%;
     transform: translateY(-50%);
 
-    .switch:not(.on){
+    .switch:not(.on) {
       background: map_get($layout-colors, 4);
     }
   }

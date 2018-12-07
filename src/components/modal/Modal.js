@@ -9,7 +9,7 @@ class Modal extends React.Component {
     className: PropTypes.string,
     title: PropTypes.string.isRequired,
     children: PropTypes.any,
-    actions: PropTypes.arrayOf(PropTypes.func),
+    actions: PropTypes.arrayOf(PropTypes.any),
     close: PropTypes.func.isRequired,
   };
 

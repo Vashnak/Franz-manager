@@ -11,6 +11,7 @@ import {
 import ThemesStore from '../../stores/ThemesStore';
 import Loader from '../../components/loader/Loader';
 import MetricsService from '../../services/MetricsService';
+import { Link } from 'react-router-dom';
 
 const hexagonesHeight = 120;
 const hexagonesWidth = 108;
@@ -73,14 +74,15 @@ class Dashboard extends React.Component {
           .then((brokers) => {
             const cluster = c;
             cluster.brokers = brokers;
-            cluster.zookeepers = brokers[0].configurations['zookeeper.connect'].split('/')[0].split(',').map((z) => {
-              const splitted = z.split(':');
-              return {
-                id: splitted[0] === 'localhost' ? '1' : splitted[0].split('.')[3],
-                host: splitted[0],
-                port: Number(splitted[1]),
-              };
-            });
+            cluster.zookeepers = brokers[0].configurations['zookeeper.connect'].split('/')[0].split(',')
+              .map((z) => {
+                const splitted = z.split(':');
+                return {
+                  id: splitted[0] === 'localhost' ? '1' : splitted[0].split('.')[3],
+                  host: splitted[0],
+                  port: Number(splitted[1]),
+                };
+              });
             resolve(cluster);
           });
       }))))
@@ -90,7 +92,10 @@ class Dashboard extends React.Component {
       })
       .then(() => this._loadClusterStats())
       .then(() => {
-        this.setState({ clusters, loading: false });
+        this.setState({
+          clusters,
+          loading: false
+        });
         this._initCanvas();
       });
   }
@@ -131,10 +136,16 @@ class Dashboard extends React.Component {
           name: 'MessagesInPerSec',
         },
         {
-          label: 'Partition count', location: 'kafka.server', type: 'ReplicaManager', name: 'PartitionCount',
+          label: 'Partition count',
+          location: 'kafka.server',
+          type: 'ReplicaManager',
+          name: 'PartitionCount',
         },
         {
-          label: 'Leader count', location: 'kafka.server', type: 'ReplicaManager', name: 'LeaderCount',
+          label: 'Leader count',
+          location: 'kafka.server',
+          type: 'ReplicaManager',
+          name: 'LeaderCount',
         },
         {
           label: 'Under replicated',
@@ -149,10 +160,16 @@ class Dashboard extends React.Component {
           name: 'ActiveControllerCount',
         },
         {
-          label: 'Memory Heap', location: 'java.lang', type: 'Memory', name: 'HeapMemoryUsage',
+          label: 'Memory Heap',
+          location: 'java.lang',
+          type: 'Memory',
+          name: 'HeapMemoryUsage',
         },
         {
-          label: 'Load average', location: 'java.lang', type: 'OperatingSystem', name: null,
+          label: 'Load average',
+          location: 'java.lang',
+          type: 'OperatingSystem',
+          name: null,
         },
       ];
 
@@ -263,7 +280,10 @@ class Dashboard extends React.Component {
       newScale = this.stage.scaleX() + 0.1;
     }
 
-    this.stage.scale({ x: newScale, y: newScale });
+    this.stage.scale({
+      x: newScale,
+      y: newScale
+    });
 
     const newPos = {
       x: -(mousePointTo.x - this.stage.getPointerPosition().x / newScale) * newScale,
@@ -299,7 +319,10 @@ class Dashboard extends React.Component {
 
     this.stage.on('click', this._onStageClick.bind(this));
 
-    this.stage.scale({ x: 0.8, y: 0.8 });
+    this.stage.scale({
+      x: 0.8,
+      y: 0.8
+    });
 
     if (!this.keepMatrix) {
       this._initMatrix();
@@ -311,7 +334,11 @@ class Dashboard extends React.Component {
           id: b.id,
           state: b.state,
         })));
-        prev.push(next.zookeepers.map(z => ({ cluster: next.name, type: 'zookeeper', id: z.id })));
+        prev.push(next.zookeepers.map(z => ({
+          cluster: next.name,
+          type: 'zookeeper',
+          id: z.id
+        })));
         return prev;
       }, []);
 
@@ -328,11 +355,19 @@ class Dashboard extends React.Component {
 
       // now center clusters
       let topLeft = null;
-      const bottomRight = { x: 0, y: 0 };
+      const bottomRight = {
+        x: 0,
+        y: 0
+      };
       for (let j = 0; j < this.matrix.length; j += 1) {
         for (let i = 0; i < this.matrix[j].length; i += 1) {
           if (matrixCopy[i][j] !== -2) {
-            if (!topLeft) topLeft = { x: i, y: j };
+            if (!topLeft) {
+              topLeft = {
+                x: i,
+                y: j
+              };
+            }
             if (topLeft.x > i) topLeft.x = i;
             if (topLeft.y > j) topLeft.y = j;
             if (bottomRight.x < i) bottomRight.x = i;
@@ -445,7 +480,10 @@ class Dashboard extends React.Component {
     if (hexagone.attrs.badges && hexagone.attrs.badges) {
       hexagone.attrs.badges.forEach((badge) => {
         const clone = badge.clone();
-        clone.position({ x: 90, y: 123 });
+        clone.position({
+          x: 90,
+          y: 123
+        });
         this.smallModal.add(clone);
       });
     }
@@ -624,7 +662,10 @@ class Dashboard extends React.Component {
           fill: isActive ? this.state.selectedTheme['dashboard-colors']['kafka-contrast']
             : disabled ? this.state.selectedTheme['dashboard-colors']['disabled-color'] : this.state.selectedTheme['dashboard-colors'][`${type}-color`],
         });
-        textId.setAbsolutePosition({ x: (hexagone.getWidth() - textId.getTextWidth()) / 2, y: 20 });
+        textId.setAbsolutePosition({
+          x: (hexagone.getWidth() - textId.getTextWidth()) / 2,
+          y: 20
+        });
         group.add(textId);
       }
 
@@ -643,7 +684,10 @@ class Dashboard extends React.Component {
           fontSize -= 1;
           textType.setFontSize(fontSize);
         }
-        textType.setAbsolutePosition({ x: (hexagone.getWidth() - textType.getTextWidth()) / 2, y: 72 });
+        textType.setAbsolutePosition({
+          x: (hexagone.getWidth() - textType.getTextWidth()) / 2,
+          y: 72
+        });
         group.add(textType);
       }
     }
@@ -714,7 +758,10 @@ class Dashboard extends React.Component {
           this.clusterHexagones.push(hexagone);
           this.mainLayer.add(hexagone);
         } else if (!onlyClusters) {
-          const clone = defaultHexagone.clone({ x, y });
+          const clone = defaultHexagone.clone({
+            x,
+            y
+          });
           this.mainLayer.add(clone);
         }
       }
@@ -732,7 +779,7 @@ class Dashboard extends React.Component {
         newNode = [...newNode.parent.children].find(c => c.className === 'Line');
       }
       if ((!oldNode && newNode.attrs.isHexagone)
-                || (oldNode && oldNode._id !== newNode._id && newNode.attrs.isHexagone)) {
+        || (oldNode && oldNode._id !== newNode._id && newNode.attrs.isHexagone)) {
         this._removeModals();
 
         if (oldNode) {
@@ -781,23 +828,28 @@ class Dashboard extends React.Component {
   _renderModal() {
     const stats = this.state.brokersStats[Number(this.hoveredNode.attrs.id)];
 
-    return !stats ? <div /> : (
+    return !stats ? <div/> : (
       <div className="broker-modal">
         <div className="modal-part">
           <h3 className="modal-part-title">
-                    DOWNLOAD/UPLOAD
+            DOWNLOAD/UPLOAD
           </h3>
           <div className="modal-part-content">
             <div className="modal-part-line">
               <span className="key">Messages in / s</span>
-              <span className="value">{stats.find(s => s.key === 'MessagesInPerSec').value.toFixed(0)}</span>
+              <span className="value">{stats.find(s => s.key === 'MessagesInPerSec')
+                .value
+                .toFixed(0)}</span>
             </div>
             <div className="modal-part-line">
               <span className="key">Bytes in / s</span>
               <span
                 className="value"
               >
-                {numeral(stats.find(s => s.key === 'BytesInPerSec').value.toString()).format('0b')}
+                {numeral(stats.find(s => s.key === 'BytesInPerSec')
+                  .value
+                  .toString())
+                  .format('0b')}
               </span>
             </div>
             <div className="modal-part-line">
@@ -805,46 +857,59 @@ class Dashboard extends React.Component {
               <span
                 className="value"
               >
-                {numeral(stats.find(s => s.key === 'BytesOutPerSec').value.toString()).format('0b')}
+                {numeral(stats.find(s => s.key === 'BytesOutPerSec')
+                  .value
+                  .toString())
+                  .format('0b')}
               </span>
             </div>
           </div>
         </div>
         <div className="modal-part">
           <h3 className="modal-part-title">
-                    PARTITIONS
+            PARTITIONS
           </h3>
           <div className="modal-part-content">
             <div className="modal-part-line">
               <span className="key">Partitions</span>
-              <span className="value">{stats.find(s => s.key === 'PartitionCount').value.toString()}</span>
+              <span className="value">{stats.find(s => s.key === 'PartitionCount')
+                .value
+                .toString()}</span>
             </div>
             <div className="modal-part-line">
               <span className="key">Under replicated</span>
               <span
                 className="value"
               >
-                {stats.find(s => s.key === 'UnderReplicatedPartitions').value.toString()}
+                {stats.find(s => s.key === 'UnderReplicatedPartitions')
+                  .value
+                  .toString()}
               </span>
             </div>
             <div className="modal-part-line">
               <span className="key">Leaders</span>
-              <span className="value">{stats.find(s => s.key === 'LeaderCount').value.toString()}</span>
+              <span className="value">{stats.find(s => s.key === 'LeaderCount')
+                .value
+                .toString()}</span>
             </div>
           </div>
         </div>
         <div className="modal-part">
           <h3 className="modal-part-title">
-                    OTHER METRICS
+            OTHER METRICS
           </h3>
           <div className="modal-part-content">
             <div className="modal-part-line">
               <span className="key">Load average</span>
-              <span className="value">{stats.find(s => s.key === 'LoadAverage').value.toString()}</span>
+              <span className="value">{stats.find(s => s.key === 'LoadAverage')
+                .value
+                .toString()}</span>
             </div>
             <div className="modal-part-line">
               <span className="key">Memory heap</span>
-              <span className="value">{stats.find(s => s.key === 'HeapMemoryUsage').value.toString()}</span>
+              <span className="value">{stats.find(s => s.key === 'HeapMemoryUsage')
+                .value
+                .toString()}</span>
             </div>
           </div>
         </div>
@@ -859,24 +924,26 @@ class Dashboard extends React.Component {
         ref={this.viewRef}
         style={{ background: this.state.selectedTheme['dashboard-colors'].background }}
       >
-        <div id="konva" ref={this.konvaRef} className="flex-1" />
+        <div id="konva" ref={this.konvaRef} className="flex-1"/>
         <div className="context-actions cluster-stats">
-          <div className="cluster-stat">
-            <div className="text">
-              <span className="value">{this.state.stats.topics}</span>
-              <span className="label">Topics</span>
+          <Link to="/topics">
+            <div className="cluster-stat">
+              <div className="text">
+                <span className="value">{this.state.stats.topics}</span>
+                <span className="label">Topics</span>
+              </div>
+              <div className="icon">
+                <TopicsIcon/>
+              </div>
             </div>
-            <div className="icon">
-              <TopicsIcon />
-            </div>
-          </div>
+          </Link>
           <div className="cluster-stat">
             <div className="text">
               <span className="value">{this.state.stats.partitions}</span>
               <span className="label">Partitions</span>
             </div>
             <div className="icon">
-              <PartitionIcon />
+              <PartitionIcon/>
             </div>
           </div>
           <div className="cluster-stat">
@@ -885,7 +952,7 @@ class Dashboard extends React.Component {
               <span className="label">Kafka Brokers</span>
             </div>
             <div className="icon kafka">
-              <KafkaIcon />
+              <KafkaIcon/>
             </div>
           </div>
           <div className="cluster-stat">
@@ -894,20 +961,20 @@ class Dashboard extends React.Component {
               <span className="label">Zookeeper</span>
             </div>
             <div className="icon">
-              <ZookeeperIcon />
+              <ZookeeperIcon/>
             </div>
           </div>
           <div className="cluster-stat">
             <div className="text">
               <span className="value">
-                <div className="ellipse ellipse-12px green margin-right-8px" />
+                <div className="ellipse ellipse-12px green margin-right-8px"/>
                 {this.state.stats.status}
               </span>
               <span className="label">Cluster status</span>
             </div>
           </div>
         </div>
-        {this.state.loading && <Loader />}
+        {this.state.loading && <Loader/>}
         {this.state.showModal && this._renderModal()}
       </div>
     );
@@ -1030,10 +1097,11 @@ const seededShuffleArray = (str, arr) => {
 
 findFreeNeighbourPosition = (strSeed, matrix, x, y) => {
   const positions = ['topLeft', 'topRight', 'right', 'bottomRight', 'bottomLeft', 'left'];
-  const freePosition = seededShuffleArray(strSeed, positions).find((pos) => {
-    const neighbour = getNeighbourCellPosition(pos, x, y);
-    return matrix[neighbour[0]][neighbour[1]] === -2;
-  });
+  const freePosition = seededShuffleArray(strSeed, positions)
+    .find((pos) => {
+      const neighbour = getNeighbourCellPosition(pos, x, y);
+      return matrix[neighbour[0]][neighbour[1]] === -2;
+    });
   return getNeighbourCellPosition(freePosition, x, y);
 };
 
@@ -1634,14 +1702,22 @@ drawSkullIcon = (color = 'black', x = 0, y = 0) => {
 };
 
 shadeColor = (color, percent) => { // deprecated. See below.
-  const num = parseInt(color.slice(1), 16); const amt = Math.round(2.55 * percent); const R = (num >> 16) + amt;
-  const G = (num >> 8 & 0x00FF) + amt; const
+  const num = parseInt(color.slice(1), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) + amt;
+  const G = (num >> 8 & 0x00FF) + amt;
+  const
     B = (num & 0x0000FF) + amt;
-  return `#${(0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1)}`;
+  return `#${(0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16)
+    .slice(1)}`;
 };
 
 drawBadge = (x, y, fill, stroke, strokeOpacity, nodeId, icon) => {
-  const group = new Konva.Group({ x, y, nodeId });
+  const group = new Konva.Group({
+    x,
+    y,
+    nodeId
+  });
   group.add(new Konva.Circle({
     radius: 12,
     fill,

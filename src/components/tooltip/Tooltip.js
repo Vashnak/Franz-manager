@@ -51,7 +51,7 @@ class Tooltip extends Component {
   render() {
     return (
       <div
-        className="tooltip-component"
+        className={'tooltip-component' + (this.props.className ? ' ' + this.props.className : '')}
         onMouseEnter={this._handleMouseEntered.bind(this)}
         onMouseLeave={this._handleMouseLeave.bind(this)}
       >

@@ -44,12 +44,14 @@ class Topnav extends Component {
 
   _updateRoute(location) {
     const baseUrl = document.querySelectorAll('base')[0].attributes['href'].value;
-    const splittedPath = location.pathname.replace(baseUrl, '').split('/');
+    const splittedPath = location.pathname.replace(baseUrl, '')
+      .split('/');
     const selectedSidenavItem = sidenavItems.find(m => m.link.split('/')[1] === splittedPath[1]);
     this.setState({
       selectedSidenavItem: selectedSidenavItem || sidenavItems[0],
       subLocation: splittedPath[2] || '',
-      previousRoute: this.state.currentRoute,
+      // needed condition in case of page refresh.
+      previousRoute: this.state.currentRoute !== location.pathname + location.search ? this.state.currentRoute : this.state.previousRoute,
       currentRoute: location.pathname + location.search,
     });
   }

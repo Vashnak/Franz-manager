@@ -27,12 +27,18 @@ class Filter extends Component {
   }
 
   _updateFilter(e) {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
     const filters = {
       filter: e.target.value,
       filterByRegexp: this.state.filterByRegexp,
     };
     this.setState(filters);
-    this.props.onChange(filters);
+    this.timeout = setTimeout(() => {
+      this.props.onChange(filters);
+    }, 250);
   }
 
   _updateRegexp() {
@@ -47,22 +53,22 @@ class Filter extends Component {
   render() {
     return (
       <div
-        className={classnames('filter', 'component', 'flex', 'flex-1', ...this.props.className || {})}
+        className={classnames('filter', 'component', 'flex', 'flex-1', this.props.className || '')}
       >
         <input
           onChange={this._updateFilter.bind(this)}
           value={this.state.filter}
           type="text"
-          placeholder="filter"
+          placeholder={this.props.placeholder || 'filter'}
           className={classnames({ regex: this.state.filterByRegexp }, 'flex-1', 'margin-left-32px')}
         />
 
-        <Switch
+        {!this.props.disableRegexp && <Switch
           className="reg"
           onChange={this._updateRegexp.bind(this, 'Regex')}
           value={this.state.filterByRegexp}
           label="Regex"
-        />
+        />}
 
       </div>
     );

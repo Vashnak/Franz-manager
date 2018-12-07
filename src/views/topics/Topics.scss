@@ -25,6 +25,14 @@
       $danger: map_get($theme-colors, danger);
       background-color: rgba($danger, 0.075);
     }
+
+    .compacted-topic {
+      display: flex;
+      height: 100%;
+      align-items: center;
+      justify-content: flex-end;
+      font-weight: 400;
+    }
   }
 
   .column:not(:last-child) {

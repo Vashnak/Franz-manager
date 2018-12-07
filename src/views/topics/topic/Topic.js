@@ -19,7 +19,7 @@ import Error from '../../../components/error/Error';
 import SettingsModal from './settingsModal/SettingsModal';
 import MetricsService from '../../../services/MetricsService';
 import EditPartitionsModal from './editPartitionsModal/EditPartitionsModal';
-import { CopyIcon, HeaderIcon } from '../../../services/SvgService';
+import { CopyIcon, HeaderIcon, KeyIcon } from '../../../services/SvgService';
 import Tooltip from '../../../components/tooltip/Tooltip';
 import ConstantsService from '../../../services/ConstantsService';
 import ClustersService from '../../../services/ClustersService';
@@ -85,6 +85,7 @@ class Topic extends Component {
       errorLoadingMessages: false,
       messageTypeSelected: '10 last messages',
       filter: '',
+      filterByKey: false,
       filterByRegexp: false
     };
   }
@@ -98,7 +99,7 @@ class Topic extends Component {
 
   _updateFilter(e) {
     this.setState({
-      filter: e.filter,
+      filter: e.filter.replace(/:[ ]*/gm, ':[ ]*'), // Did it to match space (or not) after colon
       filterByRegexp: e.filterByRegexp
     });
   }
@@ -134,7 +135,7 @@ class Topic extends Component {
           .format('x');
         maxShownMessages = 30;
         break;
-      case 'Last 24 hours':
+      case 'Today':
         timestamp = moment()
           .hour(0)
           .minute(0)
@@ -375,6 +376,10 @@ class Topic extends Component {
             </button>
           )
         }
+        <button type="button"
+                className={classnames({ active: this.state.showMessagesHeaders }, 'show-headers', 'toggle')}
+                onClick={this._toggleSwitch.bind(this, 'showMessagesHeaders')}>Messages headers
+        </button>
       </div>
     );
   }
@@ -533,7 +538,16 @@ class Topic extends Component {
       messages = messages.filter(m => m.partition === this.state.selectedPartition.partition);
     }
     if (this.state.filter) {
-      messages = messages.filter(m => this.state.filterByRegexp ? m.message.match(new RegExp(this.state.filter)) : m.message.includes(this.state.filter));
+      if (this.state.filterByRegexp) {
+        try {
+          const regexp = new RegExp(this.state.filter);
+          messages = messages.filter(m => this.state.filterByKey ? (m.key || '').match(regexp) : m.message.match(regexp));
+        } catch (e) {
+          messages = [];
+        }
+      } else {
+        messages = messages.filter(m => this.state.filterByKey ? (m.key || '').includes(this.state.filter) : m.message.includes(this.state.filter));
+      }
     }
     const totalMessages = messages.length;
     messages = messages.slice(0, this.state.maxShownMessages);
@@ -551,13 +565,13 @@ class Topic extends Component {
               onChange={this._updateFilter.bind(this)}
               value={this.state.filter}
               filterByRegexp={this.state.filterByRegexp}
-              className="filter"
+              className="filter margin-left-8px"
             />
-            <Tooltip content={this.state.showMessagesHeaders ? 'Show messages content' : 'Show messages headers'}>
+            <Tooltip content="Filter by key">
               <button type="button"
-                      className={classnames({ active: this.state.showMessagesHeaders }, 'show-headers', 'toggle')}
-                      onClick={this._toggleSwitch.bind(this, 'showMessagesHeaders')}><HeaderIcon width={24}
-                                                                                                 height={24}/>
+                      className={classnames({ active: this.state.filterByKey }, 'filter-by-key', 'toggle')}
+                      onClick={this._toggleSwitch.bind(this, 'filterByKey')}><KeyIcon width={24}
+                                                                                      height={24}/>
               </button>
             </Tooltip>
           </header>
@@ -578,7 +592,7 @@ class Topic extends Component {
                     <div className="flex-1 key">
                       <span className="key-message">
                         {' '}
-                        {message.key ? message.key : 'null'}
+                        {message.key ? message.key : 'No key'}
                       </span>
                     </div>
                     <div className="partition" style={{ backgroundColor: partitionColor }}>

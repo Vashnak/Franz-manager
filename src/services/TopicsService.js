@@ -13,10 +13,13 @@ export default {
     return null;
   },
 
-  getTopics(shortVersion) {
+  getTopics(shortVersion = true, idOnly = false) {
     const start = Date.now();
     return new Promise((resolve, reject) => {
-      ApiService.requestFranzManagerApi('GET', '/topics', null, shortVersion ? { shortVersion: true } : { idOnly: true })
+      ApiService.requestFranzManagerApi('GET', '/topics', null, {
+        shortVersion,
+        idOnly
+      })
         .then((topics) => {
           const cluster = localStorage.getItem('selectedClusterId');
           if (cluster) {
@@ -68,7 +71,7 @@ export default {
             localStorage.setItem(`${cluster}-topicsDetails`, JSON.stringify(tDetails));
           }
           topicsDetails[topicId] = tDetails;
-          localStorage.setItem(`${cluster}-topicsDetails`, topicsDetails);
+          localStorage.setItem(`${cluster}-topicsDetails`, JSON.stringify(topicsDetails));
 
           return resolve(tDetails);
         })
@@ -91,7 +94,7 @@ export default {
             localStorage.setItem(`${cluster}-topicsPartitions`, JSON.stringify(tPartitions));
           }
           topicsPartitions[topicId] = tPartitions;
-          localStorage.setItem(`${cluster}-topicsPartitions`, topicsPartitions);
+          localStorage.setItem(`${cluster}-topicsPartitions`, JSON.stringify(topicsPartitions));
           return resolve(tPartitions);
         })
         .catch(reject);
@@ -124,7 +127,10 @@ export default {
 
   addTopic(topicName) {
     return new Promise((resolve, reject) => {
-      ApiService.requestFranzManagerApi('POST', '/topics', { id: topicName, replication: 1 }, null)
+      ApiService.requestFranzManagerApi('POST', '/topics', {
+        id: topicName,
+        replication: 1
+      }, null)
         .then(res => resolve(res))
         .catch(reject);
     });
