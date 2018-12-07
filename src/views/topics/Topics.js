@@ -199,7 +199,7 @@ class Topics extends React.Component {
               </td>
               <td className="text-right">
                 <Link to={`/topics/${topic.id}`}>
-                  {topic.configurations['cleanup.policy'] === 'compact' ?
+                  {topic.configurations && topic.configurations['cleanup.policy'] === 'compact' ?
                     <Tooltip content="This metric cannot be retrieved for compacted topics"
                              className='compacted-topic'>Compacted</Tooltip> :
                     Number.isInteger(topic.retainedMessages) ? topic.retainedMessages.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}

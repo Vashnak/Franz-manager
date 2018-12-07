@@ -74,7 +74,6 @@ class Clusters extends React.Component {
             }
           });
         });
-        console.log(brokers);
         this.setState({ brokers });
       })
       .catch(() => {
