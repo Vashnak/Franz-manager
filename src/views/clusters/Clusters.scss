@@ -11,10 +11,14 @@
   .scrollbar {
     @include scroll();
   }
+
+  .leader-icon {
+    fill: map_get($text-colors, body);
+    margin: 2px;
+  }
 }
 
 .settings-list {
-
   .settings-item {
     height: 28px;
     padding: 0 8px;

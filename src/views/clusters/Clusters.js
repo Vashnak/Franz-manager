@@ -6,6 +6,7 @@ import Loader from '../../components/loader/Loader';
 import Error from '../../components/error/Error';
 import Filter from '../../components/filter/Filter';
 import MetricsService from '../../services/MetricsService';
+import { CrownIcon } from '../../services/SvgService';
 
 let copyToClipboard;
 let getValueType;
@@ -56,7 +57,9 @@ class Clusters extends React.Component {
         });
         this._formatBrokersSettings(brokers);
         const tasks = [MetricsService.getMetrics('kafka.server', 'BrokerTopicMetrics', 'BytesInPerSec'),
-          MetricsService.getMetrics('kafka.server', 'BrokerTopicMetrics', 'BytesOutPerSec')];
+          MetricsService.getMetrics('kafka.server', 'BrokerTopicMetrics', 'BytesOutPerSec'),
+          MetricsService.getMetrics('kafka.controller', 'KafkaController', 'ActiveControllerCount')];
+
         return Promise.all(tasks);
       })
       .then((metrics) => {
@@ -64,9 +67,14 @@ class Clusters extends React.Component {
         metrics.forEach((brokersMetric) => {
           brokersMetric.forEach((brokerMetric) => {
             const broker = brokers.find(b => b.id === brokerMetric.brokerId.toString());
-            broker[brokerMetric.name] = brokerMetric.metrics.FiveMinuteRate;
+            if (brokerMetric.name === 'ActiveControllerCount') {
+              broker.leader = brokerMetric.metrics.Value === 1;
+            } else {
+              broker[brokerMetric.name] = brokerMetric.metrics.FiveMinuteRate;
+            }
           });
         });
+        console.log(brokers);
         this.setState({ brokers });
       })
       .catch(() => {
@@ -205,8 +213,8 @@ class Clusters extends React.Component {
             type="button"
             onClick={copyToClipboard.bind(null, this.state.kafkaString)}
           >
-            <i className="mdi mdi-content-copy" />
-            <Ink />
+            <i className="mdi mdi-content-copy"/>
+            <Ink/>
           </button>
         </div>
         <div className="zookeeper address flex align-center">
@@ -223,8 +231,8 @@ class Clusters extends React.Component {
             type="button"
             onClick={copyToClipboard.bind(null, this.state.zookeeperString)}
           >
-            <i className="mdi mdi-content-copy" />
-            <Ink />
+            <i className="mdi mdi-content-copy"/>
+            <Ink/>
           </button>
         </div>
       </div>
@@ -234,39 +242,39 @@ class Clusters extends React.Component {
   _renderBrokers() {
     return (
       <section>
-        {this.state.loadingBrokers && <Loader width="32" />}
-        {this.state.errorLoadingBrokers && !this.state.loadingBrokers && <Error noRiddle />}
+        {this.state.loadingBrokers && <Loader width="32"/>}
+        {this.state.errorLoadingBrokers && !this.state.loadingBrokers && <Error noRiddle/>}
         {!this.state.loadingBrokers && !this.state.errorLoadingBrokers
         && [
           <header key="headerBroker"><h3>Brokers</h3></header>,
           <table key="tableBroker">
             <thead>
-              <tr>
-                <th className="text-left">Broker Id</th>
-                <th className="text-right">Host</th>
-                <th className="text-right">Port</th>
-                <th className="text-right">Bytes In per sec</th>
-                <th className="text-right">bytes Out per sec</th>
-              </tr>
+            <tr>
+              <th className="text-left">Broker Id</th>
+              <th className="text-right">Host</th>
+              <th className="text-right">Port</th>
+              <th className="text-right">Bytes In per sec</th>
+              <th className="text-right">bytes Out per sec</th>
+            </tr>
             </thead>
             <tbody>
-              {this.state.brokers.map(broker => (
-                <tr key={broker.id} className={broker.state !== 'OK' ? 'dead-broker' : ''}>
-                  <td className="text-left">{broker.id}</td>
-                  <td className="text-right">{broker.host}</td>
-                  <td className="text-right">{broker.port}</td>
-                  <td
-                    className="text-right"
-                  >
-                    {typeof broker.BytesInPerSec !== 'undefined' ? broker.BytesInPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}
-                  </td>
-                  <td
-                    className="text-right"
-                  >
-                    {typeof broker.BytesOutPerSec !== 'undefined' ? broker.BytesOutPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}
-                  </td>
-                </tr>
-              ))}
+            {this.state.brokers.map(broker => (
+              <tr key={broker.id} className={broker.state !== 'OK' ? 'dead-broker' : ''}>
+                <td className="text-left">{broker.id}  {broker.leader && <CrownIcon width={16} height={16} className="leader-icon"/>}</td>
+                <td className="text-right">{broker.host}</td>
+                <td className="text-right">{broker.port}</td>
+                <td
+                  className="text-right"
+                >
+                  {typeof broker.BytesInPerSec !== 'undefined' ? broker.BytesInPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}
+                </td>
+                <td
+                  className="text-right"
+                >
+                  {typeof broker.BytesOutPerSec !== 'undefined' ? broker.BytesOutPerSec.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : '-'}
+                </td>
+              </tr>
+            ))}
             </tbody>
           </table>,
         ]
@@ -278,12 +286,12 @@ class Clusters extends React.Component {
   _renderSettings() {
     return (
       <section className="flex-1">
-        {this.state.loadingBrokersSettings && <Loader width="32" />}
+        {this.state.loadingBrokersSettings && <Loader width="32"/>}
         {!this.state.loadingBrokersSettings && !this.state.errorLoadingBrokersSettings
         && [
           <header className="filter flex" key="header-settings">
             <h3>Settings</h3>
-            <Filter onChange={this._updateFilterComponent.bind(this)} className="margin-left-32px" />
+            <Filter onChange={this._updateFilterComponent.bind(this)} className="margin-left-32px"/>
           </header>,
           <PerfectScrollbar className="scrollbar settings-list">
             {
@@ -339,8 +347,8 @@ class Clusters extends React.Component {
   _renderMetrics() {
     return (
       <section className="flex-1">
-        {this.state.loadingMetrics && <Loader width="32" />}
-        {this.state.errorLoadingMetrics && !this.state.loadingMetrics && <Error noRiddle />}
+        {this.state.loadingMetrics && <Loader width="32"/>}
+        {this.state.errorLoadingMetrics && !this.state.loadingMetrics && <Error noRiddle/>}
 
         {!this.state.loadingMetrics && !this.state.errorLoadingMetrics
         && [
@@ -349,53 +357,53 @@ class Clusters extends React.Component {
           <PerfectScrollbar className="scrollbar" key="scrollbar-metrics">
             <table key="tableMetrics">
               <thead>
-                <tr>
-                  <th className="text-left">Name (per sec)</th>
-                  <th className="text-right">Mean Rate</th>
-                  <th className="text-right">Last minute</th>
-                  <th className="text-right">last 5 minutes</th>
-                  <th className="text-right">last 15 minutes</th>
-                </tr>
+              <tr>
+                <th className="text-left">Name (per sec)</th>
+                <th className="text-right">Mean Rate</th>
+                <th className="text-right">Last minute</th>
+                <th className="text-right">last 5 minutes</th>
+                <th className="text-right">last 15 minutes</th>
+              </tr>
               </thead>
               <tbody>
-                {this.state.metrics.map((metric) => {
-                  if (!metric.metrics) {
-                    return (
-                      <tr>
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                      </tr>
-                    );
-                  }
+              {this.state.metrics.map((metric) => {
+                if (!metric.metrics) {
                   return (
-                    <tr key={metric.name}>
-                      <td className="text-left">{metric.label}</td>
-                      <td
-                        className="text-right"
-                      >
-                        {metric.metrics.MeanRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
-                      </td>
-                      <td
-                        className="text-right"
-                      >
-                        {metric.metrics.OneMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
-                      </td>
-                      <td
-                        className="text-right"
-                      >
-                        {metric.metrics.FiveMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
-                      </td>
-                      <td
-                        className="text-right"
-                      >
-                        {metric.metrics.FifteenMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
-                      </td>
+                    <tr>
+                      <td/>
+                      <td/>
+                      <td/>
+                      <td/>
+                      <td/>
                     </tr>
                   );
-                })}
+                }
+                return (
+                  <tr key={metric.name}>
+                    <td className="text-left">{metric.label}</td>
+                    <td
+                      className="text-right"
+                    >
+                      {metric.metrics.MeanRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+                    </td>
+                    <td
+                      className="text-right"
+                    >
+                      {metric.metrics.OneMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+                    </td>
+                    <td
+                      className="text-right"
+                    >
+                      {metric.metrics.FiveMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+                    </td>
+                    <td
+                      className="text-right"
+                    >
+                      {metric.metrics.FifteenMinuteRate.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
+                    </td>
+                  </tr>
+                );
+              })}
               </tbody>
             </table>
           </PerfectScrollbar>,
