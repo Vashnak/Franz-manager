@@ -19,12 +19,11 @@ import Error from '../../../components/error/Error';
 import SettingsModal from './settingsModal/SettingsModal';
 import MetricsService from '../../../services/MetricsService';
 import EditPartitionsModal from './editPartitionsModal/EditPartitionsModal';
-import { CopyIcon, HeaderIcon, KeyIcon } from '../../../services/SvgService';
+import { CopyIcon, KeyIcon } from '../../../services/SvgService';
 import Tooltip from '../../../components/tooltip/Tooltip';
 import ConstantsService from '../../../services/ConstantsService';
 import ClustersService from '../../../services/ClustersService';
 import Filter from '../../../components/filter/Filter';
-import Switch from '../../../components/switch/Switch';
 
 let copyJSON;
 let renderFormatDateMessage;
@@ -146,6 +145,7 @@ class Topic extends Component {
         break;
       case 'Live message':
         liveMode = true;
+        maxShownMessages = 30;
         break;
       default:
         break;
@@ -480,8 +480,10 @@ class Topic extends Component {
                         </span>
                         </div>
                       </td>
-                      <td className="text-right">{partition.beginningOffset}</td>
-                      <td className="text-right">{partition.endOffset}</td>
+                      <td
+                        className="text-right">{(partition.beginningOffset || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 })}</td>
+                      <td
+                        className="text-right">{(partition.endOffset || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 })}</td>
                       <td className="text-right">
                         {partition.replicas.join(', ')}
                       </td>
