@@ -296,7 +296,8 @@ class Topic extends Component {
         });
       })
       .catch((e) => {
-        if (e === 'No message for this topic.') {
+        console.log(e);
+        if (e.message.includes('No message for this topic.')) {
           this.setState({
             loadingMessages: false,
             messages: [],
@@ -551,7 +552,6 @@ class Topic extends Component {
     }
     const totalMessages = messages.length;
     messages = messages.slice(0, this.state.maxShownMessages);
-
     return (
       <div className="flex flex-1">
         <section className="filter-section flex-1">
