@@ -142,12 +142,11 @@ class Consumer extends Component {
                               <th className="text-right">Consumer offset</th>
                               <th className="text-right">
                               Lag
-                                {this._calcLag(topic)}
                                 {' '}
                                 <span
                                   className="topic-lag"
                                 >
-                                  {this._calcLag(topic)}
+                                  ({this._calcLag(topic)})
                                 </span>
                               </th>
                               <th className="text-right">Commit timestamp</th>
