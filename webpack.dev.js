@@ -16,6 +16,10 @@ module.exports = {
     optimization: {
         minimize: false
     },
+    performance: {
+      maxEntrypointSize: 2097152,
+      maxAssetSize: 4194304
+    },
     plugins: [
         new webpack.DefinePlugin({
             'NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
@@ -45,15 +49,15 @@ module.exports = {
                 loader: 'babel-loader'
             },
             {
-                test: /\.scss|\.css$/,
+                test: /\.scss$/,
                 loaders: ['style-loader', 'css-loader', 'sass-loader']
             },
-            {
-                test: /\.(eot|woff|woff2|svg|ttf)([\?]?.*)$/,
-                loader: 'url-loader'
+	    {
+                test: /\.(eot|ttf|woff|woff2)([\?]?.*)$/,
+                loader: 'file-loader'
             },
             {
-                test: /\.(jpe?g|png|gif|svg)$/i,
+                test: /\.(jpe?g|png|gif|svg)([\?]?.*)$/i,
                 loader: 'url-loader?limit=25000'
             }
         ]
