@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const sass = require('node-sass');
 
-const themesFolder = path.join(__dirname, 'src', 'assets', 'themes');
-const coreFilePath = path.join(__dirname, 'src', 'core.scss');
-const distPath = path.join(__dirname, 'dist');
+const themesFolder = path.join('src', 'assets', 'themes');
+const coreFilePath = path.join('src', 'core.scss');
+const distPath = path.join('dist');
 let coreFile = fs.readFileSync(coreFilePath).toString();
 
 if (!fs.existsSync(distPath)) {

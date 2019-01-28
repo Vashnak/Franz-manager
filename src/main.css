@@ -8222,22 +8222,26 @@ button {
         padding: 0 24px 24px 24px;
         overflow: hidden;
         text-overflow: ellipsis; }
-      .topic-item-view .column.darker .messages-list section .json-pretty {
+      .topic-item-view .column.darker .messages-list section .__json-pretty__ {
         font: normal 300 1em "Inconsolata";
         line-height: 21px;
         padding: 0 24px 16px 16px;
         color: rgba(206, 195, 133, 0.5);
         overflow: hidden;
         text-overflow: ellipsis; }
-        .topic-item-view .column.darker .messages-list section .json-pretty .json-key {
+        .topic-item-view .column.darker .messages-list section .__json-pretty__ .__json-key__ {
           color: #cec385;
           font: normal 300 1em "Inconsolata"; }
-        .topic-item-view .column.darker .messages-list section .json-pretty .json-string {
+        .topic-item-view .column.darker .messages-list section .__json-pretty__ .__json-string__ {
           color: #d9efec;
           font: normal 300 1em "Inconsolata"; }
-        .topic-item-view .column.darker .messages-list section .json-pretty .json-value {
+        .topic-item-view .column.darker .messages-list section .json-pretty .__json-value__ {
           color: #90d2e3;
           font: normal 300 1em "Inconsolata"; }
+	.topic-item-view .column.darker .messages-list section .json-pretty .__json-boolean__ {
+          color: #90d2e3;
+          font: normal 300 1em "Inconsolata"; }
+
 
 .topic-item-view .partition-datatable.ps, .topic-item-view .messages-list.ps {
   position: relative;

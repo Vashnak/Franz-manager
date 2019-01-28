@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const CustomThemePlugin = require('./customThemePlugin');
+const CustomThemePlugin = require('./plugins/customThemePlugin');
+const CopyFaviconPlugin = require('./plugins/copyFaviconPlugin');
 
 module.exports = {
     devServer: {
@@ -15,11 +15,6 @@ module.exports = {
         minimize: false
     },
     plugins: [
-        new webpack.ProvidePlugin({
-            'jQuery': 'jquery',
-            'window.jQuery': 'jquery',
-            '$': 'jquery'
-        }),
         new webpack.DefinePlugin({
             'NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
             'SERVER_URL': JSON.stringify(process.env.SERVER_URL || ''),
@@ -27,7 +22,7 @@ module.exports = {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
         }),
         new webpack.optimize.AggressiveMergingPlugin(), //Merge chunks
-        new CopyWebpackPlugin([{from: 'src/assets/images/favicon.png', to: 'favicon.png'}]),
+	new CopyFaviconPlugin('src/assets/images/favicon.png'),
         new CustomThemePlugin()
     ],
     entry: {
