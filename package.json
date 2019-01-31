@@ -1,22 +1,27 @@
 {
   "name": "franz-manager",
-  "author": {
-    "name": "Anthony",
-    "email": "anthony.sarais@greencom-networks.com"
-  },
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Franz-Manager Frontend: A multi-cluster Kafka Administration Tool",
+  "keywords": ["kafka", "admin", "devops", "tool"],
+  "homepage": "https://franz-manager.io/",
+  "license": "EPL-2.0",
+  "contributors": [
+    "Anthony Saraïs <anthony.sarais@greencom-networks.com>",
+    "Loïc Gaillard <loic.gaillard@greencom-networks.com>",
+    "Quentin Gillon <quentin.gillon@greencom-networks.com>",
+    "Mathias Chevalier <mathias.chevalier@greencom-networks.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GreenCom-Networks/Franz-manager.git"
+  },
+  "main": "src/index.js",
   "scripts": {
-    "start": "NODE_ENV=development webpack-dev-server --config webpack.dev.js --hot --open --host 0.0.0.0",
+    "start": "NODE_ENV=development webpack-dev-server --config webpack.dev.js --hot --open",
     "docker": "docker build -t franz-manager .",
-    "build": "NODE_ENV=production webpack --mode production --display-modules --config webpack.prod.js && npm run replace",
-    "replace": "npm run replace-js-location && npm run generate-css-themes",
-    "replace-js-location": "cp index.html dist/index.html && sed -i 's~/app.js~app.js~' dist/index.html",
+    "build": "NODE_ENV=production webpack --config webpack.prod.js",
     "generate-css-themes": "node plugins/generateCssThemes.js"
   },
-  "keywords": [],
-  "license": "EPL-2.0",
   "dependencies": {
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-class-properties": "^7.3.0",
@@ -24,7 +29,6 @@
     "@babel/preset-env": "^7.3.1",
     "@babel/preset-react": "^7.0.0",
     "@mdi/font": "^3.3.92",
-    "acorn": "^6.0.5",
     "babel-loader": "^8.0.5",
     "classnames": "^2.2.5",
     "css-loader": "^1.0.0",
@@ -36,7 +40,6 @@
     "querystring": "^0.2.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
-    "react-hot-loader": "^4.6.3",
     "react-ink": "^6.4.0",
     "react-json-pretty": "^2.0.0",
     "react-perfect-scrollbar": "^1.4.4",
@@ -55,14 +58,7 @@
     "webpack-cli": "^3.2.1"
   },
   "devDependencies": {
-    "webpack-dev-server": "^3.1.14"
-  },
-  "optionalDependencies": {
-    "babel-eslint": "^10.0.1",
-    "eslint": "^5.12.1",
-    "eslint-config-airbnb": "^17.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jsx-a11y": "^6.1.2",
-    "eslint-plugin-react": "^7.12.3"
+    "webpack-dev-server": "^3.1.14",
+    "react-hot-loader": "^4.6.3"
   }
 }
