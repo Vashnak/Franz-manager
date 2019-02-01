@@ -16,6 +16,5 @@ ENV BASE_NGINX /usr/share/nginx/html
 
 COPY --from=builder /$APP/dist/ ${BASE_NGINX}/${APP}/
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY replace_constants.sh .
 
-CMD sh replace_constants.sh && nginx -g 'daemon off;'
+CMD sed -i "s~%SERVER_URL%~${SERVER_URL:-}~g; s~%WEBSOCKET_SERVER_URL%~${WEBSOCKET_SERVER_URL:-}~g" ${BASE_NGINX}/${APP}/app.js && nginx -g 'daemon off;'
