@@ -15,10 +15,9 @@ module.exports = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      'NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
       'SERVER_URL': JSON.stringify(process.env.SERVER_URL || '%SERVER_URL%'),
-      'WEBSOCKET_SERVER_URL': JSON.stringify(process.env.WEBSOCKET_SERVER_URL || '%WEBSOCKET_SERVER_URL%'),
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
+      'WEBSOCKET_SERVER_URL': JSON.stringify(process.env.WEBSOCKET_SERVER_URL || '%WEBSOCKET_SERVER_URL%')
     }),
     new webpack.optimize.AggressiveMergingPlugin(), //Merge chunks,
     new CustomThemesGenerationPlugin(path.resolve(__dirname, 'src/assets/themes')),
