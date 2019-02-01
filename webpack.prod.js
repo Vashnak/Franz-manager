@@ -30,7 +30,7 @@ module.exports = {
     ]
   },
   output: {
-    publicPath: '/',
+    publicPath: '/franz-manager/',
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].js'
   },
