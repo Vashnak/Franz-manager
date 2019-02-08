@@ -294,7 +294,7 @@ class Topics extends React.Component {
       {folders.map(folder => (
         <tr className="pointer" onClick={this._navigateToFolder.bind(this, folder)}>
           <td className="text-left flex align-center">
-            <FolderIcon width={20} className="folder-icon"/>
+            <FolderIcon size={20} className="folder-icon"/>
             <span className="margin-left-8px">{folder.id}</span>
             <span className="folder-stat">
                 {folder.topics.length}

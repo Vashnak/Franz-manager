@@ -11,7 +11,8 @@ module.exports = {
       host: '0.0.0.0',
       rewrites: [
 	{from: /(?:^|\/)app\.js$/, to: '/app.js'},
-	{from: /(?:^|\/)favicon\.png$/, to: '/src/assets/images/favicon.png'}
+	{from: /(?:^|\/)favicon\.png$/, to: '/src/assets/images/favicon.png'},
+	{from: /\./, to: '/src/index.html'}
       ]
     }
   },
