@@ -5,7 +5,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 import _ from 'lodash';
 import Ink from 'react-ink';
 import FolderIcon from 'mdi-react/FolderIcon';
-import { ToastStore, ToastContainer } from 'react-toasts';
+import { ToastsStore, ToastsContainer } from 'react-toasts';
 import PropTypes from 'prop-types';
 
 import querystring from 'querystring';
@@ -352,7 +352,7 @@ class Topics extends React.Component {
       try {
         await TopicsService.deleteTopic(topic.id);
       } catch (e) {
-        ToastStore.error(`could not delete topic ${topic.id}`);
+        ToastsStore.error(`could not delete topic ${topic.id}`);
       }
       topicsCopy.splice(topicsCopy.findIndex(t => t.id === topic.id), 1);
       this.setState({ topicsToDelete: topicsCopy });
@@ -362,7 +362,7 @@ class Topics extends React.Component {
       askBulkDeleteConfirmation: false,
       topicsToDelete: [],
     });
-    ToastStore.success(`Successfully deleted ${length} topic${length > 1 ? 's' : ''} !`, 5000);
+    ToastsStore.success(`Successfully deleted ${length} topic${length > 1 ? 's' : ''} !`, 5000);
     this._loadTopics();
   }
 
@@ -620,7 +620,7 @@ class Topics extends React.Component {
         && <AddTopicModal reloadTopics={this._loadTopics.bind(this)} close={this._closeAddTopicModal.bind(this)}/>
         }
 
-        <ToastContainer store={ToastStore}/>
+        <ToastsContainer store={ToastsStore}/>
       </div>
     );
   }

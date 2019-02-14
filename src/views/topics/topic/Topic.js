@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import JSONPretty from 'react-json-pretty';
 import moment from 'moment';
-import { ToastStore, ToastContainer } from 'react-toasts';
+import { ToastsStore, ToastsContainer } from 'react-toasts';
 import ReactTooltip from 'react-tooltip';
 import Ink from 'react-ink';
 import classnames from 'classnames';
@@ -694,7 +694,7 @@ class Topic extends Component {
             close={this._closeEditPartitionModal.bind(this)}
           />
         )}
-        <ToastContainer store={ToastStore}/>
+        <ToastsContainer store={ToastsStore}/>
         <ReactTooltip/>
       </div>
     );
@@ -708,7 +708,7 @@ copyJSON = (json) => {
   textarea.select();
   document.execCommand('copy');
   document.body.removeChild(textarea);
-  ToastStore.success('Message content copied.');
+  ToastsStore.success('Message content copied.');
 };
 
 renderFormatDateMessage = (timestamp) => {

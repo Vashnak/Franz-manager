@@ -45,7 +45,7 @@
     "react-router": "^4.1.1",
     "react-router-dom": "^4.1.1",
     "react-tap-event-plugin": "^2.0.1",
-    "react-toasts": "^2.0.14",
+    "react-toasts": "^3.0.0",
     "react-tooltip": "^3.9.2",
     "resolve-url-loader": "^2.3.0",
     "superagent": "^3.5.2",
